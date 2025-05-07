@@ -11,8 +11,9 @@ export default function Layout({ children }) {
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            TaxTracker
+          <Link href="/" className="flex items-center space-x-2">
+            <img src="/logo.png" alt="TaxTracker Logo" className="h-8 w-auto" />
+            <span className="text-2xl font-bold text-primary">TaxTracker</span>
           </Link>
 
           {/* Desktop Nav */}
