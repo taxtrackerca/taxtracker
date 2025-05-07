@@ -26,14 +26,17 @@ export default function Home() {
           </p>
 
           <div className="flex justify-center items-center gap-4 flex-wrap mb-6">
-            <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
-              30-Day Free Trial
+            <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold">
+              Built for Canadians
             </span>
             <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold">
-              Only $4.95/month after
+            30-Day Free Trial
             </span>
             <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold">
-              No charges today — subscription starts after trial
+            Only $4.95/month after
+            </span>
+            <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+            CRA-Compliant
             </span>
           </div>
 
