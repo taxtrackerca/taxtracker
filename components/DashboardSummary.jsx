@@ -94,6 +94,7 @@ export default function DashboardSummary({ refresh }) {
     };
 
     fetchSummary();
+    fetchSignupDate();
   }, [refresh]);
 
   const totalExpenses = summary.businessExpenses + summary.homeExpenses + summary.vehicleExpenses;
