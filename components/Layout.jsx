@@ -13,7 +13,7 @@ export default function Layout({ children }) {
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
             <img src="/logo.png" alt="TaxTracker Logo" className="h-8 w-auto" />
-            <span className="text-2xl font-bold text-primary">TaxTracker</span>
+            <span className="text-2xl font-bold text-black font-poppins tracking-tight text-primary">TaxTracker</span>
           </Link>
 
           {/* Desktop Nav */}
