@@ -44,7 +44,7 @@ export default function Home() {
             href="/signup"
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-8 py-3 rounded shadow-lg transition duration-200"
           >
-            Start Tracking Now
+            Take Control of Your Taxes
           </a>
 
           <p className="text-sm text-gray-400 mt-4">Cancel anytime. No strings attached.</p>
