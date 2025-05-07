@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { auth } from '../lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -11,37 +12,46 @@ export default function Signup() {
   const [error, setError] = useState('');
   const router = useRouter();
 
+
+
+
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      const token = await result.user.getIdToken();
       const uid = result.user.uid;
-  
-      // Save email to Firestore
+
+      // Wait for Firebase to fully recognize the user (safe guard)
+      await new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user?.uid === uid) {
+            unsubscribe();
+            resolve();
+          }
+        });
+      });
+
+      // Save to Firestore (with signupTimestamp)
       await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid, email }),
       });
-  
-      // Start Stripe checkout
+
+      // Proceed with Stripe checkout
+      const token = await result.user.getIdToken();
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          customerEmail: email,
-          firebaseUid: uid,
-        }),
+        body: JSON.stringify({ customerEmail: email, firebaseUid: uid }),
       });
-  
+
       const data = await res.json();
-  
       if (data.url) {
-        window.location.href = data.url; // Redirect to Stripe Checkout
+        window.location.href = data.url;
       } else {
         throw new Error('Stripe session creation failed');
       }
