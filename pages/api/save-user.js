@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   const { uid, email } = req.body;
 
   try {
-    await db.collection('users').doc(uid).set({ email }, { merge: true });
+    await db.collection('users').doc(uid).set({ email, signupTimestamp: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Error saving user:', err);

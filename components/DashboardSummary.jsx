@@ -1,7 +1,7 @@
 // components/DashboardSummary.jsx
 import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 
 export default function DashboardSummary({ refresh }) {
   const [summary, setSummary] = useState({
@@ -14,6 +14,7 @@ export default function DashboardSummary({ refresh }) {
     homeExpenses: 0,
     vehicleExpenses: 0
   });
+  const [daysLeft, setDaysLeft] = useState(null);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -39,22 +40,22 @@ export default function DashboardSummary({ refresh }) {
         gstRemitted += parseFloat(data.gstRemitted || 0);
 
         business += [
-          'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin',
-          'rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
+          'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin',
+          'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0);
 
         const homeSqft = parseFloat(data.homeSqft || 1);
         const businessSqft = parseFloat(data.businessSqft || 0);
         const homeUsePercent = businessSqft / homeSqft;
         home += [
-          'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax'
+          'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * homeUsePercent;
 
         const kmsThisMonth = parseFloat(data.kmsThisMonth || 1);
         const businessKms = parseFloat(data.businessKms || 0);
         const vehicleUsePercent = businessKms / kmsThisMonth;
         vehicle += [
-          'vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs'
+          'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * vehicleUsePercent;
       });
 
@@ -70,6 +71,26 @@ export default function DashboardSummary({ refresh }) {
         homeExpenses: home,
         vehicleExpenses: vehicle
       });
+    };
+
+    const fetchSignupDate = async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      const profileRef = doc(db, 'users', uid);
+      const snap = await getDoc(profileRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.signupTimestamp?.toDate) {
+          const signupDate = data.signupTimestamp.toDate();
+          const now = new Date();
+
+          const msPerDay = 24 * 60 * 60 * 1000;
+          const daysSinceSignup = Math.floor((now - signupDate) / msPerDay);
+          const remaining = Math.max(0, 30 - daysSinceSignup);
+          setDaysLeft(remaining);
+        }
+      }
     };
 
     fetchSummary();
@@ -108,6 +129,11 @@ export default function DashboardSummary({ refresh }) {
 
   return (
     <div className="bg-gray-100 p-4 rounded shadow">
+      {daysLeft > 0 && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 mb-4 rounded">
+          Your free trial ends in <strong>{daysLeft}</strong> day{daysLeft !== 1 && 's'}.
+        </div>
+      )}
       <h2 className="text-xl font-semibold mb-2">Year-to-Date Summary</h2>
       <ul className="text-gray-800 space-y-1">
         <li>Total Business Income: ${summary.businessIncome.toFixed(2)}</li>
