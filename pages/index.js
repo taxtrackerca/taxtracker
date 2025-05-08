@@ -53,96 +53,92 @@ export default function Home() {
 
 
       {/* Why TaxTracker Is Different Section */}
-      <section className="px-6 py-16 bg-gray-50 text-center" data-aos="fade-up">
-        <h2 className="text-3xl font-extrabold mb-4 text-gray-900">Why TaxTracker Is Different</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto mb-12 text-lg">
-          We’re not just another spreadsheet or bookkeeping app. TaxTracker is built from the ground up for Canadian sole proprietors who want to stay organized — and sane — at tax time.
-        </p>
+      <section className="relative bg-gradient-to-b from-gray-50 to-white py-20 px-6 text-center">
+        <div className="absolute top-0 left-0 w-full h-20 bg-white rounded-b-3xl z-0"></div>
 
-        <div className="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto text-left">
-          {/* Icon 1 */}
-          <div data-aos="fade-up" data-aos-delay="100" className="flex items-start">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2 2 4-4"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2z"></path>
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">Built for T2125</h4>
-              <p className="text-gray-700">Our categories and calculations match what the CRA expects on your T2125 form — no guesswork required.</p>
-            </div>
-          </div>
+        <div className="relative z-10">
+          <h2 className="text-4xl font-extrabold mb-4 text-gray-900">Why TaxTracker Is Different</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto mb-12 text-lg">
+            We’re not just another spreadsheet or bookkeeping app. TaxTracker is built from the ground up for Canadian sole proprietors who want to stay organized — and sane — at tax time.
+          </p>
 
-          {/* Icon 2 */}
-          <div data-aos="fade-up" data-aos-delay="200" className="flex items-start">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 13l4-4m0 0l4 4m-4-4v12"></path>
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">Real-Time Tax Estimates</h4>
-              <p className="text-gray-700">See your estimated tax owing as you go — no surprises at the end of the year.</p>
-            </div>
-          </div>
-
-          {/* Icon 3 */}
-          <div data-aos="fade-up" data-aos-delay="300" className="flex items-start">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">One-Click Export</h4>
-              <p className="text-gray-700">Need to hand off to your accountant or save for records? Export clean CSV and PDF summaries instantly.</p>
-            </div>
-          </div>
-
-          {/* Icon 4 */}
-          <div data-aos="fade-up" data-aos-delay="400" className="flex items-start">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7 7m0 0l7-7m-7 7h10"></path>
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">Simple. Fast. Focused.</h4>
-              <p className="text-gray-700">No bloated features. Just the tools you need to track income, claim expenses, and stay on top of GST/HST.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Step-by-Step Timeline */}
-        <div className="mt-16">
-          <h3 className="text-2xl font-semibold text-gray-900 mb-6">How It Works in 3 Simple Steps</h3>
-          <div className="flex justify-center gap-12">
-            {/* Step 1 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mb-4">
-                <span>1</span>
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto text-left">
+            {/* Each feature card */}
+            {[
+              {
+                icon: "📄",
+                title: "Built for T2125",
+                desc: "Our categories and calculations match what the CRA expects on your T2125 form — no guesswork required.",
+              },
+              {
+                icon: "📊",
+                title: "Real-Time Tax Estimates",
+                desc: "See your estimated tax owing as you go — no surprises at the end of the year.",
+              },
+              {
+                icon: "📁",
+                title: "One-Click Export",
+                desc: "Need to hand off to your accountant or save for records? Export clean CSV and PDF summaries instantly.",
+              },
+              {
+                icon: "⚡",
+                title: "Simple. Fast. Focused.",
+                desc: "No bloated features. Just the tools you need to track income, claim expenses, and stay on top of GST/HST.",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow hover:shadow-lg p-6 transition duration-200 border-t-4 border-blue-600"
+                data-aos="fade-up"
+                data-aos-delay={100 * (i + 1)}
+              >
+                <div className="text-3xl mb-4">{item.icon}</div>
+                <h4 className="text-xl font-semibold text-gray-800 mb-2">{item.title}</h4>
+                <p className="text-gray-600">{item.desc}</p>
               </div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">Sign Up</h4>
-              <p className="text-gray-700">Create an account and start your 30-day free trial in minutes — no hassle.</p>
+            ))}
+          </div>
+
+          {/* Step-by-step timeline */}
+          <div className="mt-20">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-6">How It Works in 3 Simple Steps</h3>
+            <div className="flex flex-col md:flex-row justify-center gap-12 max-w-4xl mx-auto">
+              {[
+                {
+                  number: "1",
+                  title: "Sign Up",
+                  desc: "Create an account and start your 30-day free trial in minutes — no hassle.",
+                },
+                {
+                  number: "2",
+                  title: "Track Your Income",
+                  desc: "Log your income, expenses, and GST/HST using our user-friendly dashboard.",
+                },
+                {
+                  number: "3",
+                  title: "Generate Reports",
+                  desc: "Download clean reports for your own records or your accountant.",
+                },
+              ].map((step, i) => (
+                <div key={i} className="flex flex-col items-center text-center" data-aos="fade-up" data-aos-delay={300 + i * 100}>
+                  <div className="w-16 h-16 bg-blue-600 text-white text-xl font-bold rounded-full flex items-center justify-center mb-4 shadow-lg">
+                    {step.number}
+                  </div>
+                  <h4 className="text-xl font-semibold text-blue-600 mb-2">{step.title}</h4>
+                  <p className="text-gray-700 max-w-xs">{step.desc}</p>
+                </div>
+              ))}
             </div>
 
-            {/* Step 2 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mb-4">
-                <span>2</span>
-              </div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">Track Your Income</h4>
-              <p className="text-gray-700">Easily log your income, expenses, and GST/HST with a user-friendly dashboard.</p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mb-4">
-                <span>3</span>
-              </div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">Generate Reports</h4>
-              <p className="text-gray-700">Get instant CSV and PDF reports for filing or sharing with your accountant.</p>
+            {/* CTA */}
+            <div className="mt-12">
+              <a
+                href="/signup"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-8 py-3 rounded shadow-lg transition duration-200"
+              >
+                Start Your Free Trial
+              </a>
+              <p className="text-sm text-gray-500 mt-2">Only $4.95/month after 30 days. Cancel anytime.</p>
             </div>
           </div>
         </div>
