@@ -38,7 +38,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
 
       const allMonths = await getDocs(collection(db, 'users', uid, 'months'));
 
-      const monthOrder = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
       const [selectedMonth, selectedYear] = monthId.split(' ');
       const selectedMonthIndex = monthOrder.indexOf(selectedMonth);
 
@@ -54,9 +54,9 @@ export default function MonthTracker({ monthId, onRefresh }) {
         const d = docSnap.data();
         incomeUpToLastMonth += parseFloat(d.income || 0);
 
-        const business = [ 'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin','rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other' ].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0);
-        const home = [ 'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax' ].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0) * (parseFloat(d.businessSqft || 0) / parseFloat(d.homeSqft || 1));
-        const vehicle = [ 'vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs' ].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0) * (parseFloat(d.businessKms || 0) / parseFloat(d.kmsThisMonth || 1));
+        const business = ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0);
+        const home = ['homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0) * (parseFloat(d.businessSqft || 0) / parseFloat(d.homeSqft || 1));
+        const vehicle = ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0) * (parseFloat(d.businessKms || 0) / parseFloat(d.kmsThisMonth || 1));
 
         deductionsUpToLastMonth += business + home + vehicle;
         kmYTD += parseFloat(d.businessKms || 0);
@@ -97,11 +97,11 @@ export default function MonthTracker({ monthId, onRefresh }) {
   };
 
   const sum = (...fields) => fields.reduce((t, f) => t + parseFloat(data[f] || 0), 0);
-  const businessExpenses = sum('advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin','rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other');
+  const businessExpenses = sum('advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other');
   const homeUsePercent = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
-  const homeExpenses = sum('homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax') * homeUsePercent;
+  const homeExpenses = sum('homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax') * homeUsePercent;
   const vehicleUsePercent = parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1);
-  const vehicleExpenses = sum('vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs') * vehicleUsePercent;
+  const vehicleExpenses = sum('vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs') * vehicleUsePercent;
 
   const currentIncome = parseFloat(data.income || 0);
   const otherIncome = parseFloat(data.otherIncome || 0);
@@ -148,124 +148,157 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
       {/* Income Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <h3 className="font-semibold">Income</h3>
-          <label className="text-sm">Business Income</label>
-          <input type="number" value={data.income || ''} onChange={e => updateField('income', e.target.value)} className="w-full border p-2 mb-2 rounded" />
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+        <h3 className="text-lg font-semibold text-blue-600 flex items-center mb-4">
+          💼 Income & GST/HST
+        </h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Business Income</label>
+            <input
+              type="number"
+              value={data.income || ''}
+              onChange={e => updateField('income', e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-          <label className="text-sm">Other Income</label>
-          <input type="number" value={data.otherIncome || ''} onChange={e => updateField('otherIncome', e.target.value)} className="w-full border p-2 mb-2 rounded" />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Other Income</label>
+            <input
+              type="number"
+              value={data.otherIncome || ''}
+              onChange={e => updateField('otherIncome', e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-          <label className="text-sm">Has tax already been deducted?</label>
-          <select value={data.otherIncomeTaxed} onChange={e => updateField('otherIncomeTaxed', e.target.value)} className="w-full border p-2 mb-4 rounded">
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Has Tax Already Been Deducted?</label>
+            <select
+              value={data.otherIncomeTaxed}
+              onChange={e => updateField('otherIncomeTaxed', e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
 
-        <div>
-          <h3 className="font-semibold">GST/HST</h3>
-          <label className="text-sm">GST Collected</label>
-          <input type="number" value={data.gstCollected || ''} onChange={e => updateField('gstCollected', e.target.value)} className="w-full border p-2 mb-2 rounded" />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">GST Collected</label>
+            <input
+              type="number"
+              value={data.gstCollected || ''}
+              onChange={e => updateField('gstCollected', e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-          <label className="text-sm">GST Remitted</label>
-          <input type="number" value={data.gstRemitted || ''} onChange={e => updateField('gstRemitted', e.target.value)} className="w-full border p-2 mb-2 rounded" />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">GST Remitted</label>
+            <input
+              type="number"
+              value={data.gstRemitted || ''}
+              onChange={e => updateField('gstRemitted', e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
       </div>
 
       {/* Business Expenses Section */}
-<div>
-  <h3 className="font-semibold mb-2">Gross Business Expenses</h3>
-  {[
-    'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies',
-    'legal','admin','rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
-  ].map(field => (
-    <div key={field} className="mb-2">
-      <label className="block text-sm capitalize">{field.replace(/([A-Z])/g, ' $1')}</label>
-      <input
-        type="number"
-        value={data[field] || ''}
-        onChange={e => updateField(field, e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-    </div>
-  ))}
-  <div className="font-semibold mt-4">Total: ${businessExpenses.toFixed(2)}</div>
-</div>
+      <div>
+        <h3 className="font-semibold mb-2">Gross Business Expenses</h3>
+        {[
+          'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies',
+          'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
+        ].map(field => (
+          <div key={field} className="mb-2">
+            <label className="block text-sm capitalize">{field.replace(/([A-Z])/g, ' $1')}</label>
+            <input
+              type="number"
+              value={data[field] || ''}
+              onChange={e => updateField(field, e.target.value)}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+        ))}
+        <div className="font-semibold mt-4">Total: ${businessExpenses.toFixed(2)}</div>
+      </div>
 
-{/* Business Use of Home Section */}
-<div>
-  <h3 className="font-semibold mb-2">Business Use of Home</h3>
-  {[
-    'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax'
-  ].map(field => (
-    <div key={field} className="mb-2">
-      <label className="block text-sm">{field.replace('home', '')}</label>
-      <input
-        type="number"
-        value={data[field] || ''}
-        onChange={e => updateField(field, e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-    </div>
-  ))}
-  <div className="mb-2">
-    <label className="block text-sm">Home Sqft</label>
-    <input
-      type="number"
-      value={data.homeSqft || ''}
-      onChange={e => updateField('homeSqft', e.target.value)}
-      className="w-full border p-2 rounded"
-    />
-  </div>
-  <div className="mb-2">
-    <label className="block text-sm">Business Sqft</label>
-    <input
-      type="number"
-      value={data.businessSqft || ''}
-      onChange={e => updateField('businessSqft', e.target.value)}
-      className="w-full border p-2 rounded"
-    />
-  </div>
-  <div className="font-semibold mt-4">Claimable: ${homeExpenses.toFixed(2)}</div>
-</div>
+      {/* Business Use of Home Section */}
+      <div>
+        <h3 className="font-semibold mb-2">Business Use of Home</h3>
+        {[
+          'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
+        ].map(field => (
+          <div key={field} className="mb-2">
+            <label className="block text-sm">{field.replace('home', '')}</label>
+            <input
+              type="number"
+              value={data[field] || ''}
+              onChange={e => updateField(field, e.target.value)}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+        ))}
+        <div className="mb-2">
+          <label className="block text-sm">Home Sqft</label>
+          <input
+            type="number"
+            value={data.homeSqft || ''}
+            onChange={e => updateField('homeSqft', e.target.value)}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm">Business Sqft</label>
+          <input
+            type="number"
+            value={data.businessSqft || ''}
+            onChange={e => updateField('businessSqft', e.target.value)}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        <div className="font-semibold mt-4">Claimable: ${homeExpenses.toFixed(2)}</div>
+      </div>
 
-{/* Motor Vehicle Expenses Section */}
-<div>
-  <h3 className="font-semibold mb-2">Motor Vehicle Expenses</h3>
-  <div className="mb-2">
-    <label className="block text-sm">KMs Driven This Month</label>
-    <input
-      type="number"
-      value={data.kmsThisMonth || ''}
-      onChange={e => updateField('kmsThisMonth', e.target.value)}
-      className="w-full border p-2 rounded"
-    />
-  </div>
-  <div className="mb-2">
-    <label className="block text-sm">Business KMs This Month</label>
-    <input
-      type="number"
-      value={data.businessKms || ''}
-      onChange={e => updateField('businessKms', e.target.value)}
-      className="w-full border p-2 rounded"
-    />
-  </div>
-  {['vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs'].map(field => (
-    <div key={field} className="mb-2">
-      <label className="block text-sm">{field.replace('vehicle', '')}</label>
-      <input
-        type="number"
-        value={data[field] || ''}
-        onChange={e => updateField(field, e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-    </div>
-  ))}
-  <div className="text-sm mt-2 text-gray-600">YTD Business KMs: {ytdKm}</div>
-  <div className="font-semibold mt-2">Claimable: ${vehicleExpenses.toFixed(2)}</div>
-</div>
+      {/* Motor Vehicle Expenses Section */}
+      <div>
+        <h3 className="font-semibold mb-2">Motor Vehicle Expenses</h3>
+        <div className="mb-2">
+          <label className="block text-sm">KMs Driven This Month</label>
+          <input
+            type="number"
+            value={data.kmsThisMonth || ''}
+            onChange={e => updateField('kmsThisMonth', e.target.value)}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm">Business KMs This Month</label>
+          <input
+            type="number"
+            value={data.businessKms || ''}
+            onChange={e => updateField('businessKms', e.target.value)}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        {['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'].map(field => (
+          <div key={field} className="mb-2">
+            <label className="block text-sm">{field.replace('vehicle', '')}</label>
+            <input
+              type="number"
+              value={data[field] || ''}
+              onChange={e => updateField(field, e.target.value)}
+              className="w-full border p-2 rounded"
+            />
+          </div>
+        ))}
+        <div className="text-sm mt-2 text-gray-600">YTD Business KMs: {ytdKm}</div>
+        <div className="font-semibold mt-2">Claimable: ${vehicleExpenses.toFixed(2)}</div>
+      </div>
 
       {/* Summary */}
       <div className="border-t pt-4">
