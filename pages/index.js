@@ -281,10 +281,7 @@ export default function Home() {
         </Link>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-100 text-center p-4 text-sm text-gray-600">
-        © {new Date().getFullYear()} TaxTracker.ca — <Link href="/privacy" className="underline">Privacy</Link> | <Link href="/terms" className="underline">Terms</Link>
-      </footer>
+      
     </div >
   );
 }

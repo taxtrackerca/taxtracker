@@ -49,8 +49,10 @@ export default function Layout({ children }) {
       </main>
 
       {/* Footer */}
-      <footer className="text-center text-sm text-gray-500 py-4 border-t">
-        &copy; {new Date().getFullYear()} TaxTracker. All rights reserved.
+      <footer className="bg-gray-100 text-center p-4 text-sm text-gray-600">
+        © {new Date().getFullYear()} TaxTracker.ca —
+        <Link href="/privacy" className="underline mx-1">Privacy</Link> |
+        <Link href="/terms" className="underline mx-1">Terms</Link>
       </footer>
     </div>
   );
