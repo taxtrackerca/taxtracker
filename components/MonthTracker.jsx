@@ -82,7 +82,14 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const handleAutoSave = async (updatedData) => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
-    await setDoc(doc(db, 'users', uid, 'months', monthId), updatedData, { merge: true });
+  
+    const dataWithTax = {
+      ...updatedData,
+      estimatedTaxThisMonth: estimatedTaxThisMonth.toFixed(2)
+    };
+  
+    await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
+  
     if (onRefresh) onRefresh();
     setShowCheck(true);
     setTimeout(() => setShowCheck(false), 1500);
@@ -103,7 +110,14 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const handleSave = async () => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
-    await setDoc(doc(db, 'users', uid, 'months', monthId), data, { merge: true });
+  
+    const dataWithTax = {
+      ...data,
+      estimatedTaxThisMonth: estimatedTaxThisMonth.toFixed(2)
+    };
+  
+    await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
+  
     setMessage('Saved!');
     setTimeout(() => setMessage(''), 2000);
     if (onRefresh) onRefresh();
@@ -113,8 +127,15 @@ export default function MonthTracker({ monthId, onRefresh }) {
     if (!window.confirm('Clear all fields for this month?')) return;
     const uid = auth.currentUser?.uid;
     if (!uid) return;
-    setData({ ...defaultData });
-    await setDoc(doc(db, 'users', uid, 'months', monthId), defaultData);
+  
+    const clearedData = {
+      ...defaultData,
+      estimatedTaxThisMonth: "0.00"
+    };
+  
+    setData(clearedData);
+    await setDoc(doc(db, 'users', uid, 'months', monthId), clearedData);
+  
     setMessage('Fields cleared and saved!');
     setTimeout(() => setMessage(''), 2000);
     if (onRefresh) onRefresh();
