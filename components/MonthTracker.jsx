@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import BusinessExpensesSection from './BusinessExpensesSection';
+import HomeExpensesSection from './HomeExpensesSection';
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -218,43 +219,8 @@ export default function MonthTracker({ monthId, onRefresh }) {
 
       <BusinessExpensesSection data={data} updateField={updateField} />
 
-      {/* Business Use of Home Section */}
-      <div>
-        <h3 className="font-semibold mb-2">Business Use of Home</h3>
-        {[
-          'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
-        ].map(field => (
-          <div key={field} className="mb-2">
-            <label className="block text-sm">{field.replace('home', '')}</label>
-            <input
-              type="number"
-              value={data[field] || ''}
-              onChange={e => updateField(field, e.target.value)}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-        ))}
-        <div className="mb-2">
-          <label className="block text-sm">Home Sqft</label>
-          <input
-            type="number"
-            value={data.homeSqft || ''}
-            onChange={e => updateField('homeSqft', e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block text-sm">Business Sqft</label>
-          <input
-            type="number"
-            value={data.businessSqft || ''}
-            onChange={e => updateField('businessSqft', e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        <div className="font-semibold mt-4">Claimable: ${homeExpenses.toFixed(2)}</div>
-      </div>
-
+      <HomeExpensesSection data={data} updateField={updateField} />
+      
       {/* Motor Vehicle Expenses Section */}
       <div>
         <h3 className="font-semibold mb-2">Motor Vehicle Expenses</h3>
