@@ -1,3 +1,4 @@
+// pages/reset-password.jsx
 import { useState } from 'react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -12,46 +13,37 @@ export default function ResetPassword() {
     e.preventDefault();
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage('Password reset email sent. Please check your inbox.');
+      setMessage('If an account with that email exists, a password reset link has been sent.');
       setError('');
+      setEmail('');
     } catch (err) {
-      setError('Could not send reset email. Please try again.');
+      setError('Unable to send password reset link. Please try again.');
       setMessage('');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Reset Your Password
-        </h1>
-
-        {message && <p className="text-green-600 text-sm mb-4 text-center">{message}</p>}
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
-
-        <form onSubmit={handleReset} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
-          >
-            Send Reset Email
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <Link href="/login" className="text-sm text-blue-600 hover:underline">
-            ← Back to Login
-          </Link>
-        </div>
+    <div className="max-w-md mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Reset Password</h1>
+      {message && <p className="text-green-600 mb-2">{message}</p>}
+      {error && <p className="text-red-500 mb-2">{error}</p>}
+      <form onSubmit={handleReset} className="space-y-4">
+        <input
+          type="email"
+          placeholder="Your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">
+          Send Reset Email
+        </button>
+      </form>
+      <div className="text-center mt-4">
+        <Link href="/login" className="text-blue-600 hover:underline">
+          ← Back to Login
+        </Link>
       </div>
     </div>
   );
