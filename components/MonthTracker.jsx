@@ -1,4 +1,3 @@
-// MonthTracker.jsx - Full version with income/expense fields + working tax breakdown + autosave + collapsible summary
 import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -16,187 +15,10 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [showCheck, setShowCheck] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState(null);
+
+  // ----- Helper Functions -----
   const sumFields = (source, fields) =>
     fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
-
-  const defaultData = {
-    income: '',
-    otherIncome: '',
-    otherIncomeTaxed: 'yes',
-    gstCollected: '', gstRemitted: '',
-    advertising: '', meals: '', badDebts: '', insurance: '', interest: '', businessTax: '',
-    office: '', supplies: '', legal: '', admin: '', rent: '', repairs: '', salaries: '', propertyTax: '',
-    travel: '', utilities: '', fuel: '', delivery: '', other: '',
-    homeHeat: '', homeElectricity: '', homeInsurance: '', homeMaintenance: '', homeMortgage: '', homePropertyTax: '',
-    homeSqft: '', businessSqft: '',
-    kmsThisMonth: '', businessKms: '', vehicleFuel: '', vehicleInsurance: '', vehicleLicense: '', vehicleRepairs: ''
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
-
-      setData({ ...defaultData });
-
-      const ref = doc(db, 'users', uid, 'months', monthId);
-      const snap = await getDoc(ref);
-      if (snap.exists()) setData(snap.data());
-
-      const allMonths = await getDocs(collection(db, 'users', uid, 'months'));
-
-      const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-      const [selectedMonth, selectedYear] = monthId.split(' ');
-      const selectedMonthIndex = monthOrder.indexOf(selectedMonth);
-
-      let incomeUpToLastMonth = 0, deductionsUpToLastMonth = 0, kmYTD = 0, priorOtherIncomeTaxed = 0;
-
-      allMonths.forEach(docSnap => {
-        const id = docSnap.id;
-        const [month, year] = id.split(' ');
-        if (year !== selectedYear) return;
-        const idx = monthOrder.indexOf(month);
-        if (idx >= selectedMonthIndex) return;
-
-        const d = docSnap.data();
-        incomeUpToLastMonth += parseFloat(d.income || 0);
-
-        const business = ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0);
-        const home = ['homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0) * (parseFloat(d.businessSqft || 0) / parseFloat(d.homeSqft || 1));
-        const vehicle = ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'].reduce((sum, f) => sum + parseFloat(d[f] || 0), 0) * (parseFloat(d.businessKms || 0) / parseFloat(d.kmsThisMonth || 1));
-
-        deductionsUpToLastMonth += business + home + vehicle;
-        kmYTD += parseFloat(d.businessKms || 0);
-
-        if (d.otherIncome && d.otherIncomeTaxed === 'yes') {
-          priorOtherIncomeTaxed += parseFloat(d.otherIncome || 0);
-        }
-      });
-
-      setPriorIncome(incomeUpToLastMonth + priorOtherIncomeTaxed);
-      setPriorDeductions(deductionsUpToLastMonth);
-      setYtdKm(kmYTD);
-    };
-
-    fetchData();
-  }, [monthId]);
-
-  const handleAutoSave = async (updatedData) => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-
-    const currentIncome = parseFloat(updatedData.income || 0);
-    const otherIncome = parseFloat(updatedData.otherIncome || 0);
-    const isOtherTaxed = updatedData.otherIncomeTaxed === 'yes';
-
-    const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
-    const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
-
-    const businessExpenses = sumFields(updatedData, [
-      'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies',
-      'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
-    ]);
-
-    const homeUsePercent = parseFloat(updatedData.businessSqft || 0) / parseFloat(updatedData.homeSqft || 1);
-    const homeExpenses = sumFields(updatedData, [
-      'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
-    ]) * homeUsePercent;
-
-    const vehicleUsePercent = parseFloat(updatedData.businessKms || 0) / parseFloat(updatedData.kmsThisMonth || 1);
-    const vehicleExpenses = sumFields(updatedData, [
-      'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
-    ]) * vehicleUsePercent;
-
-    const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
-    const totalTaxNow = calculateNSTax(
-      (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome)
-      - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses)
-    );
-    const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
-
-    const dataWithTax = {
-      ...updatedData,
-      estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100
-    };
-
-    await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
-
-    if (onRefresh) onRefresh();
-    setShowCheck(true);
-    setTimeout(() => setShowCheck(false), 1500);
-  };
-
-  const updateField = (field, value) => {
-    setData(prev => {
-      const updated = { ...prev, [field]: value };
-
-      if (saveTimeout) clearTimeout(saveTimeout);
-      const timeout = setTimeout(async () => {
-        await handleAutoSave(updated); // will now always call onRefresh
-      }, 1000);
-      setSaveTimeout(timeout);
-
-      return updated;
-    });
-  };
-
-  const handleSave = async () => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-
-    const dataWithTax = {
-      ...data,
-      estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100
-    };
-
-    await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
-
-    setMessage('Saved!');
-    setTimeout(() => setMessage(''), 2000);
-    if (onRefresh) onRefresh();
-  };
-
-  const handleClear = async () => {
-    if (!window.confirm('Clear all fields for this month?')) return;
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-
-    const clearedData = {
-      ...defaultData,
-      estimatedTaxThisMonth: "0.00"
-    };
-
-    setData(clearedData);
-    await setDoc(doc(db, 'users', uid, 'months', monthId), clearedData);
-
-    setMessage('Fields cleared and saved!');
-    setTimeout(() => setMessage(''), 2000);
-    if (onRefresh) onRefresh();
-  };
-
-  const sum = (...fields) => fields.reduce((t, f) => t + parseFloat(data[f] || 0), 0);
-  const businessExpenses = sum('advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other');
-  const homeUsePercent = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
-  const homeExpenses = sum('homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax') * homeUsePercent;
-  const vehicleUsePercent = parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1);
-  const vehicleExpenses = sum('vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs') * vehicleUsePercent;
-
-  const currentIncome = parseFloat(data.income || 0);
-  const otherIncome = parseFloat(data.otherIncome || 0);
-  const isOtherTaxed = data.otherIncomeTaxed === 'yes';
-
-  const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
-  const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
-
-  const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
-  const totalTaxNow = calculateNSTax(
-    (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome)
-    - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses)
-  );
-  const liveEstimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
-
-  const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
-  const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
 
   const calculateNSTax = (taxableIncome) => {
     let tax = 0;
@@ -227,17 +49,162 @@ export default function MonthTracker({ monthId, onRefresh }) {
     return { total: tax, details };
   };
 
+  // ----- Load Data -----
+  useEffect(() => {
+    const fetchData = async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      setData({ ...defaultData });
+
+      const ref = doc(db, 'users', uid, 'months', monthId);
+      const snap = await getDoc(ref);
+      if (snap.exists()) setData(snap.data());
+
+      const allMonths = await getDocs(collection(db, 'users', uid, 'months'));
+
+      const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const [selectedMonth, selectedYear] = monthId.split(' ');
+      const selectedMonthIndex = monthOrder.indexOf(selectedMonth);
+
+      let incomeUpToLastMonth = 0, deductionsUpToLastMonth = 0, kmYTD = 0, priorOtherIncomeTaxed = 0;
+
+      allMonths.forEach(docSnap => {
+        const id = docSnap.id;
+        const [month, year] = id.split(' ');
+        if (year !== selectedYear) return;
+        const idx = monthOrder.indexOf(month);
+        if (idx >= selectedMonthIndex) return;
+
+        const d = docSnap.data();
+        incomeUpToLastMonth += parseFloat(d.income || 0);
+
+        const business = sumFields(d, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
+        const home = sumFields(d, ['homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax']) * (parseFloat(d.businessSqft || 0) / parseFloat(d.homeSqft || 1));
+        const vehicle = sumFields(d, ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs']) * (parseFloat(d.businessKms || 0) / parseFloat(d.kmsThisMonth || 1));
+
+        deductionsUpToLastMonth += business + home + vehicle;
+        kmYTD += parseFloat(d.businessKms || 0);
+
+        if (d.otherIncome && d.otherIncomeTaxed === 'yes') {
+          priorOtherIncomeTaxed += parseFloat(d.otherIncome || 0);
+        }
+      });
+
+      setPriorIncome(incomeUpToLastMonth + priorOtherIncomeTaxed);
+      setPriorDeductions(deductionsUpToLastMonth);
+      setYtdKm(kmYTD);
+    };
+
+    fetchData();
+  }, [monthId]);
+
+  const handleAutoSave = async (updatedData) => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const currentIncome = parseFloat(updatedData.income || 0);
+    const otherIncome = parseFloat(updatedData.otherIncome || 0);
+    const isOtherTaxed = updatedData.otherIncomeTaxed === 'yes';
+
+    const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
+    const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
+
+    const businessExpenses = sumFields(updatedData, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
+    const homeUsePercent = parseFloat(updatedData.businessSqft || 0) / parseFloat(updatedData.homeSqft || 1);
+    const homeExpenses = sumFields(updatedData, ['homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax']) * homeUsePercent;
+    const vehicleUsePercent = parseFloat(updatedData.businessKms || 0) / parseFloat(updatedData.kmsThisMonth || 1);
+    const vehicleExpenses = sumFields(updatedData, ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs']) * vehicleUsePercent;
+
+    const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
+    const totalTaxNow = calculateNSTax((adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses));
+    const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
+
+    const dataWithTax = {
+      ...updatedData,
+      estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100
+    };
+
+    await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
+
+    if (onRefresh) onRefresh();
+    setShowCheck(true);
+    setTimeout(() => setShowCheck(false), 1500);
+  };
+
+  const updateField = (field, value) => {
+    setData(prev => {
+      const updated = { ...prev, [field]: value };
+
+      if (saveTimeout) clearTimeout(saveTimeout);
+      const timeout = setTimeout(async () => {
+        await handleAutoSave(updated);
+      }, 1000);
+      setSaveTimeout(timeout);
+
+      return updated;
+    });
+  };
+
+  const handleSave = async () => {
+    await handleAutoSave(data);
+    setMessage('Saved!');
+    setTimeout(() => setMessage(''), 2000);
+  };
+
+  const handleClear = async () => {
+    if (!window.confirm('Clear all fields for this month?')) return;
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const clearedData = {
+      ...defaultData,
+      estimatedTaxThisMonth: 0
+    };
+
+    setData(clearedData);
+    await setDoc(doc(db, 'users', uid, 'months', monthId), clearedData);
+
+    setMessage('Fields cleared and saved!');
+    setTimeout(() => setMessage(''), 2000);
+    if (onRefresh) onRefresh();
+  };
+
+  const defaultData = {
+    income: '',
+    otherIncome: '',
+    otherIncomeTaxed: 'yes',
+    gstCollected: '', gstRemitted: '',
+    advertising: '', meals: '', badDebts: '', insurance: '', interest: '', businessTax: '',
+    office: '', supplies: '', legal: '', admin: '', rent: '', repairs: '', salaries: '', propertyTax: '',
+    travel: '', utilities: '', fuel: '', delivery: '', other: '',
+    homeHeat: '', homeElectricity: '', homeInsurance: '', homeMaintenance: '', homeMortgage: '', homePropertyTax: '',
+    homeSqft: '', businessSqft: '',
+    kmsThisMonth: '', businessKms: '', vehicleFuel: '', vehicleInsurance: '', vehicleLicense: '', vehicleRepairs: ''
+  };
+
+  // ----- Realtime display calculation -----
+  const businessExpenses = sumFields(data, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
+  const homeUsePercent = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
+  const homeExpenses = sumFields(data, ['homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax']) * homeUsePercent;
+  const vehicleUsePercent = parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1);
+  const vehicleExpenses = sumFields(data, ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs']) * vehicleUsePercent;
+  const currentIncome = parseFloat(data.income || 0);
+  const otherIncome = parseFloat(data.otherIncome || 0);
+  const isOtherTaxed = data.otherIncomeTaxed === 'yes';
+  const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
+  const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
+  const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
+  const totalTaxNow = calculateNSTax((adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses));
+  const liveEstimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
 
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
       <IncomeSection data={data} updateField={updateField} />
-
       <BusinessExpensesSection data={data} updateField={updateField} />
-
       <HomeExpensesSection data={data} updateField={updateField} />
-
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
 
       {/* Summary */}
@@ -245,7 +212,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex justify-between items-center">
             <p className="font-semibold text-gray-800">
-            📊 Estimated Tax Owing (This Month): ${liveEstimatedTaxThisMonth.toFixed(2)}
+              📊 Estimated Tax Owing (This Month): ${liveEstimatedTaxThisMonth.toFixed(2)}
             </p>
             <button
               onClick={() => setSummaryExpanded(!summaryExpanded)}
