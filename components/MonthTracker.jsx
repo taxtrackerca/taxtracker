@@ -14,7 +14,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [ytdKm, setYtdKm] = useState(0);
   const [priorIncome, setPriorIncome] = useState(0);
   const [priorDeductions, setPriorDeductions] = useState(0);
-  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const defaultData = {
     income: '',
@@ -160,37 +160,46 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
 
       {/* Summary */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow-lg z-50">
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-50">
         <div className="max-w-4xl mx-auto p-4">
-          
-          <div className="max-w-4xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 text-center space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800">📊 Monthly Summary</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left text-sm text-gray-700">
-            <p><strong>Business Income:</strong> ${currentIncome.toFixed(2)}</p>
-            <p><strong>Other Income ({isOtherTaxed ? 'already taxed' : 'not yet taxed'}):</strong> ${otherIncome.toFixed(2)}</p>
-            <p><strong>Total Expenses:</strong> ${(businessExpenses + homeExpenses + vehicleExpenses).toFixed(2)}</p>
-            <p><strong>Estimated Tax Owing (This Month):</strong> ${estimatedTaxThisMonth.toFixed(2)}</p>
-            </div>
-
-            {/* Buttons */}
-            <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
-              <button
-                onClick={handleSave}
-                className="bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-500 transition"
+          <div className="flex justify-between items-center">
+            <p className="font-semibold text-gray-800">
+              📊 Estimated Tax Owing (This Month): ${estimatedTaxThisMonth.toFixed(2)}
+            </p>
+            <button
+              onClick={() => setSummaryExpanded(!summaryExpanded)}
+              className="text-sm text-blue-600 underline hover:text-blue-800"
             >
-              Save
-              </button>
-              <button
-                onClick={handleClear}
-                className="bg-red-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-red-500 transition"
-              >
-              Clear All
-              </button>
-            </div>
-
-            {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
+              {summaryExpanded ? 'Collapse ▲' : 'Expand Summary ▼'}
+            </button>
           </div>
+
+          {summaryExpanded && (
+            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left text-sm text-gray-700">
+                <p><strong>Business Income:</strong> ${currentIncome.toFixed(2)}</p>
+                <p><strong>Other Income ({isOtherTaxed ? 'already taxed' : 'not yet taxed'}):</strong> ${otherIncome.toFixed(2)}</p>
+                <p><strong>Total Expenses:</strong> ${(businessExpenses + homeExpenses + vehicleExpenses).toFixed(2)}</p>
+              </div>
+
+              <div className="mt-4 flex flex-col sm:flex-row justify-center gap-4">
+                <button
+                  onClick={handleSave}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-500 transition"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleClear}
+                  className="bg-red-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-red-500 transition"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
+            </div>
+          )}
         </div>
       </div>
     </div>
