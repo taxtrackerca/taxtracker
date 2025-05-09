@@ -85,7 +85,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   
     const dataWithTax = {
       ...updatedData,
-      estimatedTaxThisMonth: estimatedTaxThisMonth.toFixed(2)
+      estimatedTaxThisMonth: parseFloat(estimatedTaxThisMonth)
     };
   
     await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
@@ -115,7 +115,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   
     const dataWithTax = {
       ...data,
-      estimatedTaxThisMonth: estimatedTaxThisMonth.toFixed(2)
+      estimatedTaxThisMonth: parseFloat(estimatedTaxThisMonth)
     };
   
     await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
