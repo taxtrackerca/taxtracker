@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import IncomeSection from './IncomeSection';
 import BusinessExpensesSection from './BusinessExpensesSection';
 import HomeExpensesSection from './HomeExpensesSection';
+import VehicleExpensesSection from './VehicleExpensesSection';
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -149,113 +151,13 @@ export default function MonthTracker({ monthId, onRefresh }) {
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
-      {/* Income & GST/HST Section */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6 max-w-4xl mx-auto">
-        <div className="mb-5">
-          <h3 className="text-base font-semibold text-gray-800 mb-1 flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
-            Income & GST/HST
-          </h3>
-          <p className="text-sm text-gray-500">Log your monthly income and tax collection</p>
-        </div>
-
-        {/* Business Income */}
-        <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Business Income</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="number"
-              value={data.income || ''}
-              onChange={e => updateField('income', e.target.value)}
-              placeholder="0.00"
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-            />
-          </div>
-        </div>
-
-        {/* Other Income */}
-        <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Other Income</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="number"
-              value={data.otherIncome || ''}
-              onChange={e => updateField('otherIncome', e.target.value)}
-              placeholder="0.00"
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-            />
-            <select
-              value={data.otherIncomeTaxed}
-              onChange={e => updateField('otherIncomeTaxed', e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-            >
-              <option value="yes">Tax Already Deducted</option>
-              <option value="no">Tax Not Yet Deducted</option>
-            </select>
-          </div>
-        </div>
-
-        {/* GST/HST */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">GST/HST</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="number"
-              value={data.gstCollected || ''}
-              onChange={e => updateField('gstCollected', e.target.value)}
-              placeholder="GST Collected"
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-            />
-            <input
-              type="number"
-              value={data.gstRemitted || ''}
-              onChange={e => updateField('gstRemitted', e.target.value)}
-              placeholder="GST Remitted"
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-            />
-          </div>
-        </div>
-      </div>
+      <IncomeSection data={data} updateField={updateField} />
 
       <BusinessExpensesSection data={data} updateField={updateField} />
 
       <HomeExpensesSection data={data} updateField={updateField} />
-      
-      {/* Motor Vehicle Expenses Section */}
-      <div>
-        <h3 className="font-semibold mb-2">Motor Vehicle Expenses</h3>
-        <div className="mb-2">
-          <label className="block text-sm">KMs Driven This Month</label>
-          <input
-            type="number"
-            value={data.kmsThisMonth || ''}
-            onChange={e => updateField('kmsThisMonth', e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block text-sm">Business KMs This Month</label>
-          <input
-            type="number"
-            value={data.businessKms || ''}
-            onChange={e => updateField('businessKms', e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-        {['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'].map(field => (
-          <div key={field} className="mb-2">
-            <label className="block text-sm">{field.replace('vehicle', '')}</label>
-            <input
-              type="number"
-              value={data[field] || ''}
-              onChange={e => updateField(field, e.target.value)}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-        ))}
-        <div className="text-sm mt-2 text-gray-600">YTD Business KMs: {ytdKm}</div>
-        <div className="font-semibold mt-2">Claimable: ${vehicleExpenses.toFixed(2)}</div>
-      </div>
+
+      <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
 
       {/* Summary */}
       <div className="border-t pt-4">
