@@ -16,6 +16,8 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [showCheck, setShowCheck] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState(null);
+  const sumFields = (source, fields) =>
+    fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
 
   const defaultData = {
     income: '',
@@ -82,6 +84,35 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const handleAutoSave = async (updatedData) => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
+  
+    const currentIncome = parseFloat(updatedData.income || 0);
+    const otherIncome = parseFloat(updatedData.otherIncome || 0);
+    const isOtherTaxed = updatedData.otherIncomeTaxed === 'yes';
+  
+    const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
+    const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
+  
+    const businessExpenses = sumFields(updatedData, [
+      'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies',
+      'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
+    ]);
+  
+    const homeUsePercent = parseFloat(updatedData.businessSqft || 0) / parseFloat(updatedData.homeSqft || 1);
+    const homeExpenses = sumFields(updatedData, [
+      'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
+    ]) * homeUsePercent;
+  
+    const vehicleUsePercent = parseFloat(updatedData.businessKms || 0) / parseFloat(updatedData.kmsThisMonth || 1);
+    const vehicleExpenses = sumFields(updatedData, [
+      'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
+    ]) * vehicleUsePercent;
+  
+    const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
+    const totalTaxNow = calculateNSTax(
+      (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome)
+      - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses)
+    );
+    const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
   
     const dataWithTax = {
       ...updatedData,
@@ -186,9 +217,6 @@ export default function MonthTracker({ monthId, onRefresh }) {
     return { total: tax, details };
   };
 
-  const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
-  const totalTaxNow = calculateNSTax((adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses));
-  const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
 
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
@@ -207,7 +235,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex justify-between items-center">
             <p className="font-semibold text-gray-800">
-              📊 Estimated Tax Owing (This Month): ${(Math.round(estimatedTaxThisMonth * 100) / 100).toFixed(2)}
+            📊 Estimated Tax Owing (This Month): ${(parseFloat(data.estimatedTaxThisMonth || 0)).toFixed(2)}
             </p>
             <button
               onClick={() => setSummaryExpanded(!summaryExpanded)}
