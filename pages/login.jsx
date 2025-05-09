@@ -1,9 +1,9 @@
-// Login page content
 // pages/login.jsx
 import { useState } from 'react';
-import { auth } from '../lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -17,53 +17,55 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (err) {
-      if (err.code === 'auth/user-not-found') {
-        setError(
-          <>
-            No account found with this email.{' '}
-            <a href="/signup" className="text-blue-600 underline hover:text-blue-800">
-              Create an account
-            </a>
-            .
-          </>
-        );
-      } else if (err.code === 'auth/wrong-password') {
-        setError('Incorrect password. Please try again.');
-      } else {
-        setError('Login failed. Please check your email and password.');
-      }
+      setError('Invalid login credentials. Don’t have an account? ');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
-      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Login to TaxTracker</h1>
 
-        <p className="text-sm text-right text-blue-600 hover:text-blue-800 mt-2">
-          <a href="/reset-password">Forgot your password?</a>
-        </p>
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">
-          Login
-        </button>
-      </form>
+        {error && (
+          <div className="mb-4 text-sm text-red-600">
+            {error}
+            <Link href="/signup" className="text-blue-600 hover:underline ml-1">
+              Create one here.
+            </Link>
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border rounded px-4 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border rounded px-4 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            Login
+          </button>
+        </form>
+
+        <div className="text-center mt-4 text-sm text-gray-600">
+          <Link href="/reset-password" className="text-blue-600 hover:underline">
+            Forgot your password?
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
