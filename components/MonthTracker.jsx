@@ -148,7 +148,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
 
   return (
-    <div className="bg-white p-4 rounded shadow space-y-4 pb-32">
+    <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
       <IncomeSection data={data} updateField={updateField} />
