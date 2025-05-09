@@ -147,65 +147,79 @@ export default function MonthTracker({ monthId, onRefresh }) {
     <div className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
-      {/* Income Section */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
-        <h3 className="text-lg font-semibold text-blue-600 flex items-center mb-4">
-          💼 Income & GST/HST
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Business Income</label>
-            <input
-              type="number"
-              value={data.income || ''}
-              onChange={e => updateField('income', e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+      {/* Income & GST/HST Section (Tidy-style) */}
+<div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+  <div className="mb-5">
+    <h3 className="text-base font-semibold text-gray-800 mb-1 flex items-center gap-2">
+      <span className="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
+      Income & GST/HST
+    </h3>
+    <p className="text-sm text-gray-500">Track income sources and GST/HST details below</p>
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Other Income</label>
-            <input
-              type="number"
-              value={data.otherIncome || ''}
-              onChange={e => updateField('otherIncome', e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+    {/* Business Income */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Business Income</label>
+      <input
+        type="number"
+        value={data.income || ''}
+        onChange={e => updateField('income', e.target.value)}
+        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+        placeholder="0.00"
+      />
+    </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Has Tax Already Been Deducted?</label>
-            <select
-              value={data.otherIncomeTaxed}
-              onChange={e => updateField('otherIncomeTaxed', e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
+    {/* Other Income */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Other Income</label>
+      <input
+        type="number"
+        value={data.otherIncome || ''}
+        onChange={e => updateField('otherIncome', e.target.value)}
+        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+        placeholder="0.00"
+      />
+    </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GST Collected</label>
-            <input
-              type="number"
-              value={data.gstCollected || ''}
-              onChange={e => updateField('gstCollected', e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+    {/* Tax Deducted */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Has Tax Already Been Deducted?</label>
+      <select
+        value={data.otherIncomeTaxed}
+        onChange={e => updateField('otherIncomeTaxed', e.target.value)}
+        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+      >
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GST Remitted</label>
-            <input
-              type="number"
-              value={data.gstRemitted || ''}
-              onChange={e => updateField('gstRemitted', e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
+    {/* GST Collected */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">GST Collected</label>
+      <input
+        type="number"
+        value={data.gstCollected || ''}
+        onChange={e => updateField('gstCollected', e.target.value)}
+        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+        placeholder="0.00"
+      />
+    </div>
+
+    {/* GST Remitted */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">GST Remitted</label>
+      <input
+        type="number"
+        value={data.gstRemitted || ''}
+        onChange={e => updateField('gstRemitted', e.target.value)}
+        className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+        placeholder="0.00"
+      />
+    </div>
+  </div>
+</div>
 
       {/* Business Expenses Section */}
       <div>
