@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export default function BusinessExpensesSection({ data, updateField }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const fields = [
     'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies',
