@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import BusinessExpensesSection from './BusinessExpensesSection';
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -215,25 +216,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
         </div>
       </div>
 
-      {/* Business Expenses Section */}
-      <div>
-        <h3 className="font-semibold mb-2">Gross Business Expenses</h3>
-        {[
-          'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies',
-          'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
-        ].map(field => (
-          <div key={field} className="mb-2">
-            <label className="block text-sm capitalize">{field.replace(/([A-Z])/g, ' $1')}</label>
-            <input
-              type="number"
-              value={data[field] || ''}
-              onChange={e => updateField(field, e.target.value)}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-        ))}
-        <div className="font-semibold mt-4">Total: ${businessExpenses.toFixed(2)}</div>
-      </div>
+      <BusinessExpensesSection data={data} updateField={updateField} />
 
       {/* Business Use of Home Section */}
       <div>
