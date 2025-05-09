@@ -98,11 +98,13 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const updateField = (field, value) => {
     setData(prev => {
       const updated = { ...prev, [field]: value };
-
+  
       if (saveTimeout) clearTimeout(saveTimeout);
-      const timeout = setTimeout(() => handleAutoSave(updated), 1000);
+      const timeout = setTimeout(async () => {
+        await handleAutoSave(updated); // will now always call onRefresh
+      }, 1000);
       setSaveTimeout(timeout);
-
+  
       return updated;
     });
   };
