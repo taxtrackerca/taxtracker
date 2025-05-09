@@ -148,7 +148,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
 
   return (
-    <div className="bg-white p-4 rounded shadow space-y-4">
+    <div className="bg-white p-4 rounded shadow space-y-4 pb-32">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
       <IncomeSection data={data} updateField={updateField} />
@@ -160,30 +160,38 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
 
       {/* Summary */}
-      <div className="border-t pt-4">
-        <h4 className="text-lg font-semibold mb-2">Monthly Summary</h4>
-        <p>Total Business Income: ${currentIncome.toFixed(2)}</p>
-        <p>Other Income ({isOtherTaxed ? 'already taxed' : 'not yet taxed'}): ${otherIncome.toFixed(2)}</p>
-        <p>Total Expenses: ${(businessExpenses + homeExpenses + vehicleExpenses).toFixed(2)}</p>
-        <p>Estimated Tax Owing (This Month): ${estimatedTaxThisMonth.toFixed(2)}</p>
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="max-w-4xl mx-auto p-4">
+          
+          <div className="max-w-4xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 text-center space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800">📊 Monthly Summary</h3>
 
-        <button onClick={() => setShowBreakdown(!showBreakdown)} className="text-blue-600 text-sm hover:underline mt-2">
-          {showBreakdown ? 'Hide' : 'Show'} Tax Breakdown
-        </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left text-sm text-gray-700">
+            <p><strong>Business Income:</strong> ${currentIncome.toFixed(2)}</p>
+            <p><strong>Other Income ({isOtherTaxed ? 'already taxed' : 'not yet taxed'}):</strong> ${otherIncome.toFixed(2)}</p>
+            <p><strong>Total Expenses:</strong> ${(businessExpenses + homeExpenses + vehicleExpenses).toFixed(2)}</p>
+            <p><strong>Estimated Tax Owing (This Month):</strong> ${estimatedTaxThisMonth.toFixed(2)}</p>
+            </div>
 
-        {showBreakdown && (
-          <div className="mt-2 bg-gray-100 p-2 rounded text-sm">
-            {totalTaxNow.details.map((b, i) => (
-              <p key={i}>${b.amount.toFixed(2)} @ {(b.rate * 100).toFixed(2)}% = ${b.tax.toFixed(2)}</p>
-            ))}
+            {/* Buttons */}
+            <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
+              <button
+                onClick={handleSave}
+                className="bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-500 transition"
+            >
+              Save
+              </button>
+              <button
+                onClick={handleClear}
+                className="bg-red-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-red-500 transition"
+              >
+              Clear All
+              </button>
+            </div>
+
+            {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
           </div>
-        )}
-      </div>
-
-      <div className="flex gap-4">
-        <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
-        <button onClick={handleClear} className="bg-red-500 text-white px-4 py-2 rounded">Clear All</button>
-        {message && <span className="text-green-600 mt-2">{message}</span>}
+        </div>
       </div>
     </div>
   );
