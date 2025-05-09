@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import Link from 'next/link';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
@@ -45,6 +46,12 @@ export default function ResetPassword() {
             Send Reset Email
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link href="/login" className="text-sm text-blue-600 hover:underline">
+            ← Back to Login
+          </Link>
+        </div>
       </div>
     </div>
   );
