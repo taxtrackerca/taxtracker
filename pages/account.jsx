@@ -133,7 +133,7 @@ export default function Account() {
       <hr className="my-6" />
 
 
-      <button onClick={handleDeleteAccount} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Delete Account</button>
+      {/*<button onClick={handleDeleteAccount} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Delete Account</button>*/}
 
 
     </div>
