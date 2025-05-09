@@ -1,5 +1,4 @@
-
-// MonthTracker.jsx - Full version with income/expense fields + working tax breakdown + fixed logic
+// MonthTracker.jsx - Full version with income/expense fields + working tax breakdown + autosave + collapsible summary
 import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -15,6 +14,8 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [priorIncome, setPriorIncome] = useState(0);
   const [priorDeductions, setPriorDeductions] = useState(0);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
+  const [saveTimeout, setSaveTimeout] = useState(null);
 
   const defaultData = {
     income: '',
@@ -78,7 +79,26 @@ export default function MonthTracker({ monthId, onRefresh }) {
     fetchData();
   }, [monthId]);
 
-  const updateField = (field, value) => setData(prev => ({ ...prev, [field]: value }));
+  const handleAutoSave = async (updatedData) => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    await setDoc(doc(db, 'users', uid, 'months', monthId), updatedData, { merge: true });
+    if (onRefresh) onRefresh();
+    setShowCheck(true);
+    setTimeout(() => setShowCheck(false), 1500);
+  };
+
+  const updateField = (field, value) => {
+    setData(prev => {
+      const updated = { ...prev, [field]: value };
+
+      if (saveTimeout) clearTimeout(saveTimeout);
+      const timeout = setTimeout(() => handleAutoSave(updated), 1000);
+      setSaveTimeout(timeout);
+
+      return updated;
+    });
+  };
 
   const handleSave = async () => {
     const uid = auth.currentUser?.uid;
@@ -173,6 +193,13 @@ export default function MonthTracker({ monthId, onRefresh }) {
               {summaryExpanded ? 'Collapse ▲' : 'Expand Summary ▼'}
             </button>
           </div>
+
+          {showCheck && (
+            <div className="mt-2 flex items-center justify-center space-x-2 text-sm text-green-600">
+              <span className="text-green-500">✔</span>
+              <span>Autosaved</span>
+            </div>
+          )}
 
           {summaryExpanded && (
             <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
