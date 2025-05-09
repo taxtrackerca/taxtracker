@@ -1,43 +1,39 @@
-// Privacy policy
-// pages/privacy.js
-import Link from 'next/link';
-
-export default function PrivacyPolicy() {
+// pages/privacy.jsx
+export default function Privacy() {
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Privacy Policy</h1>
-      <p className="text-gray-700">
-        TaxTracker.ca respects your privacy. This policy explains what information we collect, how we use it, and how we protect it.
+    <div className="max-w-3xl mx-auto px-4 py-12 text-gray-800">
+      <h1 className="text-3xl font-bold mb-6 text-center">Privacy Policy</h1>
+
+      <p className="mb-4">
+        Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information when you use TaxTracker.ca.
       </p>
 
-      <h2 className="text-xl font-semibold mt-4">Information Collection</h2>
-      <p className="text-gray-700">
-        We collect information you provide during account registration and while using the platform, including income and expense data.
+      <h2 className="text-xl font-semibold mt-6 mb-2">1. Information We Collect</h2>
+      <p className="mb-4">
+        We collect personal information such as your email address and any data you enter into the tracking tools, such as income and expenses.
       </p>
 
-      <h2 className="text-xl font-semibold mt-4">Use of Data</h2>
-      <p className="text-gray-700">
-        Your data is used only to provide you with accurate tax tracking and summaries. We do not share or sell your information.
+      <h2 className="text-xl font-semibold mt-6 mb-2">2. How We Use Your Information</h2>
+      <p className="mb-4">
+        Your information is used solely to provide and improve our services. We do not sell or share your data with third parties, except as required by law or for billing through our payment processor.
       </p>
 
-      <h2 className="text-xl font-semibold mt-4">Data Security</h2>
-      <p className="text-gray-700">
-        We use secure authentication and encrypted databases to protect your information.
+      <h2 className="text-xl font-semibold mt-6 mb-2">3. Data Storage</h2>
+      <p className="mb-4">
+        Your data is stored securely in Canada using trusted cloud services. We take reasonable precautions to protect your information from unauthorized access.
       </p>
 
-      <h2 className="text-xl font-semibold mt-4">Your Rights</h2>
-      <p className="text-gray-700">
-        You can access or delete your data at any time by logging into your account and managing your profile.
+      <h2 className="text-xl font-semibold mt-6 mb-2">4. Your Rights</h2>
+      <p className="mb-4">
+        You may request access to or deletion of your personal data at any time by contacting us. However, please note that deleting your account will remove all associated data.
       </p>
 
-      <p className="text-gray-600 mt-8 text-sm">
-        Questions? Contact us at <a href="mailto:support@taxtracker.ca" className="underline">support@taxtracker.ca</a>
+      <h2 className="text-xl font-semibold mt-6 mb-2">5. Changes to This Policy</h2>
+      <p className="mb-4">
+        We may update this Privacy Policy from time to time. Any changes will be posted on this page.
       </p>
 
-      <div className="mt-6">
-        <Link href="/" className="text-blue-600 underline">Back to Home
-        </Link>
-      </div>
+      <p className="text-sm text-gray-500 mt-8">Last updated: May 2025</p>
     </div>
   );
 }
