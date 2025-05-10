@@ -1,60 +1,58 @@
 import React, { useState } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
+
 import Captions from 'yet-another-react-lightbox/plugins/captions';
-import 'yet-another-react-lightbox/styles.css';
+import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
-import 'yet-another-react-lightbox/plugins/captions.css';
-import 'yet-another-react-lightbox/plugins/fullscreen.css';
-import 'yet-another-react-lightbox/plugins/thumbnails.css';
-import 'yet-another-react-lightbox/plugins/zoom.css';
 
 const images = [
   {
     src: '/screenshots/year-to-date.png',
     alt: 'Year-to-Date Summary',
-    description: 'See your total income, expenses, and estimated tax owed year-to-date.'
+    description: 'See your total income, expenses, and estimated tax owed year-to-date.',
   },
   {
     src: '/screenshots/tracking-overview.png',
     alt: 'Tracking Overview',
-    description: 'Quick overview of your monthly data entry progress.'
+    description: 'Quick overview of your monthly data entry progress.',
   },
   {
     src: '/screenshots/income.png',
     alt: 'Income Section',
-    description: 'Log business income and other personal income, including tax status.'
+    description: 'Log business income and other personal income, including tax status.',
   },
   {
     src: '/screenshots/tooltip.png',
     alt: 'Helpful Tooltips',
-    description: 'Hover over tooltips for clear explanations of each field.'
+    description: 'Hover over tooltips for clear explanations of each field.',
   },
   {
     src: '/screenshots/business-expenses.png',
     alt: 'Business Expenses',
-    description: 'Track deductible expenses easily by category.'
+    description: 'Track deductible expenses easily by category.',
   },
   {
     src: '/screenshots/autosave.png',
     alt: 'Autosave in Action',
-    description: 'Never lose your work — entries are saved automatically.'
+    description: 'Never lose your work — entries are saved automatically.',
   },
   {
     src: '/screenshots/motor-vehicle-expenses.png',
     alt: 'Motor Vehicle Expenses',
-    description: 'Log business-related vehicle costs and mileage accurately.'
+    description: 'Log business-related vehicle costs and mileage accurately.',
   },
   {
     src: '/screenshots/month-summary.png',
     alt: 'Monthly Summary',
-    description: 'Review total income, expenses, and estimated tax for any month.'
+    description: 'Review total income, expenses, and estimated tax for any month.',
   },
   {
     src: '/screenshots/account-settings.png',
     alt: 'Account Settings',
-    description: 'Update business details and manage your subscription easily.'
-  }
+    description: 'Update business details and manage your subscription easily.',
+  },
 ];
 
 export default function ScreenshotLightbox() {
@@ -73,13 +71,12 @@ export default function ScreenshotLightbox() {
           <div
             key={i}
             className="cursor-pointer overflow-hidden rounded-xl shadow hover:shadow-lg transition duration-200"
-            onClick={() => { setIndex(i); setOpen(true); }}
+            onClick={() => {
+              setIndex(i);
+              setOpen(true);
+            }}
           >
-            <img
-              src={img.src}
-              alt={img.alt}
-              className="w-full h-auto object-cover"
-            />
+            <img src={img.src} alt={img.alt} className="w-full h-auto object-cover" />
           </div>
         ))}
       </div>
@@ -88,16 +85,20 @@ export default function ScreenshotLightbox() {
         <Lightbox
           open={open}
           close={() => setOpen(false)}
-          slides={images.map(({ src, alt, description }) => ({ src, alt, description }))}
+          slides={images.map(({ src, alt, description }) => ({
+            src,
+            alt,
+            description,
+          }))}
           index={index}
-          plugins={[Captions, Fullscreen, Thumbnails, Zoom]}
+          plugins={[Captions, Fullscreen, Zoom, Thumbnails]}
           captions={{ descriptionTextAlign: 'center' }}
           thumbnails={{ position: 'bottom', width: 100, height: 60 }}
           zoom={{ maxZoomPixelRatio: 2 }}
           styles={{
             container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' },
             navigationPrev: { color: '#fff' },
-            navigationNext: { color: '#fff' }
+            navigationNext: { color: '#fff' },
           }}
         />
       )}
