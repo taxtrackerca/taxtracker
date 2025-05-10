@@ -42,8 +42,10 @@ export default function HomeExpensesSection({ data, updateField }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map(({ name, label }) => (
               <div key={name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                {tooltips[name] && <Tooltip text={tooltips[name]} />}
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                  {tooltips[name] && <Tooltip text={tooltips[name]} />}
+                </div>
                 <input
                   type="number"
                   value={data[name] || ''}

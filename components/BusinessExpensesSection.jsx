@@ -6,8 +6,8 @@ export default function BusinessExpensesSection({ data, updateField }) {
   const [open, setOpen] = useState(false);
 
   const fields = [
-    'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies',
-    'legal','admin','rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
+    'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies',
+    'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
   ];
 
   const tooltips = {
@@ -49,10 +49,12 @@ export default function BusinessExpensesSection({ data, updateField }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((field) => (
               <div key={field}>
-                <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                  {field.replace(/([A-Z])/g, ' $1')}
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-sm font-medium text-gray-700 capitalize">
+                    {field.replace(/([A-Z])/g, ' $1')}
+                  </span>
                   {tooltips[field] && <Tooltip text={tooltips[field]} />}
-                </label>
+                </div>
                 <input
                   type="number"
                   value={data[field] || ''}
