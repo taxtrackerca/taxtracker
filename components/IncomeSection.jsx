@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import Tooltip from './Tooltip'; // adjust path if needed
-import { Info } from 'lucide-react';
 
 export default function IncomeSection({ data, updateField }) {
   const [open, setOpen] = useState(false); // Starts collapsed
