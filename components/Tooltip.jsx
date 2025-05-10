@@ -7,6 +7,7 @@ export default function Tooltip({ text }) {
   const [alignLeft, setAlignLeft] = useState(false);
   const ref = useRef(null);
 
+  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -17,22 +18,27 @@ export default function Tooltip({ text }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleOpen = () => {
-    if (!ref.current) return;
+  const handleToggle = () => {
+    // Toggle if already open
+    if (open) {
+      setOpen(false);
+      return;
+    }
 
+    if (!ref.current) return;
     const buttonRect = ref.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - buttonRect.bottom;
     const spaceAbove = buttonRect.top;
     const spaceRight = window.innerWidth - buttonRect.left;
 
-    // Decide vertical position
+    // Vertical positioning
     if (spaceBelow < 100 && spaceAbove > 100) {
       setPosition('top');
     } else {
       setPosition('bottom');
     }
 
-    // Decide horizontal alignment
+    // Horizontal positioning
     if (spaceRight < 200) {
       setAlignLeft(true);
     } else {
@@ -43,10 +49,10 @@ export default function Tooltip({ text }) {
   };
 
   return (
-    <span ref={ref} className="relative inline-block">
+    <span ref={ref} className="relative inline-block z-10">
       <button
         type="button"
-        onClick={handleOpen}
+        onClick={handleToggle}
         className="w-4 h-4 p-0.5 bg-gray-200 text-gray-700 rounded-full flex items-center justify-center hover:bg-gray-300 focus:outline-none"
       >
         <Info className="w-3 h-3" />
@@ -54,10 +60,11 @@ export default function Tooltip({ text }) {
 
       {open && (
         <div
-          className={`absolute z-50 w-60 max-w-xs bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg
+          className={`absolute w-60 max-w-xs bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-lg
             ${position === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}
             ${alignLeft ? 'left-0' : 'left-1/2 -translate-x-1/2'}
           `}
+          style={{ maxWidth: 'calc(100vw - 2rem)' }} // protect from horizontal clipping
         >
           {text}
         </div>
