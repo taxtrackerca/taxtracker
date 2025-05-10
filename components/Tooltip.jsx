@@ -1,5 +1,5 @@
-import { Info } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { Info } from 'lucide-react';
 
 export default function Tooltip({ text }) {
   const [open, setOpen] = useState(false);
@@ -24,8 +24,9 @@ export default function Tooltip({ text }) {
       >
         <Info className="w-3 h-3" />
       </button>
+
       {open && (
-        <div className="absolute z-10 bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-xs bg-black text-white text-xs px-2 py-1 rounded shadow-lg">
+        <div className="mt-2 bg-gray-100 text-gray-800 text-xs px-3 py-2 rounded-lg shadow-inner border border-gray-300 max-w-xs">
           {text}
         </div>
       )}
