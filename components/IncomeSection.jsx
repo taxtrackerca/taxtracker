@@ -25,7 +25,10 @@ export default function IncomeSection({ data, updateField }) {
         <div className="p-6 border-t border-gray-100 space-y-6">
           {/* Business Income */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Business Income</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              Business Income
+              <Tooltip text="Enter your total business income for the month before any expenses. This includes sales, services, or any revenue earned through your business." />
+            </label>
             <input
               type="number"
               value={data.income || ''}
@@ -51,7 +54,10 @@ export default function IncomeSection({ data, updateField }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tax Already Deducted?</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              Tax Already Deducted from Personal Income?
+              <Tooltip text="If this personal income (like wages or salary) already had tax withheld by an employer, choose Yes. If not, select No to include it in your tax estimate." />
+            </label>
             <select
               value={data.otherIncomeTaxed}
               onChange={(e) => updateField('otherIncomeTaxed', e.target.value)}
@@ -65,7 +71,10 @@ export default function IncomeSection({ data, updateField }) {
           {/* GST/HST */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">GST Collected</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                GST Collected
+                <Tooltip text="Enter the total GST/HST you charged your customers this month. This is the tax you collected on sales." />
+              </label>
               <input
                 type="number"
                 value={data.gstCollected || ''}
@@ -75,7 +84,10 @@ export default function IncomeSection({ data, updateField }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">GST Remitted</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                GST Remitted
+                <Tooltip text="Enter the amount of GST/HST you submitted to the CRA this month. This is the portion of collected tax you've already paid." />
+              </label>
               <input
                 type="number"
                 value={data.gstRemitted || ''}
