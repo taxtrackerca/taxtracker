@@ -36,7 +36,7 @@ export default function IncomeSection({ data, updateField }) {
           </div>
 
           {/* Other Income & Taxed Option */}
-          <div className="max-w-md w-full">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
               Other Personal Income
               <Tooltip text="Include any income not from your business, like job wages, salary, or tips. This helps determine your overall tax bracket." />
