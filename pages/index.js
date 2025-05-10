@@ -17,38 +17,39 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="bg-white py-16 text-center px-4">
+      <section className="bg-white px-4 py-20 sm:py-24 text-center">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
             Simplify Your Taxes. Start Today.
           </h1>
-          <p className="text-lg text-gray-600 mb-6">
+
+          <p className="text-base sm:text-lg text-gray-600 mb-6">
             TaxTracker makes it easy for Canadian sole proprietors to track income, expenses, and GST/HST — all in one place.
           </p>
 
-          <div className="flex justify-center items-center gap-4 flex-wrap mb-6">
-            <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold">
+          <div className="flex justify-center items-center gap-2 sm:gap-4 flex-wrap mb-6">
+            <span className="bg-red-100 text-red-700 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               Built for Canadians
             </span>
-            <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="bg-blue-100 text-blue-700 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               30-Day Free Trial
             </span>
-            <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="bg-yellow-100 text-yellow-800 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               Only $4.95/month after
             </span>
-            <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="bg-green-100 text-green-800 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               CRA-Compliant
             </span>
           </div>
 
           <a
             href="/signup"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-8 py-3 rounded shadow-lg transition duration-200"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base sm:text-lg px-6 sm:px-8 py-3 rounded shadow-lg transition duration-200"
           >
             Take Control of Your Taxes
           </a>
 
-          <p className="text-sm text-gray-400 mt-4">Cancel anytime. No strings attached.</p>
+          <p className="text-xs sm:text-sm text-gray-400 mt-4">Cancel anytime. No strings attached.</p>
         </div>
       </section>
 
