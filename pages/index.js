@@ -1,6 +1,7 @@
 // Landing page content
 // pages/index.js
 import Link from 'next/link';
+import ScreenshotShowcase from '@/components/ScreenshotShowcase';
 
 export default function Home() {
   return (
@@ -50,6 +51,9 @@ export default function Home() {
           <p className="text-sm text-gray-400 mt-4">Cancel anytime. No strings attached.</p>
         </div>
       </section>
+
+      {/* Screenshot Showcase */}
+      <ScreenshotShowcase />
 
 
       {/* Why TaxTracker Is Different Section */}
