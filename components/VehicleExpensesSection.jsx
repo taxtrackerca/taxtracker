@@ -63,9 +63,7 @@ export default function VehicleExpensesSection({ data, updateField, ytdKm }) {
             ))}
           </div>
 
-          {ytdKm !== undefined && (
-            <p className="text-sm text-gray-500 mt-4">📍 YTD Business KMs: <strong>{ytdKm}</strong></p>
-          )}
+          
         </div>
       )}
     </div>
