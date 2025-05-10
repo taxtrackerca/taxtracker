@@ -1,7 +1,7 @@
 // Landing page content
 // pages/index.js
 import Link from 'next/link';
-import ScreenshotShowcase from '@/components/ScreenshotShowcase';
+import ScreenshotShowcase from '../components/ScreenshotShowcase';
 
 export default function Home() {
   return (
@@ -53,7 +53,16 @@ export default function Home() {
       </section>
 
       {/* Screenshot Showcase */}
-      <ScreenshotShowcase />
+      <section className="bg-gray-50 py-20 px-6 text-center">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-4">See TaxTracker in Action</h2>
+          <p className="text-gray-600 text-lg mb-10">
+            Take a closer look at the dashboard and features that make tax time a breeze.
+          </p>
+
+          <ScreenshotShowcase />
+        </div>
+      </section>
 
 
       {/* Why TaxTracker Is Different Section */}
@@ -285,7 +294,7 @@ export default function Home() {
         </Link>
       </div>
 
-      
+
     </div >
   );
 }
