@@ -53,7 +53,22 @@ export default function Home() {
         </div>
       </section>
 
-      
+      {/* Screenshot Section */}
+      <section className="bg-white py-12 px-4 text-center">
+        <h2 className="text-3xl font-extrabold text-gray-900 mb-4">See TaxTracker in Action</h2>
+        <p className="text-gray-600 max-w-xl mx-auto mb-8">
+          Here's a quick preview of the summary you’ll get — clean, clear, and easy to follow.
+        </p>
+        <div className="flex justify-center">
+          <img
+            src="/screenshots/summary.png"
+            alt="TaxTracker Summary Screenshot"
+            className="w-full max-w-md rounded-xl shadow-lg"
+          />
+        </div>
+      </section>
+
+
 
 
       {/* Why TaxTracker Is Different Section */}
