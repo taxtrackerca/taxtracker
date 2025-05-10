@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 export default function HomeExpensesSection({ data, updateField }) {
   const [open, setOpen] = useState(false);
@@ -13,8 +14,19 @@ export default function HomeExpensesSection({ data, updateField }) {
     { name: 'homePropertyTax', label: 'Property Tax' },
   ];
 
+  const tooltips = {
+    homeHeat: "Heating costs for your entire home (e.g., oil, electric, gas). A percentage will be applied based on your business use.",
+    homeElectricity: "Electric bills for your whole home. Only the business-use portion will be claimed.",
+    homeInsurance: "Home insurance premiums. Enter the total monthly — we’ll calculate the business-use share.",
+    homeMaintenance: "Repairs or maintenance that benefit the whole home — like painting or cleaning services.",
+    homeMortgage: "Mortgage interest only — not principal. This is allowed if you own the home and use part of it for business.",
+    homePropertyTax: "Annual property tax for your entire home. A percentage based on your business-use area will be applied.",
+    homeSqft: "Enter the total square footage of your home. This helps calculate the percentage used for business.",
+    businessSqft: "How much of your home is used for business — like an office or workshop. Only this portion is deductible.",
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl mb-6 max-w-4xl mx-auto shadow-sm overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-2xl mb-6 max-w-4xl mx-auto shadow-sm overflow-hidden z-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full px-6 py-4 flex items-center justify-between text-left bg-gray-50 hover:bg-gray-100 transition"
@@ -31,6 +43,7 @@ export default function HomeExpensesSection({ data, updateField }) {
             {fields.map(({ name, label }) => (
               <div key={name}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                {tooltips[name] && <Tooltip text={tooltips[name]} />}
                 <input
                   type="number"
                   value={data[name] || ''}

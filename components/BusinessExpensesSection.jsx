@@ -33,7 +33,7 @@ export default function BusinessExpensesSection({ data, updateField }) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl mb-6 max-w-4xl mx-auto shadow-sm overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-2xl mb-6 max-w-4xl mx-auto shadow-sm overflow-hidden z-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full px-6 py-4 flex items-center justify-between text-left bg-gray-50 hover:bg-gray-100 transition"
