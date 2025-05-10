@@ -62,7 +62,7 @@ export default function ScreenshotShowcase() {
         Take a closer look at what makes TaxTracker so powerful. Swipe through the screenshots below.
       </p>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-xl mx-auto">
         <Swiper
           modules={[Navigation, Pagination, A11y]}
           spaceBetween={20}
