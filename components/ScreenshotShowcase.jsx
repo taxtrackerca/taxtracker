@@ -1,85 +1,107 @@
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, A11y, EffectFade } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
+import React, { useState } from 'react';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
+import Captions from 'yet-another-react-lightbox/plugins/captions';
+import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import 'yet-another-react-lightbox/plugins/captions.css';
+import 'yet-another-react-lightbox/plugins/fullscreen.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
+import 'yet-another-react-lightbox/plugins/zoom.css';
 
-const screenshots = [
+const images = [
   {
-    src: 'year-to-date.png',
-    alt: 'Year-to-date Summary',
-    caption: 'Track your tax estimate with a live YTD summary.',
+    src: '/screenshots/year-to-date.png',
+    alt: 'Year-to-Date Summary',
+    description: 'See your total income, expenses, and estimated tax owed year-to-date.'
   },
   {
-    src: 'tracking-overview.png',
+    src: '/screenshots/tracking-overview.png',
     alt: 'Tracking Overview',
-    caption: 'Stay organized with a clear overview of your business activity.',
+    description: 'Quick overview of your monthly data entry progress.'
   },
   {
-    src: 'income.png',
-    alt: 'Income Entry',
-    caption: 'Easily enter business and personal income.',
+    src: '/screenshots/income.png',
+    alt: 'Income Section',
+    description: 'Log business income and other personal income, including tax status.'
   },
   {
-    src: 'tooltip.png',
+    src: '/screenshots/tooltip.png',
     alt: 'Helpful Tooltips',
-    caption: 'Understand every field with simple explanations.',
+    description: 'Hover over tooltips for clear explanations of each field.'
   },
   {
-    src: 'business-expenses.png',
+    src: '/screenshots/business-expenses.png',
     alt: 'Business Expenses',
-    caption: 'Claim deductions with categorized expense tracking.',
+    description: 'Track deductible expenses easily by category.'
   },
   {
-    src: 'autosave.png',
-    alt: 'Autosave Feature',
-    caption: 'Never lose work — every change is autosaved.',
+    src: '/screenshots/autosave.png',
+    alt: 'Autosave in Action',
+    description: 'Never lose your work — entries are saved automatically.'
   },
   {
-    src: 'motor-vehicle-expenses.png',
+    src: '/screenshots/motor-vehicle-expenses.png',
     alt: 'Motor Vehicle Expenses',
-    caption: 'Track fuel, repairs, and kilometers for CRA claims.',
+    description: 'Log business-related vehicle costs and mileage accurately.'
   },
   {
-    src: 'month-summary.png',
-    alt: 'Month Summary',
-    caption: 'Each month shows a breakdown of tax impact.',
+    src: '/screenshots/month-summary.png',
+    alt: 'Monthly Summary',
+    description: 'Review total income, expenses, and estimated tax for any month.'
   },
   {
-    src: 'account-settings.png',
+    src: '/screenshots/account-settings.png',
     alt: 'Account Settings',
-    caption: 'Manage billing and subscriptions in one place.',
-  },
+    description: 'Update business details and manage your subscription easily.'
+  }
 ];
 
-export default function ScreenshotShowcase() {
+export default function ScreenshotLightbox() {
+  const [open, setOpen] = useState(false);
+  const [index, setIndex] = useState(0);
+
   return (
-    <div className="w-full px-4 sm:px-6 md:px-0 max-w-3xl mx-auto">
-      <Swiper
-        modules={[Navigation, Pagination, A11y, EffectFade]}
-        effect="fade"
-        fadeEffect={{ crossFade: true }}
-        pagination={{ clickable: true }}
-        navigation
-        speed={500}
-        spaceBetween={30}
-        slidesPerView={1}
-        className="rounded-xl shadow-lg"
-      >
-        {screenshots.map((image, index) => (
-          <SwiperSlide key={index}>
-            <div className="w-full max-w-sm mx-auto">
-              <img
-                src={`/screenshots/${image.src}`}
-                alt={image.alt}
-                className="w-full h-auto rounded-xl border shadow"
-              />
-              <p className="mt-4 text-sm text-gray-600 text-center">{image.caption}</p>
-            </div>
-          </SwiperSlide>
+    <div className="bg-white py-12 px-4 text-center">
+      <h2 className="text-3xl font-extrabold text-gray-900 mb-6">Explore TaxTracker</h2>
+      <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+        Take a closer look at what makes TaxTracker so powerful. Click any screenshot to zoom in.
+      </p>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        {images.map((img, i) => (
+          <div
+            key={i}
+            className="cursor-pointer overflow-hidden rounded-xl shadow hover:shadow-lg transition duration-200"
+            onClick={() => { setIndex(i); setOpen(true); }}
+          >
+            <img
+              src={img.src}
+              alt={img.alt}
+              className="w-full h-auto object-cover"
+            />
+          </div>
         ))}
-      </Swiper>
+      </div>
+
+      {open && (
+        <Lightbox
+          open={open}
+          close={() => setOpen(false)}
+          slides={images.map(({ src, alt, description }) => ({ src, alt, description }))}
+          index={index}
+          plugins={[Captions, Fullscreen, Thumbnails, Zoom]}
+          captions={{ descriptionTextAlign: 'center' }}
+          thumbnails={{ position: 'bottom', width: 100, height: 60 }}
+          zoom={{ maxZoomPixelRatio: 2 }}
+          styles={{
+            container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' },
+            navigationPrev: { color: '#fff' },
+            navigationNext: { color: '#fff' }
+          }}
+        />
+      )}
     </div>
   );
 }
