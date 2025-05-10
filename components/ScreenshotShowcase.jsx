@@ -55,7 +55,7 @@ const screenshots = [
 
 export default function ScreenshotShowcase() {
   return (
-    <div className="relative max-w-3xl mx-auto">
+    <div className="w-full px-4 sm:px-6 md:px-0 max-w-3xl mx-auto">
       <Swiper
         modules={[Navigation, Pagination, A11y, EffectFade]}
         effect="fade"
@@ -69,11 +69,11 @@ export default function ScreenshotShowcase() {
       >
         {screenshots.map((image, index) => (
           <SwiperSlide key={index}>
-            <div className="w-full max-w-md mx-auto">
+            <div className="w-full max-w-sm mx-auto">
               <img
                 src={`/screenshots/${image.src}`}
                 alt={image.alt}
-                className="w-full h-auto rounded-xl border shadow-md"
+                className="w-full h-auto rounded-xl border shadow"
               />
               <p className="mt-4 text-sm text-gray-600 text-center">{image.caption}</p>
             </div>
