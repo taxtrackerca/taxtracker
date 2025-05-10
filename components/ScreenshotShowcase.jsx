@@ -72,7 +72,7 @@ export default function ScreenshotShowcase() {
         >
           {images.map((img, i) => (
             <SwiperSlide key={i}>
-              <div className="rounded-xl shadow overflow-hidden bg-white">
+              <div className="w-1/2 rounded-xl shadow overflow-hidden bg-white">
                 <Image
                   src={img.src}
                   alt={img.alt}
