@@ -62,7 +62,7 @@ export default function ScreenshotShowcase() {
         Take a closer look at what makes TaxTracker so powerful. Swipe through the screenshots below.
       </p>
 
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-xl mx-auto flex justify-center items-center">
         <Swiper
           modules={[Navigation, Pagination, A11y]}
           spaceBetween={20}
@@ -72,7 +72,7 @@ export default function ScreenshotShowcase() {
         >
           {images.map((img, i) => (
             <SwiperSlide key={i}>
-              <div className="w-1/2 rounded-xl shadow overflow-hidden bg-white">
+              <div className="w-1/2 rounded-none shadow-none overflow-hidden">
                 <Image
                   src={img.src}
                   alt={img.alt}
@@ -81,6 +81,7 @@ export default function ScreenshotShowcase() {
                   layout="responsive"
                   objectFit="contain"
                   className="rounded-t-xl"
+                  style={{ touchAction: 'pinch-zoom' }}
                 />
                 <div className="p-4 text-sm text-gray-700">
                   <p className="font-semibold mb-1">{img.alt}</p>
