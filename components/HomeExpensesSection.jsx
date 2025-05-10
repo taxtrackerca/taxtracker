@@ -57,27 +57,32 @@ export default function HomeExpensesSection({ data, updateField }) {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Home Sqft</label>
-              <input
-                type="number"
-                value={data.homeSqft || ''}
-                onChange={(e) => updateField('homeSqft', e.target.value)}
-                placeholder="Eg. 1500"
-                className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Business Use Sqft</label>
-              <input
-                type="number"
-                value={data.businessSqft || ''}
-                onChange={(e) => updateField('businessSqft', e.target.value)}
-                placeholder="Eg. 300"
-                className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              Total Home Sqft
+              <Tooltip text="Enter the total square footage of your home. This helps calculate the percentage used for business." />
+            </label>
+            <input
+              type="number"
+              value={data.homeSqft || ''}
+              onChange={(e) => updateField('homeSqft', e.target.value)}
+              placeholder="Eg. 1500"
+              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              Business Use Sqft
+              <Tooltip text="How much of your home is used for business — like an office or workshop. Only this portion is deductible." />
+            </label>
+            <input
+              type="number"
+              value={data.businessSqft || ''}
+              onChange={(e) => updateField('businessSqft', e.target.value)}
+              placeholder="Eg. 300"
+              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+            />
           </div>
         </div>
       )}
