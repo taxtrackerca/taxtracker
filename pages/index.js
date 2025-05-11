@@ -2,48 +2,8 @@
 // pages/index.js
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import ScreenshotGrid from '../components/ScreenshotGrid';
 
-const screenshots = [
-  {
-    src: '/screenshots/summary.png',
-    alt: 'Summary Screenshot 1',
-  },
-  {
-    src: '/screenshots/summary1.png',
-    alt: 'Summary Screenshot 2',
-  },
-  {
-    src: '/screenshots/summary2.png',
-    alt: 'Summary Screenshot 3',
-  }
-];
-
-function ScreenshotRotator() {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % screenshots.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <section className="bg-white py-12 px-4 text-center">
-      <h2 className="text-3xl font-extrabold text-gray-900 mb-4">See TaxTracker in Action</h2>
-      <p className="text-gray-600 max-w-xl mx-auto mb-8">
-        Here's a quick preview of the summary you’ll get — clean, clear, and easy to follow.
-      </p>
-      <div className="flex justify-center">
-        <img
-          src={screenshots[index].src}
-          alt={screenshots[index].alt}
-          className="w-full max-w-md rounded-xl shadow-lg"
-        />
-      </div>
-    </section>
-  );
-}
 
 export default function Home() {
   return (
@@ -94,19 +54,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Screenshot Rotator */}
-      <ScreenshotRotator />
+      <ScreenshotGrid /> 
 
-      {/* Why TaxTracker Is Different Section */}
-      {/* ...rest of your content remains unchanged... */}
-    </div>
-  );
-}
-
-
-
-
-
+      
 
 
 {/* Why TaxTracker Is Different Section */ }
