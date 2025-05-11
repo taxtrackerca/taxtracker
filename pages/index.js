@@ -148,10 +148,6 @@ export default function Home() {
       </section>
 
 
-
-
-
-
       {/* Step-by-step timeline */}
       <div className="mt-20">
         <h3 className="text-2xl font-semibold text-gray-900 mb-6">How It Works in 3 Simple Steps</h3>
@@ -194,44 +190,9 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-2">Only $4.95/month after 30 days. Cancel anytime.</p>
         </div>
       </div>
-    </div>
-      </section >
 
-    {/* Screenshot Section */ }
-    < section className = "px-6 py-12 text-center" data - aos="fade-up" >
-        <h3 className="text-2xl font-semibold mb-6">See TaxTracker in Action</h3>
-        <p className="text-gray-600 mb-8 max-w-xl mx-auto">Here’s a preview of the clean and easy-to-use dashboard designed to simplify your small business taxes.</p>
-        <div className="flex justify-center items-center flex-wrap gap-6">
-          <div className="border rounded shadow-md overflow-hidden max-w-md" data-aos="zoom-in">
-            <img src="/screenshots/dashboard-preview1.png" alt="TaxTracker Dashboard Example" className="w-full h-auto" />
-          </div>
-          <div className="border rounded shadow-md overflow-hidden max-w-md" data-aos="zoom-in" data-aos-delay="200">
-            <img src="/screenshots/dashboard-preview2.png" alt="Tax Summary Example" className="w-full h-auto" />
-          </div>
-        </div>
-      </section >
-
-    {/* Testimonials Section */ }
-    < section className = "px-6 py-12 bg-white text-center" data - aos="fade-up" >
-        <h3 className="text-2xl font-semibold mb-6">Trusted by Small Business Owners</h3>
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div className="bg-gray-100 p-6 rounded shadow" data-aos="fade-up" data-aos-delay="100">
-            <p className="italic text-gray-700">"TaxTracker made my year-end filing so much easier. I love how simple and mobile-friendly it is!"</p>
-            <p className="mt-4 font-bold text-gray-800">— Sarah, Freelance Designer</p>
-          </div>
-          <div className="bg-gray-100 p-6 rounded shadow" data-aos="fade-up" data-aos-delay="200">
-            <p className="italic text-gray-700">"Finally a tool that's built for Canadian small business taxes. The GST tracking alone is worth it!"</p>
-            <p className="mt-4 font-bold text-gray-800">— Mark, Online Store Owner</p>
-          </div>
-          <div className="bg-gray-100 p-6 rounded shadow" data-aos="fade-up" data-aos-delay="300">
-            <p className="italic text-gray-700">"TaxTracker helped me understand my expenses better, and I saved money at tax time! Highly recommend."</p>
-            <p className="mt-4 font-bold text-gray-800">— Jenna, Consultant</p>
-          </div>
-        </div>
-      </section >
-
-    {/* Why Trust Us Section */ }
-    < section className = "bg-white py-16 px-6 text-center" >
+       {/* Why Trust Us Section */ }
+      < section className = "bg-white py-16 px-6 text-center" >
         <h2 className="text-3xl font-bold mb-4">Why Trust TaxTracker.ca?</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-12">
           Your financial data deserves privacy, protection, and peace of mind. Here’s how we deliver all three.
@@ -278,8 +239,8 @@ export default function Home() {
         </div>
       </section >
 
-    {/* Pricing Section */ }
-    < section className = "bg-gray-50 py-16 px-6 text-center" >
+      {/* Pricing Section */ }
+      < section className = "bg-gray-50 py-16 px-6 text-center" >
         <h2 className="text-3xl font-bold mb-4">Simple, Honest Pricing</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-12">
           Start with a free 30-day trial. After that, it’s just <span className="font-semibold text-gray-800">$4.95/month</span>. No contracts. Cancel anytime.
@@ -326,13 +287,14 @@ export default function Home() {
         </div>
       </section >
 
-    {/* Floating Mobile CTA */ }
-    < div className = "fixed bottom-0 left-0 right-0 md:hidden bg-white border-t p-3 text-center shadow z-50" >
+      {/* Floating Mobile CTA */ }
+      < div className = "fixed bottom-0 left-0 right-0 md:hidden bg-white border-t p-3 text-center shadow z-50" >
       <Link href="/signup"
         className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-500 w-full block">
         Start Free Trial
       </Link>
-      </div >
+      </div>
+  
 
 
     </div >
