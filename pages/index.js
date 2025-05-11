@@ -148,49 +148,6 @@ export default function Home() {
       </section>
 
 
-      {/* Step-by-step timeline */}
-      <div className="mt-20">
-        <h3 className="text-2xl font-semibold text-gray-900 mb-6">How It Works in 3 Simple Steps</h3>
-        <div className="flex flex-col md:flex-row justify-center gap-12 max-w-4xl mx-auto">
-          {[
-            {
-              number: "1",
-              title: "Sign Up",
-              desc: "Create an account and start your 30-day free trial in minutes — no hassle.",
-            },
-            {
-              number: "2",
-              title: "Track Your Income",
-              desc: "Log your income, expenses, and GST/HST using our user-friendly dashboard.",
-            },
-            {
-              number: "3",
-              title: "Generate Reports",
-              desc: "Download clean reports for your own records or your accountant.",
-            },
-          ].map((step, i) => (
-            <div key={i} className="flex flex-col items-center text-center" data-aos="fade-up" data-aos-delay={300 + i * 100}>
-              <div className="w-16 h-16 bg-blue-600 text-white text-xl font-bold rounded-full flex items-center justify-center mb-4 shadow-lg">
-                {step.number}
-              </div>
-              <h4 className="text-xl font-semibold text-blue-600 mb-2">{step.title}</h4>
-              <p className="text-gray-700 max-w-xs">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="mt-12">
-          <a
-            href="/signup"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-8 py-3 rounded shadow-lg transition duration-200"
-          >
-            Start Your Free Trial
-          </a>
-          <p className="text-sm text-gray-500 mt-2">Only $4.95/month after 30 days. Cancel anytime.</p>
-        </div>
-      </div>
-
        {/* Why Trust Us Section */ }
       < section className = "bg-white py-16 px-6 text-center" >
         <h2 className="text-3xl font-bold mb-4">Why Trust TaxTracker.ca?</h2>
