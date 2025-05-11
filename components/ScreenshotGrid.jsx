@@ -1,4 +1,3 @@
-// Replace this section in pages/index.js
 import { useState } from 'react';
 import Image from 'next/image';
 
@@ -23,7 +22,7 @@ export default function ScreenshotGrid() {
         {images.map((img, i) => (
           <div
             key={i}
-            className="cursor-pointer overflow-hidden rounded-xl shadow hover:shadow-lg transition duration-200"
+            className="cursor-pointer overflow-hidden rounded-xl shadow-2xl hover:shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition duration-300 hover:scale-105"
             onClick={() => setModalImg(img)}
           >
             <img
@@ -41,7 +40,11 @@ export default function ScreenshotGrid() {
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
           onClick={() => setModalImg(null)}
         >
-          <img src={modalImg.src} alt={modalImg.alt} className="max-w-full max-h-[90vh] rounded-lg shadow-lg" />
+          <img
+            src={modalImg.src}
+            alt={modalImg.alt}
+            className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
+          />
         </div>
       )}
     </section>
