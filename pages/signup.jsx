@@ -8,9 +8,17 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    const refCodeFromUrl = router.query.ref;
+    if (refCodeFromUrl) {
+      setReferralCode(refCodeFromUrl);
+    }
+  }, [router.query]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -34,7 +42,7 @@ export default function Signup() {
       await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, email }),
+        body: JSON.stringify({ uid, email, referredBy: referralCode || null }),
       });
 
       const res = await fetch('/api/create-checkout-session', {
@@ -98,6 +106,17 @@ export default function Signup() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Referral Code (optional)</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="ABC123"
             />
           </div>
 
