@@ -1,10 +1,21 @@
 // components/Layout.jsx
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 export default function Layout({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, setUser);
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   return (
     <div className="min-h-screen bg-background text-text flex flex-col font-sans">
@@ -18,9 +29,18 @@ export default function Layout({ children }) {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex space-x-6 text-sm">
-            <Link href="/dashboard" className="text-gray-700 hover:text-primary">Dashboard</Link>
-            <Link href="/account" className="text-gray-700 hover:text-primary">Account</Link>
-            <Link href="/login" className="text-gray-700 hover:text-primary">Logout</Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="text-gray-700 hover:text-primary">Dashboard</Link>
+                <Link href="/account" className="text-gray-700 hover:text-primary">Account</Link>
+                <button onClick={handleLogout} className="text-red-600 hover:underline">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-gray-700 hover:text-primary">Login</Link>
+                <Link href="/signup" className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Sign Up</Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -36,9 +56,18 @@ export default function Layout({ children }) {
         {/* Mobile Nav */}
         {menuOpen && (
           <nav className="md:hidden bg-white px-4 pb-4 space-y-2 text-sm border-t">
-            <Link href="/dashboard" className="block text-gray-700 hover:text-primary">Dashboard</Link>
-            <Link href="/account" className="block text-gray-700 hover:text-primary">Account</Link>
-            <Link href="/login" className="block text-gray-700 hover:text-primary">Logout</Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="block text-gray-700 hover:text-primary">Dashboard</Link>
+                <Link href="/account" className="block text-gray-700 hover:text-primary">Account</Link>
+                <button onClick={handleLogout} className="block text-red-600 hover:underline">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="block text-gray-700 hover:text-primary">Login</Link>
+                <Link href="/signup" className="block text-gray-700 hover:text-primary">Sign Up</Link>
+              </>
+            )}
           </nav>
         )}
       </header>

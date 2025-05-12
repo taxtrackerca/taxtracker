@@ -16,13 +16,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-blue-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">TaxTracker.ca</h1>
-        <div className="space-x-4">
-          <Link href="/login" className="hover:underline">Login </Link>
-          <Link href="/signup" className="bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-blue-100">Sign Up</Link>
-        </div>
-      </header>
+      
 
       {/* Hero */}
       <section className="bg-white px-4 py-20 sm:py-24 text-center">
