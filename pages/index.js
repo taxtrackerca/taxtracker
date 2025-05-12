@@ -6,6 +6,13 @@ import ScreenshotGrid from '../components/ScreenshotGrid';
 
 
 export default function Home() {
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform) {
+      window.location.href = '/login';
+    }
+  }, []);
+
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
