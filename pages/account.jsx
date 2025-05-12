@@ -5,6 +5,7 @@ import { sendPasswordResetEmail, updateEmail, deleteUser } from 'firebase/auth';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { getIdToken } from 'firebase/auth';
+import { Check } from 'lucide-react';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -13,6 +14,9 @@ export default function Account() {
   const [message, setMessage] = useState('');
   const [hasSubscription, setHasSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [credits, setCredits] = useState(0);
+  const [referralCode, setReferralCode] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -27,6 +31,8 @@ export default function Account() {
           const profile = snap.data();
           setBusinessName(profile.businessName || '');
           setHasSubscription(!!profile.subscriptionId); // ← this is what you’re adding
+          setCredits(profile.credits || 0); // ← NEW
+          setReferralCode(profile.referralCode || ''); // ← NEW
         }
       }
     });
@@ -91,6 +97,14 @@ export default function Account() {
     }
   };
 
+  const handleCopyLink = () => {
+    const referralLink = `https://taxtracker.ca/signup?ref=${referralCode}`;
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // reset after 2 seconds
+    });
+  };
+
 
   if (!user) return null;
 
@@ -131,6 +145,37 @@ export default function Account() {
       <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Business Name</button>
 
       <hr className="my-6" />
+
+      <hr className="my-6" />
+
+      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
+        <h2 className="text-lg font-semibold mb-2">Referral Rewards</h2>
+        <p className="text-gray-700 mb-2">
+          You have <strong>{credits}</strong> free month{credits === 1 ? '' : 's'} remaining.
+        </p>
+        <p className="text-gray-700">
+          Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Share this link to earn rewards: <br />
+          <code className="bg-gray-100 px-2 py-1 rounded inline-block mt-1">
+            https://taxtracker.ca/signup?ref={referralCode}
+          </code>
+          <button
+            onClick={handleCopyLink}
+            className={`flex items-center gap-1 text-sm px-3 py-1 rounded transition ${copied ? 'bg-green-600 hover:bg-green-500' : 'bg-blue-600 hover:bg-blue-500'
+              } text-white`}
+          >
+            {copied ? (
+              <>
+                <span>Copied</span> <span><Check size={16} /></span>
+              </>
+            ) : (
+              <span>Copy</span>
+            )}
+          </button>
+        </p>
+      </div>
 
 
       {/*<button onClick={handleDeleteAccount} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Delete Account</button>*/}
