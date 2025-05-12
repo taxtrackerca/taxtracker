@@ -1,0 +1,6 @@
+{
+  "appId": "ca.taxtracker.app",
+  "appName": "TaxTracker",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}

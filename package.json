@@ -8,6 +8,10 @@
         "start": "next start"
     },
     "dependencies": {
+        "@capacitor/android": "^7.2.0",
+        "@capacitor/cli": "^7.2.0",
+        "@capacitor/core": "^7.2.0",
+        "@capacitor/ios": "^7.2.0",
         "@stripe/stripe-js": "^7.3.0",
         "aos": "^2.3.4",
         "firebase": "^10.0.0",
