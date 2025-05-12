@@ -1,10 +1,9 @@
 // pages/login.jsx
-import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState, useEffect } from 'react'; // ✅ FIXED: added useEffect
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -78,4 +77,9 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+// ✅ FIXED: disables static generation for this page
+export async function getServerSideProps() {
+  return { props: {} };
 }

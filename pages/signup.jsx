@@ -133,3 +133,8 @@ export default function Signup() {
     </div>
   );
 }
+
+// ✅ FIXED: disables static generation for this page
+export async function getServerSideProps() {
+  return { props: {} };
+}
