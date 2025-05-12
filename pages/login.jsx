@@ -31,8 +31,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 pt-12 sm:pt-0">
-      <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gray-50 px-4 pt-24 sm:pt-32">
+      <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md mx-auto">
         <div className="mb-4 text-center">
           <h1 className="text-2xl font-bold text-gray-800">Login to TaxTracker</h1>
           <p className="text-sm text-gray-500 mt-1">
