@@ -55,13 +55,8 @@ export default function Dashboard() {
         {businessName && <p className="text-sm text-gray-600">{businessName}</p>}
       </div>
 
-      <div className="mb-6 flex items-center justify-between">
-        <div></div>
-        <div>
-          <Link href="/account" className="text-blue-600 hover:underline">Account</Link>
-          <button onClick={handleLogout} className="ml-4 text-red-600 hover:underline">Logout</button>
-        </div>
-      </div>
+      <div className="mb-6"></div>
+        
 
       <div className="flex gap-4 mb-4">
         <ExportSummaryCSV />
