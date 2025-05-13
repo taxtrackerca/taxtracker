@@ -1,44 +1,77 @@
-// Firebase functions
-import functions from 'firebase-functions';
-import admin from 'firebase-admin';
-import fetch from 'node-fetch';
+const functions = require('firebase-functions');
+functions.config().stripe = {
+  secret_key: process.env.STRIPE_SECRET_KEY
+};
+const admin = require('firebase-admin');
+const Stripe = require('stripe');
+const { buffer } = require('micro');
 
 admin.initializeApp();
 const db = admin.firestore();
 
-const RESEND_API_KEY = functions.config().resend.key;
-const FROM_EMAIL = 'reminder@taxtracker.ca';  // or use resend.dev default if not verified yet
+const stripe = new Stripe(functions.config().stripe.secret_key, {
+  apiVersion: '2023-10-16',
+});
 
-export const sendMonthlyReminders = functions.pubsub
-  .schedule('0 10 1 * *') // 10 AM Atlantic, 1st of every month
-  .timeZone('America/Halifax')
-  .onRun(async () => {
-    const usersSnapshot = await db.collection('users').get();
-    const month = new Date().toLocaleString('default', { month: 'long' });
+exports.stripeWebhook = functions
+  .region('us-central1')
+  .runWith({ secrets: ['STRIPE_SECRET_KEY'] })
+  .https.onRequest(async (req, res) => {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    });
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-    for (const doc of usersSnapshot.docs) {
-      const user = doc.data();
-      if (!user.email) continue;
-
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: user.email,
-          subject: `Reminder to log your ${month} income & expenses`,
-          html: `
-            <p>Hi there,</p>
-            <p>This is your monthly reminder to log your income and expenses for <strong>${month}</strong> in <a href="https://taxtracker.ca">TaxTracker.ca</a>.</p>
-            <p>Stay organized and tax-ready!</p>
-            <p>– The TaxTracker Team</p>
-          `,
-        }),
-      });
+    let event;
+    try {
+      const buf = await buffer(req);
+      event = JSON.parse(buf.toString());
+    } catch (err) {
+      console.error('❌ Error parsing webhook:', err.message);
+      return res.status(400).send('Invalid payload');
     }
 
-    console.log(`✅ Monthly reminders sent for ${month}`);
+    if (event.type === 'invoice.paid') {
+      try {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+        const customer = await stripe.customers.retrieve(customerId);
+        const firebaseUid = customer.metadata?.firebaseUid;
+
+        if (!firebaseUid) {
+          console.log('⚠️ No firebaseUid in metadata');
+          return res.status(200).send('No UID');
+        }
+
+        const userRef = db.collection('users').doc(firebaseUid);
+        const userSnap = await userRef.get();
+
+        if (!userSnap.exists) {
+          console.log("❌ User not found:", firebaseUid);
+          return res.status(200).send('No user');
+        }
+
+        const userData = userSnap.data();
+
+        if (userData.referredBy && !userData.referralRewarded) {
+          const referrerRef = db.collection('users').doc(userData.referredBy);
+          const referrerSnap = await referrerRef.get();
+
+          if (referrerSnap.exists) {
+            const credits = referrerSnap.data().credits || 0;
+            await referrerRef.update({ credits: credits + 1 });
+            await userRef.update({ referralRewarded: true });
+
+            console.log(`🎉 Credit given to ${userData.referredBy}`);
+          }
+        }
+
+        return res.status(200).send('Processed referral');
+      } catch (err) {
+        console.error("❌ Error processing webhook:", err.message);
+        return res.status(500).send('Webhook failed');
+      }
+    }
+
+    return res.status(200).send('Event received');
   });
