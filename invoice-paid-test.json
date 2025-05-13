@@ -1,0 +1,12 @@
+{
+  "id": "evt_test_invoice_paid",
+  "object": "event",
+  "type": "invoice.paid",
+  "data": {
+    "object": {
+      "customer_email": "colestephen@hotmail.com",
+      "amount_paid": 1995,
+      "currency": "cad"
+    }
+  }
+}
