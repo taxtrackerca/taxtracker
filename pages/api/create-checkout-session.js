@@ -1,4 +1,3 @@
-// pages/api/create-checkout-session.js
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -9,23 +8,28 @@ export default async function handler(req, res) {
   const { customerEmail, firebaseUid } = req.body;
 
   try {
+    // ✅ STEP 1: Create the Stripe customer with metadata
+    const customer = await stripe.customers.create({
+      email: customerEmail,
+      metadata: {
+        firebaseUid, // ✅ store Firebase UID directly on the customer
+      },
+    });
+
+    // ✅ STEP 2: Create the session and pass the customer ID
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
+      customer: customer.id, // ✅ pass customer ID instead of email
       line_items: [
         {
-          price: 'price_1RKyanGbcqZ6lOpJHtAuXFQp', // Replace with your actual price ID
+          price: 'price_1RKyanGbcqZ6lOpJHtAuXFQp',
           quantity: 1,
         },
       ],
-      customer_email: customerEmail,
       subscription_data: {
         trial_period_days: 30,
       },
-      metadata: {
-          firebaseUid, // now properly passed
-        },
-      
       success_url: `${req.headers.origin}/verify-email?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/signup`,
     });
