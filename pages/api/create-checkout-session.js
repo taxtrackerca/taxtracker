@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       metadata: {
           firebaseUid, // now properly passed
         },
-      },
+      
       success_url: `${req.headers.origin}/verify-email?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/signup`,
     });
