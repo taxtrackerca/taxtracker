@@ -78,7 +78,7 @@ export default async function handler(req, res) {
   }
 
   // ✅ Referral credit logic on first paid invoice
-  iif (event.type === 'invoice.paid') {
+    if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
     const customerEmail = invoice.customer_email;
   
