@@ -81,31 +81,47 @@ export default async function handler(req, res) {
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
     const customerEmail = invoice.customer_email;
-
+  
+    console.log("📬 invoice.paid received for", customerEmail);
+  
     try {
       const userSnap = await db.collection('users').where('email', '==', customerEmail).get();
-      if (userSnap.empty) return res.status(200).send('User not found');
-
+      console.log("✅ Firestore user lookup complete");
+  
+      if (userSnap.empty) {
+        console.log("❌ No user found");
+        return res.status(200).send('User not found');
+      }
+  
       const userDoc = userSnap.docs[0];
       const userData = userDoc.data();
-
+  
+      console.log("🔍 User data loaded:", userData);
+  
       if (userData.referredBy && !userData.referralRewarded) {
+        console.log("🎯 Referral reward eligible for:", userData.referredBy);
+  
         const referrerUid = userData.referredBy;
         const referrerRef = db.collection('users').doc(referrerUid);
-
+  
         await db.runTransaction(async (t) => {
           const refDoc = await t.get(referrerRef);
           const refData = refDoc.data();
+  
+          console.log("🏦 Referrer data:", refData);
+  
           const newCredits = (refData.credits || 0) + 1;
-
           t.update(referrerRef, { credits: newCredits });
           t.update(userDoc.ref, { referralRewarded: true });
         });
-
+  
         console.log(`🎉 Added 1 credit to referrer ${referrerUid} for user ${customerEmail}`);
       }
+  
+      console.log("✅ invoice.paid handler completed");
     } catch (err) {
       console.error('❌ Referral credit error:', err.message);
+      return res.status(500).send('Error processing referral');
     }
   }
 
