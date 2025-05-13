@@ -78,46 +78,28 @@ export default async function handler(req, res) {
   }
 
   // ✅ Referral credit logic on first paid invoice
-  if (event.type === 'invoice.paid') {
+  iif (event.type === 'invoice.paid') {
     const invoice = event.data.object;
     const customerEmail = invoice.customer_email;
-
+  
     console.log("📬 invoice.paid received for", customerEmail);
-
+  
     try {
       const userSnap = await db.collection('users').where('email', '==', customerEmail).get();
-      console.log("✅ Firestore user lookup complete");
-
+      console.log("✅ User lookup complete");
+  
       if (userSnap.empty) {
-        console.log("❌ No user found");
+        console.log("❌ No user found for:", customerEmail);
         return res.status(200).send('User not found');
       }
-
+  
       const userDoc = userSnap.docs[0];
-      const userData = userDoc.data();
-
-      console.log("🔍 User data loaded:", userData);
-
-      if (userData.referredBy && !userData.referralRewarded) {
-        console.log("🎯 Referral reward eligible for:", userData.referredBy);
-
-        const referrerUid = userData.referredBy;
-        const referrerRef = db.collection('users').doc(referrerUid);
-
-        const refDocSnap = await referrerRef.get();
-        const refData = refDocSnap.data();
-        const newCredits = (refData?.credits || 0) + 1;
-
-        await referrerRef.update({ credits: newCredits });
-        await userDoc.ref.update({ referralRewarded: true });
-
-        console.log(`🎉 Added 1 credit to referrer ${referrerUid} for user ${customerEmail}`);
-      }
-
-      console.log("✅ invoice.paid handler completed");
+      console.log("🔍 Found user doc ID:", userDoc.id);
+  
+      return res.status(200).send('Test complete — user found');
     } catch (err) {
-      console.error('❌ Referral credit error:', err.message);
-      return res.status(500).send('Error processing referral');
+      console.error('❌ Error during invoice.paid handling:', err.message);
+      return res.status(500).send('Internal server error');
     }
   }
 
