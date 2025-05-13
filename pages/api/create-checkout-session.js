@@ -21,8 +21,9 @@ export default async function handler(req, res) {
       customer_email: customerEmail,
       subscription_data: {
         trial_period_days: 30,
-        metadata: {
-          firebaseUid: firebaseUid, // now properly passed
+      },
+      metadata: {
+          firebaseUid, // now properly passed
         },
       },
       success_url: `${req.headers.origin}/verify-email?session_id={CHECKOUT_SESSION_ID}`,
