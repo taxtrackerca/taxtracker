@@ -1,6 +1,14 @@
-import { buffer } from 'micro';
 import * as admin from 'firebase-admin';
 import Stripe from 'stripe';
+
+const getRawBody = async (req) => {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+};
 
 export const config = {
   api: {
@@ -26,7 +34,7 @@ const db = admin.firestore();
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-  const buf = await buffer(req);
+  const buf = await getRawBody(req);
   const sig = req.headers['stripe-signature'];
   let event;
 
