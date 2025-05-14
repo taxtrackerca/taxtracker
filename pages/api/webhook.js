@@ -27,15 +27,19 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
   const buf = await buffer(req);
+  const sig = req.headers['stripe-signature'];
   let event;
 
   try {
-    // Dev mode: skip signature check
-    event = JSON.parse(buf.toString());
+    event = stripe.webhooks.constructEvent(
+      buf,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
     console.log(`✅ Stripe event: ${event.type}`);
   } catch (err) {
-    console.error('❌ JSON parse error:', err.message);
-    return res.status(400).send('Invalid payload');
+    console.error('❌ Signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'invoice.paid') {
