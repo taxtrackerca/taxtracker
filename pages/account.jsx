@@ -1,4 +1,4 @@
-// Updated pages/account.jsx with business name + delete account
+// Updated pages/account.jsx with business name + province selector + delete account
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { sendPasswordResetEmail, updateEmail, deleteUser } from 'firebase/auth';
@@ -7,10 +7,17 @@ import Link from 'next/link';
 import { getIdToken } from 'firebase/auth';
 import { Check } from 'lucide-react';
 
+const provinces = [
+  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+  'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario',
+  'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon',
+];
+
 export default function Account() {
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState('');
   const [businessName, setBusinessName] = useState('');
+  const [province, setProvince] = useState('');
   const [message, setMessage] = useState('');
   const [hasSubscription, setHasSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -30,9 +37,10 @@ export default function Account() {
         if (snap.exists()) {
           const profile = snap.data();
           setBusinessName(profile.businessName || '');
-          setHasSubscription(!!profile.subscriptionId); // ← this is what you’re adding
-          setCredits(profile.credits || 0); // ← NEW
-          setReferralCode(profile.referralCode || ''); // ← NEW
+          setProvince(profile.province || '');
+          setHasSubscription(!!profile.subscriptionId);
+          setCredits(profile.credits || 0);
+          setReferralCode(profile.referralCode || '');
         }
       }
     });
@@ -84,6 +92,16 @@ export default function Account() {
     }
   };
 
+  const handleProvinceUpdate = async () => {
+    try {
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(profileRef, { province }, { merge: true });
+      setMessage('Province updated.');
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm('Are you sure you want to delete your account? This cannot be undone.');
     if (!confirmed) return;
@@ -101,10 +119,9 @@ export default function Account() {
     const referralLink = `https://taxtracker.ca/signup?ref=${referralCode}`;
     navigator.clipboard.writeText(referralLink).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // reset after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     });
   };
-
 
   if (!user) return null;
 
@@ -144,7 +161,21 @@ export default function Account() {
 
       <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Business Name</button>
 
-      <hr className="my-6" />
+      <div className="mb-4">
+        <label className="block text-sm mb-1">Current Province or Territory</label>
+        <select
+          value={province}
+          onChange={(e) => setProvince(e.target.value)}
+          className="w-full border p-2 rounded"
+        >
+          <option value="">Select...</option>
+          {provinces.map((prov) => (
+            <option key={prov} value={prov}>{prov}</option>
+          ))}
+        </select>
+      </div>
+
+      <button onClick={handleProvinceUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Province</button>
 
       <hr className="my-6" />
 
@@ -163,8 +194,7 @@ export default function Account() {
           </code>
           <button
             onClick={handleCopyLink}
-            className={`flex items-center gap-1 text-sm px-3 py-1 rounded transition ${copied ? 'bg-green-600 hover:bg-green-500' : 'bg-blue-600 hover:bg-blue-500'
-              } text-white`}
+            className={`flex items-center gap-1 text-sm px-3 py-1 rounded transition ${copied ? 'bg-green-600 hover:bg-green-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
           >
             {copied ? (
               <>
@@ -176,11 +206,6 @@ export default function Account() {
           </button>
         </p>
       </div>
-
-
-      {/*<button onClick={handleDeleteAccount} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Delete Account</button>*/}
-
-
     </div>
   );
 }
