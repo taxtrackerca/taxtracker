@@ -4,45 +4,64 @@ const express = require('express');
 const Stripe = require('stripe');
 
 admin.initializeApp();
-
+const db = admin.firestore();
 const app = express();
 
-// Disable Firebase's default body parser
-app.use(
-  express.raw({ type: 'application/json' })
-);
-
-app.post('/', async (req, res) => {
+// ✅ Raw body for Stripe webhook
+app.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2023-10-16',
   });
 
   const sig = req.headers['stripe-signature'];
-  const rawBody = req.body;
 
   let event;
-
   try {
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-    console.log(`✅ Stripe event received: ${event.type}`);
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('❌ Signature verification failed.', err.message);
+    console.error('❌ Signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  console.log(`✅ Received event: ${event.type}`);
+
   if (event.type === 'invoice.paid') {
     const invoice = event.data.object;
-    const customerEmail = invoice.customer_email || 'unknown';
-    console.log(`🎉 Invoice paid for customer: ${customerEmail}`);
+    const customer = await stripe.customers.retrieve(invoice.customer);
+    const uid = customer.metadata?.firebaseUid;
+
+    if (!uid) {
+      console.warn('⚠️ No firebaseUid found on customer metadata');
+      return res.status(200).send('No action required');
+    }
+
+    const userRef = db.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      console.warn('⚠️ User document not found');
+      return res.status(200).send('No action required');
+    }
+
+    const userData = userSnap.data();
+
+    if (userData.referredBy && !userData.referralRewarded) {
+      const referrerRef = db.collection('users').doc(userData.referredBy);
+      const referrerSnap = await referrerRef.get();
+
+      if (referrerSnap.exists) {
+        const credits = referrerSnap.data().credits || 0;
+        await referrerRef.update({ credits: credits + 1 });
+        await userRef.update({ referralRewarded: true });
+        console.log(`🎉 Credit granted to referrer: ${userData.referredBy}`);
+      }
+    }
   }
 
-  return res.status(200).send('Event received');
+  res.status(200).send('Webhook processed');
 });
 
+// ✅ Export with Firebase secrets
 exports.stripeWebhook = functions
   .region('us-central1')
   .runWith({ secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'] })

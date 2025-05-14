@@ -14,11 +14,9 @@
     "firebase-functions": "^4.4.1",
     "micro": "^10.0.1",
     "node-fetch": "^3.3.2",
+    "raw-body": "^3.0.0",
     "stripe": "^18.1.0"
   },
   "type": "commonjs"
-
-  
-  
-  
 }
+
