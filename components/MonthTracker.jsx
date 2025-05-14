@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
 import IncomeSection from './IncomeSection';
 import BusinessExpensesSection from './BusinessExpensesSection';
 import HomeExpensesSection from './HomeExpensesSection';
 import VehicleExpensesSection from './VehicleExpensesSection';
+import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -16,53 +16,36 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [showCheck, setShowCheck] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState(null);
-  const [province, setProvince] = useState(null);
-
-  useEffect(() => {
-    const fetchUserProvince = async () => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        setProvince(userDoc.data().province);
-      }
-    };
-    fetchUserProvince();
-  }, []);
+  const [province, setProvince] = useState('Nova Scotia');
 
   const sumFields = (source, fields) =>
     fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
 
-  const applyBrackets = (rates, income) => {
-    let remaining = income;
+  const calculateTax = (taxableIncome, rates, credit) => {
     let tax = 0;
+    let remaining = taxableIncome;
     let previousThreshold = 0;
+
     for (const { rate, threshold } of rates) {
-      const bracketAmount = Math.min(remaining, threshold - previousThreshold);
-      if (bracketAmount <= 0) break;
-      tax += bracketAmount * rate;
-      remaining -= bracketAmount;
+      const slice = Math.min(remaining, threshold - previousThreshold);
+      if (slice <= 0) break;
+      tax += slice * rate;
+      remaining -= slice;
       previousThreshold = threshold;
     }
-    return tax;
-  };
 
-  const calculateCombinedTax = (taxableIncome) => {
-    if (!province || !provincialData[province]) return { total: 0 };
-    const provRates = provincialData[province].rates;
-    const provCredit = provincialData[province].credit;
-    const provBaseRate = provRates[0]?.rate || 0;
-
-    const federalTax = applyBrackets(federalRates, taxableIncome) - federalCredit * 0.15;
-    const provTax = applyBrackets(provRates, taxableIncome) - provCredit * provBaseRate;
-
-    return { total: Math.max(0, federalTax + provTax) };
+    tax -= credit * rates[0].rate;
+    return Math.max(0, tax);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
+
+      const userSnap = await getDoc(doc(db, 'users', uid));
+      const userData = userSnap.data();
+      if (userData?.province) setProvince(userData.province);
 
       setData({ ...defaultData });
 
@@ -124,9 +107,16 @@ export default function MonthTracker({ monthId, onRefresh }) {
     const vehicleUsePercent = parseFloat(updatedData.businessKms || 0) / parseFloat(updatedData.kmsThisMonth || 1);
     const vehicleExpenses = sumFields(updatedData, ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs']) * vehicleUsePercent;
 
-    const totalTaxBefore = calculateCombinedTax(adjustedPriorIncome - priorDeductions);
-    const totalTaxNow = calculateCombinedTax((adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses));
-    const estimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
+    const taxableBefore = adjustedPriorIncome - priorDeductions;
+    const taxableNow = (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
+
+    const provincial = provincialData[province];
+    const federalTaxBefore = calculateTax(taxableBefore, federalRates, federalCredit);
+    const provincialTaxBefore = calculateTax(taxableBefore, provincial.rates, provincial.credit);
+    const federalTaxNow = calculateTax(taxableNow, federalRates, federalCredit);
+    const provincialTaxNow = calculateTax(taxableNow, provincial.rates, provincial.credit);
+
+    const estimatedTaxThisMonth = (federalTaxNow + provincialTaxNow) - (federalTaxBefore + provincialTaxBefore);
 
     const dataWithTax = {
       ...updatedData,
@@ -191,7 +181,6 @@ export default function MonthTracker({ monthId, onRefresh }) {
     kmsThisMonth: '', businessKms: '', vehicleFuel: '', vehicleInsurance: '', vehicleLicense: '', vehicleRepairs: ''
   };
 
-  // ----- Realtime display calculation -----
   const businessExpenses = sumFields(data, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
   const homeUsePercent = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
   const homeExpenses = sumFields(data, ['homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax']) * homeUsePercent;
@@ -202,9 +191,12 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const isOtherTaxed = data.otherIncomeTaxed === 'yes';
   const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
   const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
-  const totalTaxBefore = calculateNSTax(adjustedPriorIncome - priorDeductions);
-  const totalTaxNow = calculateNSTax((adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses));
-  const liveEstimatedTaxThisMonth = totalTaxNow.total - totalTaxBefore.total;
+  const taxableBefore = adjustedPriorIncome - priorDeductions;
+  const taxableNow = (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
+  const provincial = provincialData[province];
+  const totalTaxBefore = calculateTax(taxableBefore, federalRates, federalCredit) + calculateTax(taxableBefore, provincial.rates, provincial.credit);
+  const totalTaxNow = calculateTax(taxableNow, federalRates, federalCredit) + calculateTax(taxableNow, provincial.rates, provincial.credit);
+  const liveEstimatedTaxThisMonth = totalTaxNow - totalTaxBefore;
 
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
@@ -215,7 +207,6 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <HomeExpensesSection data={data} updateField={updateField} />
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
 
-      {/* Summary */}
       <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-50">
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex justify-between items-center">
@@ -268,4 +259,3 @@ export default function MonthTracker({ monthId, onRefresh }) {
     </div>
   );
 }
-
