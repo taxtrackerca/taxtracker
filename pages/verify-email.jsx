@@ -35,7 +35,7 @@ export default function VerifyEmail() {
       if (currentUser) {
         await currentUser.reload();
         if (currentUser.emailVerified) {
-          router.push('/dashboard');
+          router.push('/account-setup');
         }
       }
     }, 3000);
