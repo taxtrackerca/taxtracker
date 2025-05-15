@@ -18,6 +18,8 @@ export default function DashboardSummary({ refresh }) {
     totalEstimatedTax: 0
   });
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchSummary = async () => {
       const uid = auth.currentUser?.uid;
