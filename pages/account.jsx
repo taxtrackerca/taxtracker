@@ -163,8 +163,9 @@ export default function Account() {
         const estimatedTaxThisMonth = (federalNow + provincialNow) - (federalBefore + provincialBefore);
   
         await setDoc(doc(db, 'users', uid, 'months', docSnap.id), {
+          ...data, // ← keep the rest of the month intact
           estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100,
-        }, { merge: true });
+        });
   
         priorIncome = adjustedPriorIncome + income + adjustedCurrentOtherIncome;
         priorDeductions = priorDeductions + business + home + vehicle;
