@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { Loader } from 'lucide-react';
 
 export default function DashboardSummary({ refresh }) {
   const [summary, setSummary] = useState({
@@ -17,14 +16,10 @@ export default function DashboardSummary({ refresh }) {
     totalEstimatedTax: 0
   });
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchSummary = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
-
-      setLoading(true);
 
       const snapshot = await getDocs(collection(db, 'users', uid, 'months'));
 
@@ -81,8 +76,6 @@ export default function DashboardSummary({ refresh }) {
         vehicleExpenses: vehicle,
         totalEstimatedTax: totalTax
       });
-
-      setLoading(false);
     };
 
     fetchSummary();
@@ -93,22 +86,15 @@ export default function DashboardSummary({ refresh }) {
   return (
     <div className="bg-gray-100 p-4 rounded shadow">
       <h2 className="text-xl font-semibold mb-2">Year-to-Date Summary</h2>
-      {loading ? (
-        <div className="flex items-center justify-center py-10 text-gray-500">
-          <Loader className="animate-spin w-6 h-6 mr-2" />
-          Loading summary...
-        </div>
-      ) : (
-        <ul className="text-gray-800 space-y-1">
-          <li>Total Business Income: ${summary.businessIncome.toFixed(2)}</li>
-          <li>Total Other Income (already taxed): ${summary.otherIncome.toFixed(2)}</li>
-          <li className="font-bold">Combined Income: ${summary.combinedIncome.toFixed(2)}</li>
-          <li>Total Claimable Expenses: ${totalExpenses.toFixed(2)}</li>
-          <li className="font-bold text-red-600">Estimated Tax Owing (YTD): ${summary.totalEstimatedTax.toFixed(2)}</li>
-          <li>GST Collected: ${summary.gstCollected.toFixed(2)}</li>
-          <li>GST Remitted: ${summary.gstRemitted.toFixed(2)}</li>
-        </ul>
-      )}
+      <ul className="text-gray-800 space-y-1">
+        <li>Total Business Income: ${summary.businessIncome.toFixed(2)}</li>
+        <li>Total Other Income (already taxed): ${summary.otherIncome.toFixed(2)}</li>
+        <li className="font-bold">Combined Income: ${summary.combinedIncome.toFixed(2)}</li>
+        <li>Total Claimable Expenses: ${totalExpenses.toFixed(2)}</li>
+        <li className="font-bold text-red-600">Estimated Tax Owing (YTD): ${summary.totalEstimatedTax.toFixed(2)}</li>
+        <li>GST Collected: ${summary.gstCollected.toFixed(2)}</li>
+        <li>GST Remitted: ${summary.gstRemitted.toFixed(2)}</li>
+      </ul>
     </div>
   );
 }

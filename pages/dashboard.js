@@ -17,7 +17,7 @@ const months = [
 export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [user, setUser] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(Date.now());
+  const [refreshYTD, setRefreshYTD] = useState(false);
   const [businessName, setBusinessName] = useState('');
 
   const currentYear = new Date().getFullYear();
@@ -39,12 +39,6 @@ export default function Dashboard() {
       }
     });
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const handleFocus = () => setRefreshKey(Date.now());
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const handleLogout = async () => {
@@ -69,7 +63,7 @@ export default function Dashboard() {
         <ExportSummaryPDF />
       </div>
 
-      <DashboardSummary refresh={refreshKey} />
+      <DashboardSummary refresh={refreshYTD} />
 
       <div className="mt-6">
         <h2 className="text-xl font-semibold mb-2">Select a Month</h2>
@@ -88,7 +82,7 @@ export default function Dashboard() {
 
       {selectedMonth && (
         <div className="mt-8">
-          <MonthTracker monthId={selectedMonth} onRefresh={() => setRefreshKey(Date.now())} />
+          <MonthTracker monthId={selectedMonth} onRefresh={() => setRefreshYTD(prev => !prev)} />
         </div>
       )}
     </div>
