@@ -1,7 +1,7 @@
+// components/DashboardSummary.jsx
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
 import { Loader } from 'lucide-react';
 
 export default function DashboardSummary({ refresh }) {
@@ -19,32 +19,12 @@ export default function DashboardSummary({ refresh }) {
 
   const [loading, setLoading] = useState(true);
 
-  const calculateBracketTax = (income, brackets, credit, creditRate) => {
-    let tax = 0;
-    let remaining = income;
-
-    for (const bracket of brackets) {
-      const slice = Math.min(remaining, bracket.threshold);
-      tax += slice * bracket.rate;
-      remaining -= slice;
-      if (remaining <= 0) break;
-    }
-
-    tax -= credit * creditRate;
-    return Math.max(tax, 0);
-  };
-
   useEffect(() => {
     const fetchSummary = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
 
       setLoading(true);
-
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      const userData = userDoc.data();
-      const province = userData?.province || 'Nova Scotia';
-      const prov = provincialData[province];
 
       const snapshot = await getDocs(collection(db, 'users', uid, 'months'));
 
@@ -55,46 +35,37 @@ export default function DashboardSummary({ refresh }) {
       let business = 0, home = 0, vehicle = 0;
       let totalTax = 0;
 
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
+      snapshot.forEach((doc) => {
+        const data = doc.data();
 
-        const income = parseFloat(data.income || 0);
-        const other = parseFloat(data.otherIncome || 0);
-        const isOtherTaxed = data.otherIncomeTaxed === 'yes';
-        const adjustedOther = isOtherTaxed ? 0 : other;
-
-        businessIncome += income;
-        if (isOtherTaxed) otherIncome += other;
+        businessIncome += parseFloat(data.income || 0);
+        if (data.otherIncome && data.otherIncomeTaxed === 'yes') {
+          otherIncome += parseFloat(data.otherIncome || 0);
+        }
 
         gstCollected += parseFloat(data.gstCollected || 0);
         gstRemitted += parseFloat(data.gstRemitted || 0);
 
-        const businessExpenses = [
+        business += [
           'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin',
           'rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0);
 
-        const homeUsePercent = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
-        const homeExpenses = [
+        const homeSqft = parseFloat(data.homeSqft || 1);
+        const businessSqft = parseFloat(data.businessSqft || 0);
+        const homeUsePercent = businessSqft / homeSqft;
+        home += [
           'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * homeUsePercent;
 
-        const vehicleUsePercent = parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1);
-        const vehicleExpenses = [
+        const kmsThisMonth = parseFloat(data.kmsThisMonth || 1);
+        const businessKms = parseFloat(data.businessKms || 0);
+        const vehicleUsePercent = businessKms / kmsThisMonth;
+        vehicle += [
           'vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * vehicleUsePercent;
 
-        const totalExpenses = businessExpenses + homeExpenses + vehicleExpenses;
-        const taxable = income + adjustedOther - totalExpenses;
-
-        const federalTax = calculateBracketTax(taxable, federalRates, federalCredit, 0.15);
-        const provincialTax = calculateBracketTax(taxable, prov.rates, prov.credit, prov.rates[0].rate);
-
-        totalTax += federalTax + provincialTax;
-
-        business += businessExpenses;
-        home += homeExpenses;
-        vehicle += vehicleExpenses;
+        totalTax += parseFloat(data.estimatedTaxThisMonth || 0);
       });
 
       const combinedIncome = businessIncome + otherIncome;
