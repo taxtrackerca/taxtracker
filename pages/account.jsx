@@ -2,11 +2,10 @@
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { sendPasswordResetEmail, updateEmail, deleteUser } from 'firebase/auth';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDoc, getDocs, setDoc, deleteDoc, doc } from 'firebase/firestore';
 import Link from 'next/link';
 import { getIdToken } from 'firebase/auth';
 import { Check } from 'lucide-react';
-import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 import { provincialData, federalRates, federalCredit } from '../lib/taxRates';
 
 const provinces = [
