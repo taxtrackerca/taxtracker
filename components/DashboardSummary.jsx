@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
+import { Loader } from 'lucide-react';
 
 export default function DashboardSummary({ refresh }) {
   const [summary, setSummary] = useState({
@@ -21,6 +22,8 @@ export default function DashboardSummary({ refresh }) {
     const fetchSummary = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
+
+      setLoading(true); // 
   
       const snapshot = await getDocs(collection(db, 'users', uid, 'months'));
   
@@ -77,6 +80,7 @@ export default function DashboardSummary({ refresh }) {
         vehicleExpenses: vehicle,
         totalEstimatedTax: totalTax
       });
+      setLoading(false); // hide spinner
     };
   
     fetchSummary();
@@ -87,6 +91,14 @@ export default function DashboardSummary({ refresh }) {
   return (
     <div className="bg-gray-100 p-4 rounded shadow">
       <h2 className="text-xl font-semibold mb-2">Year-to-Date Summary</h2>
+      {loading ? (
+        <div className="flex items-center justify-center py-10 text-gray-500">
+          <Loader className="animate-spin w-6 h-6 mr-2" />
+          Loading summary...
+        </div>
+      ) : (
+
+
       <ul className="text-gray-800 space-y-1">
         <li>Total Business Income: ${summary.businessIncome.toFixed(2)}</li>
         <li>Total Other Income (already taxed): ${summary.otherIncome.toFixed(2)}</li>
@@ -96,6 +108,7 @@ export default function DashboardSummary({ refresh }) {
         <li>GST Collected: ${summary.gstCollected.toFixed(2)}</li>
         <li>GST Remitted: ${summary.gstRemitted.toFixed(2)}</li>
       </ul>
+      )}
     </div>
   );
 }

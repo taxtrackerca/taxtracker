@@ -6,6 +6,8 @@ import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { getIdToken } from 'firebase/auth';
 import { Check } from 'lucide-react';
+import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
+import { provincialData, federalRates, federalCredit } from '../lib/taxRates';
 
 const provinces = [
   'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
@@ -94,86 +96,74 @@ export default function Account() {
     }
   };
 
+
+
+  const calculateBracketTax = (income, brackets, credit, creditRate) => {
+    let tax = 0;
+    let remaining = income;
+
+    for (const bracket of brackets) {
+      const slice = Math.min(remaining, bracket.threshold);
+      tax += slice * bracket.rate;
+      remaining -= slice;
+      if (remaining <= 0) break;
+    }
+
+    tax -= credit * creditRate;
+    return Math.max(tax, 0);
+  };
+
   const handleProvinceUpdate = async () => {
     try {
-      const uid = user.uid;
-      const profileRef = doc(db, 'users', uid);
+      const profileRef = doc(db, 'users', user.uid);
       await setDoc(profileRef, { province }, { merge: true });
-  
-      // ✅ Recalculate estimated tax for each month
-      const snapshot = await getDocs(collection(db, 'users', uid, 'months'));
-      const { federalRates, federalCredit, provincialData } = await import('../lib/taxRates');
-  
-      const calculateBracketTax = (income, brackets, credit, creditRate) => {
-        let tax = 0;
-        let remaining = income;
-        for (const bracket of brackets) {
-          const slice = Math.min(remaining, bracket.threshold);
-          tax += slice * bracket.rate;
-          remaining -= slice;
-          if (remaining <= 0) break;
-        }
-        tax -= credit * creditRate;
-        return Math.max(tax, 0);
-      };
-  
-      let priorIncome = 0;
-      let priorDeductions = 0;
-  
-      const sortedMonths = [...snapshot.docs].sort((a, b) => {
-        const [monthA, yearA] = a.id.split(' ');
-        const [monthB, yearB] = b.id.split(' ');
-        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-        return new Date(`${monthA} 1, ${yearA}`) - new Date(`${monthB} 1, ${yearB}`);
-      });
-  
-      for (const docSnap of sortedMonths) {
+      setProvinceMessage('Province updated.');
+
+      // Recalculate each month's tax using new province
+      const monthDocs = await getDocs(collection(db, 'users', user.uid, 'months'));
+      const prov = provincialData[province];
+
+      for (const docSnap of monthDocs.docs) {
         const data = docSnap.data();
+        if (!data) continue;
+
         const income = parseFloat(data.income || 0);
         const otherIncome = parseFloat(data.otherIncome || 0);
         const isOtherTaxed = data.otherIncomeTaxed === 'yes';
-  
-        const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
-        const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
-  
-        const business = [
-          'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin',
-          'rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
+
+        const adjustedOther = isOtherTaxed ? 0 : otherIncome;
+
+        const businessExpenses = [
+          'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin',
+          'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0);
-  
-        const home = [
-          'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax'
-        ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) *
-          (parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1));
-  
-        const vehicle = [
-          'vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs'
-        ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) *
-          (parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1));
-  
-        const provincial = provincialData[province];
-        const taxableBefore = adjustedPriorIncome - priorDeductions;
-        const taxableNow = (adjustedPriorIncome + income + adjustedCurrentOtherIncome) - (priorDeductions + business + home + vehicle);
-  
-        const federalBefore = calculateBracketTax(taxableBefore, federalRates, federalCredit, 0.15);
-        const provincialBefore = calculateBracketTax(taxableBefore, provincial.rates, provincial.credit, provincial.rates[0].rate);
-        const federalNow = calculateBracketTax(taxableNow, federalRates, federalCredit, 0.15);
-        const provincialNow = calculateBracketTax(taxableNow, provincial.rates, provincial.credit, provincial.rates[0].rate);
-  
-        const estimatedTaxThisMonth = (federalNow + provincialNow) - (federalBefore + provincialBefore);
-  
-        await setDoc(doc(db, 'users', uid, 'months', docSnap.id), {
-          ...data, // ← keep the rest of the month intact
-          estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100,
+
+        const homeUsePercent = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
+        const homeExpenses = [
+          'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
+        ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * homeUsePercent;
+
+        const vehicleUsePercent = parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1);
+        const vehicleExpenses = [
+          'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
+        ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * vehicleUsePercent;
+
+        const taxableIncome = income + adjustedOther - (businessExpenses + homeExpenses + vehicleExpenses);
+
+        const federalTax = calculateBracketTax(taxableIncome, federalRates, federalCredit, 0.15);
+        const provincialTax = calculateBracketTax(taxableIncome, prov.rates, prov.credit, prov.rates[0].rate);
+
+        const estimatedTaxThisMonth = federalTax + provincialTax;
+
+        await setDoc(doc(db, 'users', user.uid, 'months', docSnap.id), {
+          ...data,
+          estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100
         });
-  
-        priorIncome = adjustedPriorIncome + income + adjustedCurrentOtherIncome;
-        priorDeductions = priorDeductions + business + home + vehicle;
       }
-  
-      setMessage('Location updated and tax recalculated.');
+
+      setTimeout(() => setProvinceMessage(''), 3000);
     } catch (error) {
-      setMessage(error.message);
+      setProvinceMessage(error.message);
     }
   };
 
