@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import IncomeSection from './IncomeSection';
 import BusinessExpensesSection from './BusinessExpensesSection';
@@ -21,32 +21,33 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const sumFields = (source, fields) =>
     fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
 
-  const calculateTax = (taxableIncome, rates, credit) => {
+  const calculateBracketTax = (income, brackets, credit, creditRate) => {
     let tax = 0;
-    let remaining = taxableIncome;
-    let previousThreshold = 0;
+    let remaining = income;
 
-    for (const { rate, threshold } of rates) {
-      const slice = Math.min(remaining, threshold - previousThreshold);
-      if (slice <= 0) break;
-      tax += slice * rate;
+    for (const bracket of brackets) {
+      const slice = Math.min(remaining, bracket.threshold);
+      tax += slice * bracket.rate;
       remaining -= slice;
-      previousThreshold = threshold;
+      if (remaining <= 0) break;
     }
 
-    tax -= credit * rates[0].rate;
-    return Math.max(0, tax);
+    tax -= credit * creditRate;
+    return Math.max(tax, 0);
   };
 
   useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    const unsubscribe = onSnapshot(doc(db, 'users', uid), (snap) => {
+      if (snap.exists()) {
+        const userData = snap.data();
+        setProvince(userData.province || 'Nova Scotia');
+      }
+    });
+
     const fetchData = async () => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
-
-      const userSnap = await getDoc(doc(db, 'users', uid));
-      const userData = userSnap.data();
-      if (userData?.province) setProvince(userData.province);
-
       setData({ ...defaultData });
 
       const ref = doc(db, 'users', uid, 'months', monthId);
@@ -88,6 +89,8 @@ export default function MonthTracker({ monthId, onRefresh }) {
     };
 
     fetchData();
+
+    return () => unsubscribe();
   }, [monthId]);
 
   const handleAutoSave = async (updatedData) => {
@@ -111,10 +114,10 @@ export default function MonthTracker({ monthId, onRefresh }) {
     const taxableNow = (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
 
     const provincial = provincialData[province];
-    const federalTaxBefore = calculateTax(taxableBefore, federalRates, federalCredit);
-    const provincialTaxBefore = calculateTax(taxableBefore, provincial.rates, provincial.credit);
-    const federalTaxNow = calculateTax(taxableNow, federalRates, federalCredit);
-    const provincialTaxNow = calculateTax(taxableNow, provincial.rates, provincial.credit);
+    const federalTaxBefore = calculateBracketTax(taxableBefore, federalRates, federalCredit, 0.15);
+    const provincialTaxBefore = calculateBracketTax(taxableBefore, provincial.rates, provincial.credit, provincial.rates[0].rate);
+    const federalTaxNow = calculateBracketTax(taxableNow, federalRates, federalCredit, 0.15);
+    const provincialTaxNow = calculateBracketTax(taxableNow, provincial.rates, provincial.credit, provincial.rates[0].rate);
 
     const estimatedTaxThisMonth = (federalTaxNow + provincialTaxNow) - (federalTaxBefore + provincialTaxBefore);
 
@@ -194,8 +197,8 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const taxableBefore = adjustedPriorIncome - priorDeductions;
   const taxableNow = (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
   const provincial = provincialData[province];
-  const totalTaxBefore = calculateTax(taxableBefore, federalRates, federalCredit) + calculateTax(taxableBefore, provincial.rates, provincial.credit);
-  const totalTaxNow = calculateTax(taxableNow, federalRates, federalCredit) + calculateTax(taxableNow, provincial.rates, provincial.credit);
+  const totalTaxBefore = calculateBracketTax(taxableBefore, federalRates, federalCredit, 0.15) + calculateBracketTax(taxableBefore, provincial.rates, provincial.credit, provincial.rates[0].rate);
+  const totalTaxNow = calculateBracketTax(taxableNow, federalRates, federalCredit, 0.15) + calculateBracketTax(taxableNow, provincial.rates, provincial.credit, provincial.rates[0].rate);
   const liveEstimatedTaxThisMonth = totalTaxNow - totalTaxBefore;
 
   return (
