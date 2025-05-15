@@ -1,4 +1,4 @@
-// pages/account.jsx
+// Updated pages/account.jsx with business name + province selector + delete account
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { sendPasswordResetEmail, updateEmail, deleteUser } from 'firebase/auth';
@@ -56,29 +56,31 @@ export default function Account() {
       const res = await fetch('/api/subscription-status', {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (res.ok) {
         const data = await res.json();
         setSubscriptionStatus(data);
       }
     };
+
     fetchSubscriptionStatus();
   }, [user]);
 
   const handleEmailUpdate = async () => {
     try {
       await updateEmail(user, email);
-      alert('Email updated successfully.');
+      setMessage('Email updated successfully.');
     } catch (error) {
-      alert(error.message);
+      setMessage(error.message);
     }
   };
 
   const handlePasswordReset = async () => {
     try {
       await sendPasswordResetEmail(auth, email);
-      alert('Password reset email sent.');
+      setMessage('Password reset email sent.');
     } catch (error) {
-      alert(error.message);
+      setMessage(error.message);
     }
   };
 
@@ -88,20 +90,24 @@ export default function Account() {
       await setDoc(profileRef, { businessName }, { merge: true });
       setBusinessMessage('Business name saved.');
       setTimeout(() => setBusinessMessage(''), 3000);
-    } catch {
+    } catch (error) {
       setBusinessMessage('Error saving business name.');
     }
   };
 
+
+
   const calculateBracketTax = (income, brackets, credit, creditRate) => {
     let tax = 0;
     let remaining = income;
+
     for (const bracket of brackets) {
       const slice = Math.min(remaining, bracket.threshold);
       tax += slice * bracket.rate;
       remaining -= slice;
       if (remaining <= 0) break;
     }
+
     tax -= credit * creditRate;
     return Math.max(tax, 0);
   };
@@ -112,13 +118,15 @@ export default function Account() {
       await setDoc(profileRef, { province }, { merge: true });
       setProvinceMessage('Province updated.');
 
+      // Recalculate each month's tax using new province
+      const monthDocs = await getDocs(collection(db, 'users', user.uid, 'months'));
       const prov = provincialData[province];
       if (!prov) {
-        setProvinceMessage('Province data not found.');
+        console.warn('Invalid province:', province);
+        setProvinceMessage('Could not find tax data for selected province.');
         return;
       }
 
-      const monthDocs = await getDocs(collection(db, 'users', user.uid, 'months'));
       for (const docSnap of monthDocs.docs) {
         const data = docSnap.data();
         if (!data) continue;
@@ -126,28 +134,31 @@ export default function Account() {
         const income = parseFloat(data.income || 0);
         const otherIncome = parseFloat(data.otherIncome || 0);
         const isOtherTaxed = data.otherIncomeTaxed === 'yes';
+
         const adjustedOther = isOtherTaxed ? 0 : otherIncome;
 
         const businessExpenses = [
-          'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin',
-          'rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
+          'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin',
+          'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0);
 
         const homeSqft = parseFloat(data.homeSqft || 0);
         const homeUsePercent = homeSqft > 0 ? parseFloat(data.businessSqft || 0) / homeSqft : 0;
         const homeExpenses = [
-          'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax'
+          'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * homeUsePercent;
 
         const kmsThisMonth = parseFloat(data.kmsThisMonth || 0);
         const vehicleUsePercent = kmsThisMonth > 0 ? parseFloat(data.businessKms || 0) / kmsThisMonth : 0;
         const vehicleExpenses = [
-          'vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs'
+          'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * vehicleUsePercent;
 
         const taxableIncome = Math.max(0, income + adjustedOther - (businessExpenses + homeExpenses + vehicleExpenses));
+
         const federalTax = calculateBracketTax(taxableIncome, federalRates, federalCredit, 0.15);
         const provincialTax = calculateBracketTax(taxableIncome, prov.rates, prov.credit, prov.rates[0].rate);
+
         const estimatedTaxThisMonth = federalTax + provincialTax;
 
         await setDoc(doc(db, 'users', user.uid, 'months', docSnap.id), {
@@ -163,14 +174,15 @@ export default function Account() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+    const confirmed = window.confirm('Are you sure you want to delete your account? This cannot be undone.');
+    if (!confirmed) return;
     try {
       await deleteDoc(doc(db, 'users', user.uid));
       await deleteUser(user);
-      alert('Account deleted.');
+      setMessage('Account deleted.');
       window.location.href = '/login';
     } catch (error) {
-      alert(error.message);
+      setMessage(error.message);
     }
   };
 
@@ -187,33 +199,89 @@ export default function Account() {
   return (
     <div className="p-4 max-w-xl mx-auto">
       <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
+
       <h1 className="text-2xl font-bold mb-4 mt-4">Account Settings</h1>
+
+      <div className="bg-gray-100 border rounded p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-2">Manage Your Subscription</h2>
+        <p className="text-sm mb-4">
+          Use the link below to securely view your subscription, update your billing details, check when your next payment is due, or cancel your subscription.
+        </p>
+        <a
+          href="https://billing.stripe.com/p/login/6oE0346eYfk83FCbII"
+          className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded"
+        >
+          Manage Subscription
+        </a>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm mb-1">Email</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 rounded" />
+      </div>
+
+      <div className="flex gap-4 mb-6">
+        <button onClick={handleEmailUpdate} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
+        <button onClick={handlePasswordReset} className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
+      </div>
 
       <div className="mb-4">
         <label className="block text-sm mb-1">Business Name</label>
         <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} className="w-full border p-2 rounded" />
-        <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white px-4 py-2 rounded mt-2 hover:bg-green-500">Save</button>
-        {businessMessage && <p className="text-green-600 text-sm mt-1">{businessMessage}</p>}
       </div>
 
+      <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Business Name</button>
+      {businessMessage && (
+        <p className="text-green-600 text-sm mt-2">{businessMessage}</p>
+      )}
+
       <div className="mb-4">
-        <label className="block text-sm mb-1">Province or Territory</label>
-        <select value={province} onChange={e => setProvince(e.target.value)} className="w-full border p-2 rounded">
+        <label className="block text-sm mb-1">Current Province or Territory</label>
+        <select
+          value={province}
+          onChange={(e) => setProvince(e.target.value)}
+          className="w-full border p-2 rounded"
+        >
           <option value="">Select...</option>
-          {provinces.map((prov) => <option key={prov} value={prov}>{prov}</option>)}
+          {provinces.map((prov) => (
+            <option key={prov} value={prov}>{prov}</option>
+          ))}
         </select>
-        <button onClick={handleProvinceUpdate} className="bg-green-600 text-white px-4 py-2 rounded mt-2 hover:bg-green-500">Save</button>
-        {provinceMessage && <p className="text-green-600 text-sm mt-1">{provinceMessage}</p>}
       </div>
+
+      <button onClick={handleProvinceUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Location</button>
+      {provinceMessage && (
+        <p className="text-green-600 text-sm mt-2">{provinceMessage}</p>
+      )}
 
       <hr className="my-6" />
 
-      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
         <h2 className="text-lg font-semibold mb-2">Referral Rewards</h2>
-        <p>You have <strong>{credits}</strong> free month{credits === 1 ? '' : 's'} remaining.</p>
-        <p className="mt-1">Referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code></p>
-        <p className="mt-1 text-sm text-gray-600">Share this link: <br /><code className="bg-gray-100 px-2 py-1 rounded inline-block mt-1">https://taxtracker.ca/signup?ref={referralCode}</code></p>
-        <button onClick={handleCopyLink} className={`mt-2 ${copied ? 'bg-green-600' : 'bg-blue-600'} text-white px-3 py-1 rounded`}>{copied ? 'Copied!' : 'Copy'}</button>
+        <p className="text-gray-700 mb-2">
+          You have <strong>{credits}</strong> free month{credits === 1 ? '' : 's'} remaining.
+        </p>
+        <p className="text-gray-700">
+          Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Share this link to earn rewards: <br />
+          <code className="bg-gray-100 px-2 py-1 rounded inline-block mt-1">
+            https://taxtracker.ca/signup?ref={referralCode}
+          </code>
+          <button
+            onClick={handleCopyLink}
+            className={`flex items-center gap-1 text-sm px-3 py-1 rounded transition ${copied ? 'bg-green-600 hover:bg-green-500' : 'bg-blue-600 hover:bg-blue-500'} text-white`}
+          >
+            {copied ? (
+              <>
+                <span>Copied</span> <span><Check size={16} /></span>
+              </>
+            ) : (
+              <span>Copy</span>
+            )}
+          </button>
+        </p>
       </div>
     </div>
   );
