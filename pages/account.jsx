@@ -18,7 +18,8 @@ export default function Account() {
   const [email, setEmail] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [province, setProvince] = useState('');
-  const [message, setMessage] = useState('');
+  const [businessMessage, setBusinessMessage] = useState('');
+  const [provinceMessage, setProvinceMessage] = useState('');
   const [hasSubscription, setHasSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [credits, setCredits] = useState(0);
@@ -86,9 +87,10 @@ export default function Account() {
     try {
       const profileRef = doc(db, 'users', user.uid);
       await setDoc(profileRef, { businessName }, { merge: true });
-      setMessage('Business name saved.');
+      setBusinessMessage('Business name saved.');
+      setTimeout(() => setBusinessMessage(''), 3000);
     } catch (error) {
-      setMessage(error.message);
+      setBusinessMessage('Error saving business name.');
     }
   };
 
@@ -96,9 +98,10 @@ export default function Account() {
     try {
       const profileRef = doc(db, 'users', user.uid);
       await setDoc(profileRef, { province }, { merge: true });
-      setMessage('Province updated.');
+      setProvinceMessage('Location updated successfully.');
+      setTimeout(() => setProvinceMessage(''), 3000);
     } catch (error) {
-      setMessage(error.message);
+      setProvinceMessage('Error updating location.');
     }
   };
 
@@ -160,6 +163,9 @@ export default function Account() {
       </div>
 
       <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Business Name</button>
+      {businessMessage && (
+        <p className="text-green-600 text-sm mt-2">{businessMessage}</p>
+      )}
 
       <div className="mb-4">
         <label className="block text-sm mb-1">Current Province or Territory</label>
@@ -175,7 +181,10 @@ export default function Account() {
         </select>
       </div>
 
-      <button onClick={handleProvinceUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Province</button>
+      <button onClick={handleProvinceUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Location</button>
+      {provinceMessage && (
+        <p className="text-green-600 text-sm mt-2">{provinceMessage}</p>
+      )}
 
       <hr className="my-6" />
 
