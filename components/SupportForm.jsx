@@ -1,4 +1,3 @@
-// components/SupportForm.jsx
 import { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
@@ -9,37 +8,39 @@ export default function SupportForm() {
   const [status, setStatus] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus('');
+  const handleSubmit = async () => {
     const user = auth.currentUser;
-    if (!user) return setStatus('You must be logged in to submit a request.');
+    if (!user) {
+      setStatus('You must be logged in to submit a request.');
+      return;
+    }
 
     try {
       await addDoc(collection(db, 'supportRequests'), {
         email: user.email,
         requestedProvince: province,
         message,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
         resolved: false,
       });
       setProvince('');
       setMessage('');
-      setShowConfirm(false);
       setStatus('Your request has been submitted.');
     } catch (error) {
+      console.error(error);
       setStatus('Error submitting request.');
+    } finally {
+      setShowConfirm(false);
     }
   };
 
-  const handleStartSubmit = (e) => {
+  const handleConfirmation = (e) => {
     e.preventDefault();
-    if (!province) return setStatus('Please select a province.');
     setShowConfirm(true);
   };
 
   return (
-    <form onSubmit={handleStartSubmit} className="max-w-xl mx-auto p-6 bg-white rounded shadow space-y-4">
+    <form onSubmit={handleConfirmation} className="max-w-xl mx-auto p-6 bg-white rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Request Location Change</h2>
 
       <label className="block">
@@ -71,37 +72,39 @@ export default function SupportForm() {
         />
       </label>
 
-      {showConfirm ? (
-        <div className="bg-yellow-100 border border-yellow-300 p-4 rounded">
-          <p className="text-sm text-yellow-800 mb-2">
-            ⚠️ Changing your province will delete all of your current monthly tax data. Are you sure you want to continue?
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setShowConfirm(false)}
-              className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
-            >
-              Yes, Submit Request
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-        >
-          Submit Request
-        </button>
-      )}
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+      >
+        Submit Request
+      </button>
 
       {status && <p className="text-sm text-green-700 mt-2">{status}</p>}
+
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Are you sure?</h3>
+            <p className="mb-4 text-sm text-gray-700">
+              Submitting this request will permanently clear all your current tax data. This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500"
+              >
+                Yes, Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

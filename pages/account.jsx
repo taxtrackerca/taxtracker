@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { sendPasswordResetEmail, updateEmail, deleteUser } from 'firebase/auth';
-import { collection, getDoc, getDocs, setDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDoc, getDocs, setDoc, deleteDoc, doc, query, where, orderBy, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import { getIdToken } from 'firebase/auth';
 import { Check } from 'lucide-react';
@@ -28,6 +28,7 @@ export default function Account() {
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [requestPending, setRequestPending] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -45,6 +46,16 @@ export default function Account() {
           setHasSubscription(!!profile.subscriptionId);
           setCredits(profile.credits || 0);
           setReferralCode(profile.referralCode || '');
+          // Check if user has a pending support request
+          const requestQuery = query(
+            collection(db, 'supportRequests'),
+            where('email', '==', u.email),
+            where('resolved', '==', false),
+            orderBy('timestamp', 'desc'),
+            limit(1)
+          );
+          const requestSnap = await getDocs(requestQuery);
+          setRequestPending(!requestSnap.empty);
 
           if (profile.isAdmin === true) {
             setIsAdmin(true);
@@ -56,17 +67,37 @@ export default function Account() {
   }, []);
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const handleFocus = async () => {
       const user = auth.currentUser;
       if (!user) return;
   
+      const requestQuery = query(
+        collection(db, 'supportRequests'),
+        where('email', '==', user.email),
+        where('resolved', '==', false),
+        orderBy('timestamp', 'desc'),
+        limit(1)
+      );
+      const requestSnap = await getDocs(requestQuery);
+      setRequestPending(!requestSnap.empty);
+    };
+  
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef);
       if (snap.exists() && snap.data().isAdmin === true) {
         setIsAdmin(true);
       }
     };
-  
+
     auth.onAuthStateChanged(() => checkAdmin());
   }, []);
 
@@ -270,6 +301,11 @@ export default function Account() {
           readOnly
           className="w-full border p-2 rounded bg-gray-100 text-gray-700 cursor-not-allowed"
         />
+        {requestPending && (
+          <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">
+            Request Sent
+          </span>
+        )}
         <p className="text-sm text-gray-600 mt-2">
           Need to update your province?{' '}
           <a href="#support-form" className="text-blue-600 underline">
