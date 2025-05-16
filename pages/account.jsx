@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getIdToken } from 'firebase/auth';
 import { Check } from 'lucide-react';
 import { provincialData, federalRates, federalCredit } from '../lib/taxRates';
+import SupportForm from '../components/SupportForm';
 
 const provinces = [
   'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
@@ -235,24 +236,25 @@ export default function Account() {
         <p className="text-green-600 text-sm mt-2">{businessMessage}</p>
       )}
 
-      <div className="mb-4">
+      <div className="mb-6">
         <label className="block text-sm mb-1">Current Province or Territory</label>
-        <select
-          value={province}
-          onChange={(e) => setProvince(e.target.value)}
-          className="w-full border p-2 rounded"
-        >
-          <option value="">Select...</option>
-          {provinces.map((prov) => (
-            <option key={prov} value={prov}>{prov}</option>
-          ))}
-        </select>
+        <input
+          type="text"
+          value={province || 'Not Set'}
+          readOnly
+          className="w-full border p-2 rounded bg-gray-100 text-gray-700 cursor-not-allowed"
+        />
+        <p className="text-sm text-gray-600 mt-2">
+          Need to update your province?{' '}
+          <a href="#support-form" className="text-blue-600 underline">
+            Submit a request
+          </a>
+        </p>
       </div>
 
-      <button onClick={handleProvinceUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-6">Save Location</button>
-      {provinceMessage && (
-        <p className="text-green-600 text-sm mt-2">{provinceMessage}</p>
-      )}
+      <div id="support-form" className="mt-6">
+        <SupportForm />
+      </div>
 
       <hr className="my-6" />
 
