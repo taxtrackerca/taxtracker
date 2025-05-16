@@ -7,6 +7,7 @@ export default function SupportForm() {
   const [province, setProvince] = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,17 +21,25 @@ export default function SupportForm() {
         requestedProvince: province,
         message,
         timestamp: new Date().toISOString(),
+        resolved: false,
       });
       setProvince('');
       setMessage('');
+      setShowConfirm(false);
       setStatus('Your request has been submitted.');
     } catch (error) {
       setStatus('Error submitting request.');
     }
   };
 
+  const handleStartSubmit = (e) => {
+    e.preventDefault();
+    if (!province) return setStatus('Please select a province.');
+    setShowConfirm(true);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-6 bg-white rounded shadow space-y-4">
+    <form onSubmit={handleStartSubmit} className="max-w-xl mx-auto p-6 bg-white rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Request Location Change</h2>
 
       <label className="block">
@@ -62,12 +71,35 @@ export default function SupportForm() {
         />
       </label>
 
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-      >
-        Submit Request
-      </button>
+      {showConfirm ? (
+        <div className="bg-yellow-100 border border-yellow-300 p-4 rounded">
+          <p className="text-sm text-yellow-800 mb-2">
+            ⚠️ Changing your province will delete all of your current monthly tax data. Are you sure you want to continue?
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowConfirm(false)}
+              className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Yes, Submit Request
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+        >
+          Submit Request
+        </button>
+      )}
 
       {status && <p className="text-sm text-green-700 mt-2">{status}</p>}
     </form>
