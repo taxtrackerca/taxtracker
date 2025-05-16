@@ -27,6 +27,7 @@ export default function Account() {
   const [credits, setCredits] = useState(0);
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -44,10 +45,29 @@ export default function Account() {
           setHasSubscription(!!profile.subscriptionId);
           setCredits(profile.credits || 0);
           setReferralCode(profile.referralCode || '');
+
+          if (profile.isAdmin === true) {
+            setIsAdmin(true);
+          }
         }
       }
     });
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+  
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      if (snap.exists() && snap.data().isAdmin === true) {
+        setIsAdmin(true);
+      }
+    };
+  
+    auth.onAuthStateChanged(() => checkAdmin());
   }, []);
 
   useEffect(() => {
@@ -202,6 +222,12 @@ export default function Account() {
       <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
 
       <h1 className="text-2xl font-bold mb-4 mt-4">Account Settings</h1>
+
+      {isAdmin && (
+        <Link href="/admin" className="text-blue-600 hover:underline block mb-4">
+          Go to Admin Dashboard
+        </Link>
+      )}
 
       <div className="bg-gray-100 border rounded p-4 mb-6">
         <h2 className="text-lg font-semibold mb-2">Manage Your Subscription</h2>
