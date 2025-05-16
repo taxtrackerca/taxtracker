@@ -1,42 +1,49 @@
 // pages/admin.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { auth, db } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import AdminDashboard from '../components/AdminDashboard';
+import Link from 'next/link';
 
 export default function AdminPage() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [input, setInput] = useState('');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (input === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setAuthenticated(true);
-    } else {
-      alert('Incorrect password');
-    }
-  };
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (u) => {
+      if (!u) {
+        window.location.href = '/login';
+        return;
+      }
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-full max-w-sm">
-          <h1 className="text-lg font-bold mb-4">Admin Login</h1>
-          <input
-            type="password"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter admin password"
-            className="w-full border p-2 mb-4 rounded"
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded"
-          >
-            Login
-          </button>
-        </form>
-      </div>
-    );
+      setUser(u);
+
+      const profileRef = doc(db, 'users', u.uid);
+      const snap = await getDoc(profileRef);
+      const data = snap.data();
+
+      if (!snap.exists() || !data?.isAdmin) {
+        window.location.href = '/';
+        return;
+      }
+
+      setIsAdmin(true);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <p className="p-4">Loading...</p>;
   }
 
-  return <AdminDashboard />;
+  return (
+    <div className="p-4">
+      <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
+      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      {isAdmin ? <AdminDashboard /> : <p>Unauthorized</p>}
+    </div>
+  );
 }
