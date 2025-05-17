@@ -62,7 +62,7 @@ export default function AdminSupportTabs() {
     setResolved(prev => prev.filter(r => r.id !== id));
   };
 
-  const renderRequests = (list, isResolved = false) => (
+  const renderRequests = (list, type) =>
     list.map((req) => (
       <details key={req.id} className="border rounded p-3 mb-3 bg-white">
         <summary className="cursor-pointer font-medium">
@@ -75,18 +75,15 @@ export default function AdminSupportTabs() {
             {req.message && <p className="text-sm text-gray-700 mt-1">{req.message}</p>}
           </>
         )}
+
         {req.type === 'support' && (
           <p className="text-sm mt-2 text-gray-700">{req.message}</p>
         )}
 
         <div className="mt-3 flex gap-2">
-          {isResolved ? (
+          {type === 'resolved' ? (
             <button
-              onClick={() => {
-                if (confirm('Are you sure you want to delete this request permanently?')) {
-                  deleteResolved(req.type, req.id);
-                }
-              }}
+              onClick={() => deleteResolved(req.type, req.id)}
               className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500"
             >
               Delete
@@ -101,8 +98,7 @@ export default function AdminSupportTabs() {
           )}
         </div>
       </details>
-    ))
-  );
+    ));
 
   return (
     <div className="mb-10">
@@ -118,13 +114,14 @@ export default function AdminSupportTabs() {
         </button>
       </div>
 
-      {activeTab === 'location' && renderRequests(locationRequests)}
-      {activeTab === 'support' && renderRequests(supportTickets)}
+      {activeTab === 'location' && renderRequests(locationRequests, 'location')}
+      {activeTab === 'support' && renderRequests(supportTickets, 'support')}
       {activeTab === 'resolved' && (
         resolved.length === 0
           ? <p>No resolved requests yet.</p>
-          : renderRequests(resolved, true)
+          : renderRequests(resolved, 'resolved')
       )}
+
     </div>
   );
 }
