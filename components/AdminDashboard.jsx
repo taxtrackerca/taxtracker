@@ -8,6 +8,7 @@ import AdminOverview from './AdminOverview';
 import AdminUserLookup from './AdminUserLookup';
 import AdminCreditAdjuster from './AdminCreditAdjuster';
 import AdminLogs from './AdminLogs';
+import AdminBroadcastForm from './AdminBroadcastForm';
 
 
 const provinces = [
@@ -120,6 +121,7 @@ export default function AdminDashboard() {
           {status && <p className="text-sm text-green-700 mt-2">{status}</p>}
         </div>
       </div>
+      <AdminBroadcastForm />
       <AdminLogs />
     </div>
   );
