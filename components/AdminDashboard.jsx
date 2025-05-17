@@ -6,6 +6,8 @@ import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
 import AdminSupportRequests from './AdminSupportRequests';
 import AdminOverview from './AdminOverview';
 import AdminUserLookup from './AdminUserLookup';
+import AdminCreditAdjuster from './AdminCreditAdjuster';
+import AdminLogs from './AdminLogs';
 
 
 const provinces = [
@@ -66,6 +68,16 @@ export default function AdminDashboard() {
     }
 
     setStatus(`Province updated to ${newProvince}. All previous data has been cleared.`);
+    
+    await logEvent({
+      userId: uid,
+      email,
+      type: 'province_change',
+      reason: 'Manual admin province update',
+      details: { newProvince }
+    });
+    
+    
     setCurrentProvince(newProvince);
   };
 
@@ -73,6 +85,7 @@ export default function AdminDashboard() {
     <div className="max-w-4xl mx-auto p-6 space-y-10">
       <AdminOverview />
       <AdminUserLookup />
+      <AdminCreditAdjuster />
       <AdminSupportRequests />
 
       <div className="bg-white border p-4 rounded shadow">
@@ -107,6 +120,7 @@ export default function AdminDashboard() {
           {status && <p className="text-sm text-green-700 mt-2">{status}</p>}
         </div>
       </div>
+      <AdminLogs />
     </div>
   );
 }
