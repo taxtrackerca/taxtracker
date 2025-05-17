@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { doc, setDoc, getDocs, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
-import AdminSupportRequests from './AdminSupportRequests';
 import AdminOverview from './AdminOverview';
 import AdminUserLookup from './AdminUserLookup';
 import AdminCreditAdjuster from './AdminCreditAdjuster';
@@ -89,7 +88,6 @@ export default function AdminDashboard() {
       <AdminUserLookup />
       <AdminCreditAdjuster />
       <AdminSupportTabs />
-      <AdminSupportRequests />
 
       <div className="bg-white border p-4 rounded shadow">
         <h1 className="text-2xl font-bold mb-4">Admin Province Updater</h1>
