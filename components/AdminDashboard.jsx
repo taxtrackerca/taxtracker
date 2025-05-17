@@ -89,7 +89,7 @@ export default function AdminDashboard() {
       <AdminUserLookup />
       <AdminCreditAdjuster />
       <AdminSupportTabs />
-      <AdminSupportRequests />
+      
 
       <div className="bg-white border p-4 rounded shadow">
         <h1 className="text-2xl font-bold mb-4">Admin Province Updater</h1>
