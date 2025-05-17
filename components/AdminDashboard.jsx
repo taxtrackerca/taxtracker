@@ -9,6 +9,7 @@ import AdminUserLookup from './AdminUserLookup';
 import AdminCreditAdjuster from './AdminCreditAdjuster';
 import AdminLogs from './AdminLogs';
 import AdminBroadcastForm from './AdminBroadcastForm';
+import AdminSupportTabs from './AdminSupportTabs';
 
 
 const provinces = [
@@ -87,6 +88,7 @@ export default function AdminDashboard() {
       <AdminOverview />
       <AdminUserLookup />
       <AdminCreditAdjuster />
+      <AdminSupportTabs />
       <AdminSupportRequests />
 
       <div className="bg-white border p-4 rounded shadow">

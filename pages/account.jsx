@@ -8,6 +8,7 @@ import { getIdToken } from 'firebase/auth';
 import { Check } from 'lucide-react';
 import { provincialData, federalRates, federalCredit } from '../lib/taxRates';
 import SupportForm from '../components/SupportForm';
+import SupportTicketForm from '../components/SupportTicketForm';
 
 const provinces = [
   'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
@@ -347,6 +348,8 @@ export default function Account() {
           </button>
         </p>
       </div>
+      <hr className="my-6" />
+      <SupportTicketForm />   
     </div>
   );
 }
