@@ -42,6 +42,7 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
+
   const handleLogout = async () => {
     await signOut(auth);
     window.location.href = '/login';
