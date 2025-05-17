@@ -8,6 +8,7 @@ import ExportSummaryCSV from '../components/ExportSummaryCSV';
 import ExportSummaryPDF from '../components/ExportSummaryPDF';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
+import DashboardMessages from '../components/DashboardMessages';
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -54,6 +55,8 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {businessName && <p className="text-sm text-gray-600">{businessName}</p>}
       </div>
+
+      <DashboardMessages />
 
       <div className="mb-6"></div>
         
