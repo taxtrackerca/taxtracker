@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import AdminUserNotes from './AdminUserNotes';
 
 export default function AdminUserLookup() {
   const [query, setQuery] = useState('');
@@ -97,6 +98,19 @@ export default function AdminUserLookup() {
             </tbody>
           </table>
         </div>
+      )}
+      {userData && (
+        <>
+          <div className="mt-4 space-y-2 text-sm">
+            <p><strong>Email:</strong> {userData.data.email}</p>
+            <p><strong>Business Name:</strong> {userData.data.businessName || '—'}</p>
+            <p><strong>Province:</strong> {userData.data.province || '—'}</p>
+            <p><strong>Subscription ID:</strong> {userData.data.subscriptionId || 'None'}</p>
+            <p><strong>Credits:</strong> {userData.data.credits || 0}</p>
+          </div>
+
+          <AdminUserNotes userId={userData.id} />
+        </>
       )}
     </div>
   );
