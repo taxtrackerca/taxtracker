@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { deleteDoc } from 'firebase/firestore'; // ensure this is imported
 
 export default function AdminSupportTabs() {
   const [activeTab, setActiveTab] = useState('location');
@@ -13,17 +14,26 @@ export default function AdminSupportTabs() {
     const fetchRequests = async () => {
       const locQuery = query(collection(db, 'supportRequests'), where('resolved', '==', false), orderBy('timestamp', 'desc'));
       const supQuery = query(collection(db, 'supportTickets'), where('resolved', '==', false), orderBy('timestamp', 'desc'));
-      const resQuery = query(collectionGroup(db, 'support'), where('resolved', '==', true), orderBy('timestamp', 'desc'));
 
-      const [locSnap, supSnap, resSnap] = await Promise.all([
+      const resLocQuery = query(collection(db, 'supportRequests'), where('resolved', '==', true), orderBy('timestamp', 'desc'));
+      const resSupQuery = query(collection(db, 'supportTickets'), where('resolved', '==', true), orderBy('timestamp', 'desc'));
+
+      const [locSnap, supSnap, resLocSnap, resSupSnap] = await Promise.all([
         getDocs(locQuery),
         getDocs(supQuery),
-        getDocs(resQuery),
+        getDocs(resLocQuery),
+        getDocs(resSupQuery),
       ]);
 
       setLocationRequests(locSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'location' })));
       setSupportTickets(supSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'support' })));
-      setResolved(resSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      const resolvedCombined = [
+        ...resLocSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'location' })),
+        ...resSupSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'support' })),
+      ];
+
+      setResolved(resolvedCombined);
     };
 
     fetchRequests();
@@ -31,21 +41,34 @@ export default function AdminSupportTabs() {
 
   const markResolved = async (type, id) => {
     const col = type === 'location' ? 'supportRequests' : 'supportTickets';
-    await updateDoc(doc(db, col, id), { resolved: true });
+    const ref = doc(db, col, id);
+    await updateDoc(ref, { resolved: true });
+
+    const docSnap = await getDoc(ref);
+    const data = { id: docSnap.id, ...docSnap.data(), type };
+
     if (type === 'location') {
       setLocationRequests(prev => prev.filter(r => r.id !== id));
     } else {
       setSupportTickets(prev => prev.filter(r => r.id !== id));
     }
-    setResolved(prev => [...prev, { ...resolved.find(r => r.id === id) }]);
+
+    setResolved(prev => [...prev, data]);
   };
 
-  const renderRequests = (list) => (
+  const deleteResolved = async (type, id) => {
+    const col = type === 'location' ? 'supportRequests' : 'supportTickets';
+    await deleteDoc(doc(db, col, id));
+    setResolved(prev => prev.filter(r => r.id !== id));
+  };
+
+  const renderRequests = (list, isResolved = false) => (
     list.map((req) => (
       <details key={req.id} className="border rounded p-3 mb-3 bg-white">
         <summary className="cursor-pointer font-medium">
           {req.email} - {new Date(req.timestamp?.toDate()).toLocaleDateString()}
         </summary>
+
         {req.type === 'location' && (
           <>
             <p className="text-sm mt-2"><strong>Requested Province:</strong> {req.requestedProvince}</p>
@@ -55,9 +78,28 @@ export default function AdminSupportTabs() {
         {req.type === 'support' && (
           <p className="text-sm mt-2 text-gray-700">{req.message}</p>
         )}
-        <button onClick={() => markResolved(req.type, req.id)} className="text-sm mt-3 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500">
-          Mark Resolved
-        </button>
+
+        <div className="mt-3 flex gap-2">
+          {isResolved ? (
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to delete this request permanently?')) {
+                  deleteResolved(req.type, req.id);
+                }
+              }}
+              className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500"
+            >
+              Delete
+            </button>
+          ) : (
+            <button
+              onClick={() => markResolved(req.type, req.id)}
+              className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-500"
+            >
+              Mark Resolved
+            </button>
+          )}
+        </div>
       </details>
     ))
   );
@@ -79,9 +121,9 @@ export default function AdminSupportTabs() {
       {activeTab === 'location' && renderRequests(locationRequests)}
       {activeTab === 'support' && renderRequests(supportTickets)}
       {activeTab === 'resolved' && (
-        <div>
-          {resolved.length === 0 ? <p>No resolved requests yet.</p> : renderRequests(resolved)}
-        </div>
+        resolved.length === 0
+          ? <p>No resolved requests yet.</p>
+          : renderRequests(resolved, true)
       )}
     </div>
   );
