@@ -8,6 +8,7 @@ import AdminUserLookup from './AdminUserLookup';
 import AdminCreditAdjuster from './AdminCreditAdjuster';
 import AdminLogs from './AdminLogs';
 import AdminBroadcastForm from './AdminBroadcastForm';
+import AdminSupportRequests from './AdminSupportRequests';
 import AdminSupportTabs from './AdminSupportTabs';
 
 
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
       <AdminUserLookup />
       <AdminCreditAdjuster />
       <AdminSupportTabs />
+      <AdminSupportRequests />
 
       <div className="bg-white border p-4 rounded shadow">
         <h1 className="text-2xl font-bold mb-4">Admin Province Updater</h1>
