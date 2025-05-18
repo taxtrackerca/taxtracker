@@ -25,48 +25,50 @@ export default function Dashboard() {
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [blocked, setBlocked] = useState(false);
   const router = useRouter();
+  const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
 
   const currentYear = new Date().getFullYear();
 
-    useEffect(() => {
-      const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-        if (!currentUser) {
-          router.push('/login');
-        } else {
-          setUser(currentUser);
-          const uid = currentUser.uid;
-          const userDoc = await getDoc(doc(db, 'users', uid));
-          if (!userDoc.exists()) return;
-    
-          const data = userDoc.data();
-          setUserData(data);
-    
-          // Check subscription status
-          const token = await currentUser.getIdToken();
-          const res = await fetch('/api/subscription-status', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-    
-          const sub = await res.json();
-          setSubscriptionStatus(sub);
-    
-          const now = new Date();
-          const signupDate = data.signupTimestamp?.toDate?.() || new Date(data.signupTimestamp);
-          const trialEnds = new Date(signupDate);
-          trialEnds.setDate(trialEnds.getDate() + 30);
-    
-          const trialExpired = now > trialEnds;
-          const isPaused = data.paused === true;
-          const hasActiveSub = sub?.status === 'active';
-    
-          if (isPaused && trialExpired && !hasActiveSub) {
-            setBlocked(true);
-          }
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (!currentUser) {
+        router.push('/login');
+      } else {
+        setUser(currentUser);
+        const uid = currentUser.uid;
+        const userDoc = await getDoc(doc(db, 'users', uid));
+        if (!userDoc.exists()) return;
+
+        const data = userDoc.data();
+        setUserData(data);
+        setBusinessName(data.businessName || '');
+
+        // Check subscription status
+        const token = await currentUser.getIdToken();
+        const res = await fetch('/api/subscription-status', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const sub = await res.json();
+        setSubscriptionStatus(sub);
+
+        const now = new Date();
+        const signupDate = data.signupTimestamp?.toDate?.() || new Date(data.signupTimestamp);
+        const trialEnds = new Date(signupDate);
+        trialEnds.setDate(trialEnds.getDate() + 30);
+
+        const trialExpired = now > trialEnds;
+        const isPaused = data.paused === true;
+        const hasActiveSub = sub?.status === 'active' || sub?.status === 'trialing';
+
+        if (isPaused && trialExpired && !hasActiveSub) {
+          setBlocked(true);
         }
-      });
-    
-      return () => unsubscribe();
-    }, []);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
 
   const handleLogout = async () => {
@@ -76,24 +78,29 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-if (blocked) {
-  return (
-    <div className="p-6 text-center max-w-md mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Access Paused</h1>
-      <p className="text-gray-600 mb-4">
-        Your trial has ended and your subscription is currently paused.
-      </p>
-      <Link href="/account">
-        <a className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">
-          Resume Subscription
-        </a>
-      </Link>
-    </div>
-  );
-}
+  if (blocked) {
+    return (
+      <div className="p-6 text-center max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Access Paused</h1>
+        <p className="text-gray-600 mb-4">
+          Your trial has ended and your subscription is currently paused.
+        </p>
+        <Link href="/account">
+          <a className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">
+            Resume Subscription
+          </a>
+        </Link>
+      </div>
+    );
+  }
   return (
     <div className="p-4">
       <div className="mb-2">
+        {isPaused && !blocked && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+            Your subscription is paused. You have {daysLeft} day{daysLeft !== 1 ? 's' : ''} of access remaining.
+          </div>
+        )}
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {businessName && <p className="text-sm text-gray-600">{businessName}</p>}
       </div>
@@ -101,7 +108,7 @@ if (blocked) {
       <DashboardMessages />
 
       <div className="mb-6"></div>
-        
+
 
       <div className="flex gap-4 mb-4">
         <ExportSummaryCSV />

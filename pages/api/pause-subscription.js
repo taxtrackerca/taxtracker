@@ -34,13 +34,16 @@ export default async function handler(req, res) {
 
     // Find active subscription
     const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'active',
-      limit: 1,
+      customer: customerId,
+      status: 'all', // grab all statuses including trialing
+      limit: 3,      // look at a few just in case
     });
 
-    const subscription = subscriptions.data[0];
-    if (!subscription) return res.status(404).json({ error: 'No active subscription found' });
+    const subscription = subscriptions.data.find(sub => 
+      sub.status === 'active' || sub.status === 'trialing'
+    );
+    
+    if (!subscription) throw new Error('No active subscription found');
 
     // Pause subscription: stop future payments after current billing cycle
     await stripe.subscriptions.update(subscription.id, {
