@@ -6,6 +6,7 @@ import { db } from '../../lib/firebase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -32,6 +33,7 @@ export default async function handler(req, res) {
     const customer = customers.data[0];
     if (!customer) return res.status(404).json({ error: 'Stripe customer not found' });
 
+    const customerId = customers.data[0].id;
     // Find active subscription
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
