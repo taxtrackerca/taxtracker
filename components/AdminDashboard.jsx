@@ -10,6 +10,7 @@ import AdminLogs from './AdminLogs';
 import AdminBroadcastForm from './AdminBroadcastForm';
 import AdminSupportRequests from './AdminSupportRequests';
 import AdminSupportTabs from './AdminSupportTabs';
+import AdminIpAlerts from './AdminIpAlerts';
 
 
 const provinces = [
@@ -89,6 +90,7 @@ export default function AdminDashboard() {
       <AdminUserLookup />
       <AdminCreditAdjuster />
       <AdminSupportTabs />
+      <AdminIpAlerts />
       
 
       <div className="bg-white border p-4 rounded shadow">
