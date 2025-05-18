@@ -37,6 +37,8 @@ export default function Layout({ children }) {
               </>
             ) : (
               <>
+                <Link href="#faq" className="hover:underline">FAQ</Link>
+                <Link href="#pricing" className="hover:underline">Pricing</Link>
                 <Link href="/login" className="text-gray-700 hover:text-primary">Login</Link>
                 <Link href="/signup" className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Sign Up</Link>
               </>
@@ -64,6 +66,8 @@ export default function Layout({ children }) {
               </>
             ) : (
               <>
+                 <Link href="#faq" className="hover:underline">FAQ</Link>
+                <Link href="#pricing" className="hover:underline">Pricing</Link>
                 <Link href="/login" className="block text-gray-700 hover:text-primary">Login</Link>
                 <Link href="/signup" className="block text-gray-700 hover:text-primary">Sign Up</Link>
               </>

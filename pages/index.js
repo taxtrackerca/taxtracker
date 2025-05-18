@@ -5,6 +5,52 @@ import { useEffect, useState } from 'react';
 import ScreenshotGrid from '../components/ScreenshotGrid';
 
 
+const faqItems = [
+  {
+    question: 'What is TaxTracker?',
+    answer: 'TaxTracker is an easy-to-use tool designed for Canadian sole proprietors and small businesses to track income, expenses, and estimate taxes in real-time—all based on the CRA’s T2125 form.'
+  },
+  {
+    question: 'Who is TaxTracker for?',
+    answer: 'It’s built specifically for Canadian sole proprietors, freelancers, Etsy sellers, and other small business owners who want to stay organized and avoid surprises at tax time.'
+  },
+  {
+    question: 'Do I need any accounting knowledge to use it?',
+    answer: 'Not at all. TaxTracker is designed to be simple and intuitive—even if you’ve never touched a spreadsheet.'
+  },
+  {
+    question: 'How does it calculate my taxes?',
+    answer: 'TaxTracker uses current federal and provincial tax brackets, business-use-of-home rules, and vehicle expense calculations based on CRA guidelines. It automatically updates as you enter your monthly info.'
+  },
+  {
+    question: 'Can I use it on my phone or tablet?',
+    answer: 'Yes! TaxTracker is mobile-friendly and works great on any device—no app required (though an app version is coming soon).'
+  },
+  {
+    question: 'What happens when my free trial ends?',
+    answer: 'You’ll still have access to your data, but you’ll need to subscribe for $4.95/month to keep entering new information and using the dashboard.'
+  },
+  {
+    question: 'What if I take a break from my business?',
+    answer: 'You can pause your subscription anytime. Your access stays active until your billing cycle ends, and you can resume later with no extra fees.'
+  },
+  {
+    question: 'Do I need to connect my bank account?',
+    answer: 'Nope. TaxTracker doesn’t require any financial syncing—just manual entry, which keeps things private and simple.'
+  },
+  {
+    question: 'Can I export my data?',
+    answer: 'Yes! You can export your tax summary as a PDF or CSV anytime. Perfect for sharing with your accountant or keeping on file.'
+  },
+  {
+    question: 'Is my information secure?',
+    answer: 'Absolutely. TaxTracker uses Firebase Authentication and Firestore to keep your data safe and accessible only to you.'
+  }
+];
+
+
+
+
 export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform) {
@@ -58,7 +104,7 @@ export default function Home() {
       <ScreenshotGrid />
 
       {/* Pricing Section */}
-      <section className="bg-gray-50 py-16 px-6 text-center">
+      <section id="pricing" className="bg-gray-50 py-16 px-6 text-center">
         <h2 className="text-3xl font-bold mb-4">Simple, Honest Pricing</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-12">
           Start with a free 30-day trial. After that, it’s just <span className="font-semibold text-gray-800">$4.95/month</span>. No contracts. Cancel anytime.
@@ -147,6 +193,19 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <section id="faq" className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          {faqItems.map((item, index) => (
+            <details key={index} className="bg-white shadow rounded p-4">
+              <summary className="font-medium cursor-pointer">{item.question}</summary>
+              <p className="mt-2 text-gray-700">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
 
 
        {/* Why Trust Us Section */ }
