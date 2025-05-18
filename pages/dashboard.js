@@ -1,4 +1,4 @@
-// Dashboard.js with export buttons restored above summary
+// Dashboard.js with countdown timer for paused subscriptions
 import { useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -24,8 +24,10 @@ export default function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [blocked, setBlocked] = useState(false);
+  const [trialEnds, setTrialEnds] = useState(null);
+  const [pauseEndsAt, setPauseEndsAt] = useState(null);
+  const [timeLeft, setTimeLeft] = useState('');
   const router = useRouter();
-  const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
 
   const currentYear = new Date().getFullYear();
 
@@ -43,7 +45,6 @@ export default function Dashboard() {
         setUserData(data);
         setBusinessName(data.businessName || '');
 
-        // Check subscription status
         const token = await currentUser.getIdToken();
         const res = await fetch('/api/subscription-status', {
           headers: { Authorization: `Bearer ${token}` },
@@ -54,15 +55,20 @@ export default function Dashboard() {
 
         const now = new Date();
         const signupDate = data.signupTimestamp?.toDate?.() || new Date(data.signupTimestamp);
-        const trialEnds = new Date(signupDate);
-        trialEnds.setDate(trialEnds.getDate() + 30);
+        const trialEndDate = new Date(signupDate);
+        trialEndDate.setDate(trialEndDate.getDate() + 30);
+        setTrialEnds(trialEndDate);
 
-        const trialExpired = now > trialEnds;
+        const trialExpired = now > trialEndDate;
         const isPaused = data.paused === true;
         const hasActiveSub = sub?.status === 'active' || sub?.status === 'trialing';
 
         if (isPaused && trialExpired && !hasActiveSub) {
           setBlocked(true);
+        }
+
+        if (isPaused && hasActiveSub && sub?.currentPeriodEnd) {
+          setPauseEndsAt(new Date(sub.currentPeriodEnd * 1000));
         }
       }
     });
@@ -70,6 +76,28 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!pauseEndsAt) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const diff = pauseEndsAt - now;
+
+      if (diff <= 0) {
+        setTimeLeft('Access expires soon');
+        clearInterval(interval);
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [pauseEndsAt]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -93,12 +121,13 @@ export default function Dashboard() {
       </div>
     );
   }
+
   return (
     <div className="p-4">
       <div className="mb-2">
-        {isPaused && !blocked && (
+        {userData?.paused && !blocked && timeLeft && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
-            Your subscription is paused. You have {daysLeft} day{daysLeft !== 1 ? 's' : ''} of access remaining.
+            Your subscription is paused. You have {timeLeft} of access remaining.
           </div>
         )}
         <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -108,7 +137,6 @@ export default function Dashboard() {
       <DashboardMessages />
 
       <div className="mb-6"></div>
-
 
       <div className="flex gap-4 mb-4">
         <ExportSummaryCSV />
