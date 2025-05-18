@@ -9,6 +9,7 @@ import ExportSummaryPDF from '../components/ExportSummaryPDF';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import DashboardMessages from '../components/DashboardMessages';
+import { useRouter } from 'next/router';
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -20,27 +21,52 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [refreshYTD, setRefreshYTD] = useState(false);
   const [businessName, setBusinessName] = useState('');
+  const [userData, setUserData] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+  const [blocked, setBlocked] = useState(false);
+  const router = useRouter();
 
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (u) => {
-      if (!u) {
-        window.location.href = '/login';
-      } else if (!u.emailVerified) {
-        window.location.href = '/verify-email';
-      } else {
-        setUser(u);
-        const profileRef = doc(db, 'users', u.uid);
-        const snap = await getDoc(profileRef);
-        if (snap.exists()) {
-          const profile = snap.data();
-          setBusinessName(profile.businessName || '');
+    useEffect(() => {
+      const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+        if (!currentUser) {
+          router.push('/login');
+        } else {
+          setUser(currentUser);
+          const uid = currentUser.uid;
+          const userDoc = await getDoc(doc(db, 'users', uid));
+          if (!userDoc.exists()) return;
+    
+          const data = userDoc.data();
+          setUserData(data);
+    
+          // Check subscription status
+          const token = await currentUser.getIdToken();
+          const res = await fetch('/api/subscription-status', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+    
+          const sub = await res.json();
+          setSubscriptionStatus(sub);
+    
+          const now = new Date();
+          const signupDate = data.signupTimestamp?.toDate?.() || new Date(data.signupTimestamp);
+          const trialEnds = new Date(signupDate);
+          trialEnds.setDate(trialEnds.getDate() + 30);
+    
+          const trialExpired = now > trialEnds;
+          const isPaused = data.paused === true;
+          const hasActiveSub = sub?.status === 'active';
+    
+          if (isPaused && trialExpired && !hasActiveSub) {
+            setBlocked(true);
+          }
         }
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+      });
+    
+      return () => unsubscribe();
+    }, []);
 
 
   const handleLogout = async () => {
@@ -50,6 +76,21 @@ export default function Dashboard() {
 
   if (!user) return null;
 
+if (blocked) {
+  return (
+    <div className="p-6 text-center max-w-md mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Access Paused</h1>
+      <p className="text-gray-600 mb-4">
+        Your trial has ended and your subscription is currently paused.
+      </p>
+      <Link href="/account">
+        <a className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">
+          Resume Subscription
+        </a>
+      </Link>
+    </div>
+  );
+}
   return (
     <div className="p-4">
       <div className="mb-2">

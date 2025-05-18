@@ -64,7 +64,11 @@ export default function Signup() {
         throw new Error('Stripe session creation failed.');
       }
     } catch (err) {
-      setError(err.message || 'Signup failed.');
+      if (err.code === 'auth/email-already-in-use') {
+        setError('An account with this email already exists. Please log in instead.');
+      } else {
+        setError(err.message || 'Signup failed.');
+      }
     }
   };
 

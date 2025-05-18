@@ -30,6 +30,7 @@ export default function Account() {
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [requestPending, setRequestPending] = useState(false);
+  const [userData, setUserData] = useState(null); // 👈 add this line
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -42,6 +43,7 @@ export default function Account() {
         const snap = await getDoc(profileRef);
         if (snap.exists()) {
           const profile = snap.data();
+          setUserData(profile);
           setBusinessName(profile.businessName || '');
           setProvince(profile.province || '');
           setHasSubscription(!!profile.subscriptionId);
@@ -71,7 +73,7 @@ export default function Account() {
     const handleFocus = async () => {
       const user = auth.currentUser;
       if (!user) return;
-  
+
       const requestQuery = query(
         collection(db, 'supportRequests'),
         where('email', '==', user.email),
@@ -82,7 +84,7 @@ export default function Account() {
       const requestSnap = await getDocs(requestQuery);
       setRequestPending(!requestSnap.empty);
     };
-  
+
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
@@ -226,6 +228,42 @@ export default function Account() {
     }
   };
 
+  const handlePause = async () => {
+    try {
+      const res = await fetch('/api/pause-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: auth.currentUser.uid }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('Subscription pause requested. Access remains active until the end of your current period.');
+      } else {
+        throw new Error(data.error || 'Pause failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while trying to pause the subscription.');
+    }
+  };
+
+  const handleResume = async () => {
+    try {
+      const res = await fetch('/api/resume-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: auth.currentUser.uid }),
+      });
+      if (!res.ok) throw new Error('Resume failed');
+      alert('Subscription resumed. You’re back on track!');
+      window.location.reload(); // Optional: refresh to reflect changes
+    } catch (err) {
+      alert('Could not resume subscription.');
+      console.error(err);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm('Are you sure you want to delete your account? This cannot be undone.');
     if (!confirmed) return;
@@ -273,6 +311,30 @@ export default function Account() {
           Manage Subscription
         </a>
       </div>
+
+      {subscriptionStatus && subscriptionStatus.status === 'active' && (
+        <div className="mt-4">
+          <button
+            onClick={handlePause}
+            className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+          >
+            Pause Subscription
+          </button>
+          <p className="text-sm text-gray-500 mt-1">
+            Your access will remain active until the end of your current billing period.
+          </p>
+        </div>
+      )}
+
+      {userData?.paused ? (
+        <button onClick={handleResume} className="bg-blue-600 text-white px-4 py-2 rounded">
+          Resume Subscription
+        </button>
+      ) : (
+        <button onClick={handlePause} className="bg-yellow-600 text-white px-4 py-2 rounded">
+          Pause Subscription
+        </button>
+      )}
 
       <div className="mb-4">
         <label className="block text-sm mb-1">Email</label>
@@ -349,7 +411,7 @@ export default function Account() {
         </p>
       </div>
       <hr className="my-6" />
-      <SupportTicketForm />   
+      <SupportTicketForm />
     </div>
   );
 }
