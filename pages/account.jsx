@@ -321,7 +321,7 @@ export default function Account() {
         </a>
       </div>
 
-      {subscriptionStatus && subscriptionStatus.status === 'active' && (
+      {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
         <div className="mt-4">
           <button
             onClick={() => setShowPauseConfirm(true)}
