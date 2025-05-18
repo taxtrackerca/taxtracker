@@ -3,9 +3,6 @@ import { useState, useEffect } from 'react';
 import { auth } from '../lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
-import { getDocs, collection } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { isTrialBlocked } from '../lib/checkTrialEligibility';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -23,12 +20,6 @@ export default function Signup() {
     }
   }, [router.query]);
 
-  const checkIfEmailExists = async (email) => {
-    const usersRef = collection(db, 'users');
-    const snapshot = await getDocs(usersRef);
-    return snapshot.docs.some(doc => doc.data().email === email);
-  };
-
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
@@ -43,51 +34,10 @@ export default function Signup() {
       return;
     }
 
-    const alreadyExists = await checkIfEmailExists(email);
-    if (alreadyExists) {
-      setError('An account with this email already exists. Please log in instead.');
-      return;
-    }
-
     try {
-
-      // 🚫 Check if trial is blocked for this email
-      const blocked = await isTrialBlocked(email);
-      if (blocked) {
-        // Skip Firebase Auth — just create a Stripe checkout
-        const res = await fetch('/api/create-checkout-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customerEmail: email,
-            firebaseUid: null,  // No Firebase account yet
-            trial: false,       // Skip trial
-          }),
-        });
-
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          throw new Error('Stripe session creation failed.');
-        }
-        return; // prevent continuing with Firebase account creation
-      }
-
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const token = await result.user.getIdToken();
       const uid = result.user.uid;
-
-      const ipRes = await fetch('/api/get-ip');
-      const { ip } = await ipRes.json();
-
-      await fetch('/api/log-ip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, ip }),
-      });
-
-      
 
       await fetch('/api/save-user', {
         method: 'POST',

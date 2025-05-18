@@ -1,9 +1,11 @@
+// Verify email page content
 // pages/verify-email.jsx
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { auth, sendEmailVerification } from '../lib/firebase';
+import { auth } from '../lib/firebase';
+import { sendEmailVerification } from 'firebase/auth';
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react'; // Make sure lucide-react is installed
 
 export default function VerifyEmail() {
   const router = useRouter();
@@ -11,11 +13,11 @@ export default function VerifyEmail() {
   const [resent, setResent] = useState(false);
   const [error, setError] = useState('');
 
-  // Monitor auth state and send verification email
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+
         if (!currentUser.emailVerified && !resent) {
           sendEmailVerification(currentUser)
             .then(() => setResent(true))
@@ -27,7 +29,6 @@ export default function VerifyEmail() {
     return () => unsubscribe();
   }, []);
 
-  // Poll every 3 seconds to check for verified status
   useEffect(() => {
     const interval = setInterval(async () => {
       const currentUser = auth.currentUser;
@@ -40,17 +41,6 @@ export default function VerifyEmail() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  // Fallback redirect to login if auth fails
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!auth.currentUser) {
-        router.push('/login');
-      }
-    }, 8000);
-
-    return () => clearTimeout(timeout);
   }, []);
 
   const handleResend = async () => {
@@ -86,6 +76,6 @@ export default function VerifyEmail() {
       <div className="text-sm text-gray-600">
         Already verified? <Link href="/dashboard" className="underline">Go to Dashboard</Link>
       </div>
-    </div>
+    </div >
   );
 }
