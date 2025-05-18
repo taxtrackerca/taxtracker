@@ -31,6 +31,7 @@ export default function Account() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [requestPending, setRequestPending] = useState(false);
   const [userData, setUserData] = useState(null); // 👈 add this line
+  const [showPauseConfirm, setShowPauseConfirm] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -228,7 +229,13 @@ export default function Account() {
     }
   };
 
+  // Updated handlePause in Account.jsx with confirmation popup
   const handlePause = async () => {
+    const confirmed = window.confirm(
+      'Pausing your subscription means your dashboard access will be disabled at the end of your current billing cycle. You will still have access to your account settings and can resume anytime. Do you wish to continue?'
+    );
+    if (!confirmed) return;
+
     try {
       const res = await fetch('/api/pause-subscription', {
         method: 'POST',
@@ -239,6 +246,7 @@ export default function Account() {
       const data = await res.json();
       if (data.success) {
         alert('Subscription pause requested. Access remains active until the end of your current period.');
+        window.location.reload();
       } else {
         throw new Error(data.error || 'Pause failed');
       }
@@ -247,6 +255,7 @@ export default function Account() {
       alert('An error occurred while trying to pause the subscription.');
     }
   };
+
 
   const handleResume = async () => {
     try {
@@ -315,8 +324,8 @@ export default function Account() {
       {subscriptionStatus && subscriptionStatus.status === 'active' && (
         <div className="mt-4">
           <button
-            onClick={handlePause}
-            className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+            onClick={() => setShowPauseConfirm(true)}
+            className="bg-yellow-600 text-white px-4 py-2 rounded"
           >
             Pause Subscription
           </button>
@@ -326,15 +335,24 @@ export default function Account() {
         </div>
       )}
 
-      {userData?.paused ? (
-        <button onClick={handleResume} className="bg-blue-600 text-white px-4 py-2 rounded">
-          Resume Subscription
-        </button>
-      ) : (
-        <button onClick={handlePause} className="bg-yellow-600 text-white px-4 py-2 rounded">
-          Pause Subscription
-        </button>
+      {userData?.paused && (
+        <div className="mt-4">
+          <button
+            onClick={handleResume}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+          >
+            Resume Subscription
+          </button>
+          <p className="text-sm text-gray-500 mt-1">
+            Resuming will immediately charge $4.95 and unlock your dashboard.
+          </p>
+        </div>
       )}
+
+
+
+
+
 
       <div className="mb-4">
         <label className="block text-sm mb-1">Email</label>
@@ -412,6 +430,34 @@ export default function Account() {
       </div>
       <hr className="my-6" />
       <SupportTicketForm />
+      {showPauseConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Pause Subscription</h2>
+            <p className="text-gray-700 mb-4">
+              Pausing your subscription will keep your access active until the end of your current billing cycle.
+              After that, your dashboard will be locked until you resume. Are you sure you want to continue?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowPauseConfirm(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await handlePause();
+                  setShowPauseConfirm(false);
+                }}
+                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-500"
+              >
+                Confirm Pause
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

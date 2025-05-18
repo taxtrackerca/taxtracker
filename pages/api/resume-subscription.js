@@ -28,20 +28,31 @@ export default async function handler(req, res) {
     const email = userRecord.email;
     if (!email) return res.status(404).json({ error: 'Email not found for UID' });
 
-    // Find active subscription for the email
+    // Find Stripe customer by email
     const customers = await stripe.customers.list({ email, limit: 1 });
     if (!customers.data.length) return res.status(404).json({ error: 'No Stripe customer found for email' });
 
     const customerId = customers.data[0].id;
+
+    // Find the paused subscription
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'all' });
     const sub = subscriptions.data.find(s => s.status === 'paused' || s.pause_collection);
 
     if (!sub) return res.status(404).json({ error: 'No paused subscription found' });
 
+    // Resume subscription (remove pause_collection)
     await stripe.subscriptions.update(sub.id, {
       pause_collection: '',
     });
 
+    // Check if billing cycle already ended
+    const now = Math.floor(Date.now() / 1000); // current time in seconds
+    if (now > sub.current_period_end) {
+      // Invoice immediately to reactivate access
+      await stripe.invoices.createAndSendInvoice({ customer: customerId });
+    }
+
+    // Update Firestore
     const db = admin.firestore();
     await db.collection('users').doc(uid).update({ paused: false });
 

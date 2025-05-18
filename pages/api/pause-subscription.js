@@ -1,8 +1,7 @@
-// /pages/api/pause-subscription.js
+// pages/api/pause-subscription.js
 import Stripe from 'stripe';
-import { getAuth } from 'firebase-admin/auth';
 import * as admin from 'firebase-admin';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -18,37 +17,45 @@ if (!admin.apps.length) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
   try {
     const { uid } = req.body;
-    if (!uid) return res.status(400).json({ error: 'Missing uid' });
+    if (!uid) return res.status(400).json({ error: 'Missing UID' });
 
     const userRecord = await admin.auth().getUser(uid);
-    const customerEmail = userRecord.email;
+    const email = userRecord.email;
+    if (!email) return res.status(400).json({ error: 'No email found for user' });
 
-    // Find Stripe customer
-    const customers = await stripe.customers.list({ email: customerEmail, limit: 1 });
-    if (!customers.data.length) throw new Error('Customer not found');
+    // Get Stripe customer by email
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    const customer = customers.data[0];
+    if (!customer) return res.status(404).json({ error: 'Stripe customer not found' });
 
-    const customerId = customers.data[0].id;
-
-    // Find the active subscription
-    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 1 });
-    if (!subscriptions.data.length) throw new Error('No active subscription');
-
-    const subscription = subscriptions.data[0];
-
-    // Pause the subscription at the end of current period
-    await stripe.subscriptions.update(subscription.id, {
-      pause_collection: { behavior: 'mark_uncollectible', resumes_at: null },
+    // Find active subscription
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: 'active',
+      limit: 1,
     });
 
+    const subscription = subscriptions.data[0];
+    if (!subscription) return res.status(404).json({ error: 'No active subscription found' });
+
+    // Pause subscription: stop future payments after current billing cycle
+    await stripe.subscriptions.update(subscription.id, {
+      pause_collection: {
+        behavior: 'mark_uncollectible',
+        resumes_at: null,
+      },
+    });
+
+    // Mark paused in Firestore
     await setDoc(doc(db, 'users', uid), { paused: true }, { merge: true });
 
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error pausing subscription:', err);
     res.status(400).json({ error: err.message });
   }
 }
