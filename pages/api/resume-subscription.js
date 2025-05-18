@@ -1,38 +1,53 @@
-// pages/api/resume-subscription.js
+// /pages/api/resume-subscription.js
 import Stripe from 'stripe';
-import { admin, db } from '../../lib/firebase-admin'; // Assumes you have centralized admin setup
+import { getAuth } from 'firebase-admin/auth';
+import * as admin from 'firebase-admin';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\n/g, '\n'),
+    }),
+  });
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
-  const { uid } = req.body;
-  if (!uid) return res.status(400).json({ error: 'Missing user ID' });
-
   try {
-    // Fetch the user document from Firestore
-    const userDoc = await db.collection('users').doc(uid).get();
-    const userData = userDoc.data();
-    const subscriptionId = userData.subscriptionId;
+    const { uid } = req.body;
+    if (!uid) return res.status(400).json({ error: 'Missing UID' });
 
-    if (!subscriptionId) {
-      return res.status(400).json({ error: 'No subscription ID found for this user.' });
-    }
+    const userRecord = await getAuth().getUser(uid);
+    const email = userRecord.email;
+    if (!email) return res.status(404).json({ error: 'Email not found for UID' });
 
-    // Resume the subscription in Stripe
-    await stripe.subscriptions.update(subscriptionId, {
+    // Find active subscription for the email
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    if (!customers.data.length) return res.status(404).json({ error: 'No Stripe customer found for email' });
+
+    const customerId = customers.data[0].id;
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'all' });
+    const sub = subscriptions.data.find(s => s.status === 'paused' || s.pause_collection);
+
+    if (!sub) return res.status(404).json({ error: 'No paused subscription found' });
+
+    await stripe.subscriptions.update(sub.id, {
       pause_collection: '',
     });
 
-    // Update Firestore flag
-    await db.collection('users').doc(uid).update({
-      paused: false,
-    });
+    const db = admin.firestore();
+    await db.collection('users').doc(uid).update({ paused: false });
 
-    return res.status(200).json({ success: true });
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Resume error:', err);
-    return res.status(500).json({ error: 'Failed to resume subscription' });
+    console.error('Error resuming subscription:', err);
+    res.status(500).json({ error: err.message });
   }
 }
