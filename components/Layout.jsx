@@ -20,7 +20,7 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen bg-background text-text flex flex-col font-sans">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white shadow fixed w-full z-50 top-0">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
             <img src="/logo.png" alt="TaxTracker Logo" className="h-8 w-auto" />
@@ -75,6 +75,9 @@ export default function Layout({ children }) {
           </nav>
         )}
       </header>
+
+      {/* Spacer to account for fixed header height */}
+      <div className="h-20"></div>
 
       {/* Main Content */}
       <main className="flex-grow max-w-6xl mx-auto p-4">
