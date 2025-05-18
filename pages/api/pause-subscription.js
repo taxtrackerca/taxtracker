@@ -51,7 +51,6 @@ export default async function handler(req, res) {
     await stripe.subscriptions.update(subscription.id, {
       pause_collection: {
         behavior: 'mark_uncollectible',
-        resumes_at: null,
       },
     });
 
