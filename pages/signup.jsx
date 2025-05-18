@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { getDocs, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { isTrialBlocked } from '../lib/checkTrialEligibility';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -75,6 +76,7 @@ export default function Signup() {
 
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const token = await result.user.getIdToken();
+      const uid = result.user.uid;
 
       const ipRes = await fetch('/api/get-ip');
       const { ip } = await ipRes.json();
@@ -85,7 +87,7 @@ export default function Signup() {
         body: JSON.stringify({ uid, ip }),
       });
 
-      const uid = result.user.uid;
+      
 
       await fetch('/api/save-user', {
         method: 'POST',
