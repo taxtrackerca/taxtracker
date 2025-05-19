@@ -33,7 +33,7 @@ export default function SupportTicketForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border p-4 rounded shadow max-w-xl mx-auto space-y-4 mt-10">
+    <form onSubmit={handleSubmit} className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
       <h2 className="text-xl font-bold">Contact Support</h2>
 
       <label className="block">
@@ -42,7 +42,7 @@ export default function SupportTicketForm() {
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="w-full p-2 border rounded mt-1"
+          className="w-full p-2 border rounded mt-1 mb-2"
           required
         />
       </label>
@@ -53,7 +53,7 @@ export default function SupportTicketForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={5}
-          className="w-full p-2 border rounded mt-1"
+          className="w-full p-2 border rounded mt-1 mb-2"
           required
         ></textarea>
       </label>

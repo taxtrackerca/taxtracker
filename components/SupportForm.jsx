@@ -55,7 +55,7 @@ export default function SupportForm() {
           {[
             'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
             'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario',
-            'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon',
+            'Prince Edward Island', 'Saskatchewan', 'Yukon',
           ].map((prov) => (
             <option key={prov} value={prov}>{prov}</option>
           ))}
@@ -86,7 +86,7 @@ export default function SupportForm() {
           <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
             <h3 className="text-lg font-semibold mb-4">Are you sure?</h3>
             <p className="mb-4 text-sm text-gray-700">
-              Submitting this request will permanently clear all your current tax data. This cannot be undone.
+              Submitting this request will permanently clear all your current tax data once your location is updated. This cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
