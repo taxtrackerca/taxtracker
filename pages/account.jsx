@@ -309,35 +309,36 @@ export default function Account() {
         >
           Manage Subscription
         </a>
+      
+
+        {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
+          <div className="mt-4">
+            <button
+              onClick={() => setShowPauseConfirm(true)}
+              className="bg-yellow-600 text-white px-4 py-2 rounded"
+            >
+              Pause Subscription
+            </button>
+            <p className="text-sm text-gray-500 mt-1">
+              Your access will remain active until the end of your current billing period.
+            </p>
+          </div>
+        )}
+
+        {userData?.paused && (
+          <div className="mt-4">
+            <button
+              onClick={handleResume}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+            >
+              Resume Subscription
+            </button>
+            <p className="text-sm text-gray-500 mt-1">
+              Resuming will immediately charge $4.95 and unlock your dashboard.
+            </p>
+          </div>
+        )}
       </div>
-
-      {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
-        <div className="mt-4">
-          <button
-            onClick={() => setShowPauseConfirm(true)}
-            className="bg-yellow-600 text-white px-4 py-2 rounded"
-          >
-            Pause Subscription
-          </button>
-          <p className="text-sm text-gray-500 mt-1">
-            Your access will remain active until the end of your current billing period.
-          </p>
-        </div>
-      )}
-
-      {userData?.paused && (
-        <div className="mt-4">
-          <button
-            onClick={handleResume}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-          >
-            Resume Subscription
-          </button>
-          <p className="text-sm text-gray-500 mt-1">
-            Resuming will immediately charge $4.95 and unlock your dashboard.
-          </p>
-        </div>
-      )}
 
 
       <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
@@ -416,6 +417,7 @@ export default function Account() {
       </div>
       <hr className="my-6" />
       <SupportTicketForm />
+
       {showPauseConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
