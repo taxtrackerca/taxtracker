@@ -312,6 +312,7 @@ export default function Account() {
       
 
         {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
+          !userData?.paused &&
           <div className="mt-4">
             <p className="text-sm mt-2 mb-2">
               Pause your subscription before the next billing cycle, you will not be charged. Resume anytime to pick up where you left off.
