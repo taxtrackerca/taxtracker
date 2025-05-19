@@ -331,7 +331,7 @@ export default function Account() {
           <div className="mt-4 mb-4">
             <button
               onClick={handleResume}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+              className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500"
             >
               Resume Subscription
             </button>
@@ -348,8 +348,8 @@ export default function Account() {
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 mb-6 rounded" />
       
         <div className="flex gap-4 mb-2">
-          <button onClick={handleEmailUpdate} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
-          <button onClick={handlePasswordReset} className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
+          <button onClick={handleEmailUpdate} className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
+          <button onClick={handlePasswordReset} className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
         </div>
       </div>
 
@@ -361,7 +361,7 @@ export default function Account() {
         <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} className="w-full border p-2 mb-6 rounded" />
         
 
-        <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 mb-2">Save Business Name</button>
+        <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white font-semibold px-4 py-2 rounded hover:bg-green-500 mb-2">Save Business Name</button>
         {businessMessage && (
           <p className="text-green-600 text-sm mt-2">{businessMessage}</p>
         )}
