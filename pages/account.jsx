@@ -327,15 +327,15 @@ export default function Account() {
         )}
 
         {userData?.paused && (
-          <div className="mt-4">
+          <div className="mt-4 mb-4">
             <button
               onClick={handleResume}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
             >
               Resume Subscription
             </button>
-            <p className="text-sm text-gray-500 mt-1">
-              Resuming will immediately charge $4.95 and unlock your dashboard.
+            <p className="text-sm mt-2 mb-2">
+              If you resume before your next billing cycle, the payment date will be the same. If the date has passed, you will be charged $4.95 immediately.
             </p>
           </div>
         )}
