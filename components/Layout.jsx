@@ -18,62 +18,74 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-text flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-text flex flex-col font-sans hover:no-underline">
       {/* Header */}
-      <header className="bg-white shadow fixed w-full z-50 top-0">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
+      <header className="bg-white shadow fixed w-full z-50 top-0 hover:text-blue-600 hover:no-underline ">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center hover:no-underline">
+          <Link href="/" className="flex items-center space-x-2 hover:text-blue-600 hover:no-underline">
             <img src="/logo.png" alt="TaxTracker Logo" className="h-8 w-auto" />
             <span className="text-2xl font-bold text-black font-poppins tracking-tight text-primary">TaxTracker</span>
           </Link>
+
+
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex space-x-6 text-sm">
             {user ? (
               <>
-                <Link href="/dashboard" className="text-gray-700 hover:text-primary">Dashboard</Link>
-                <Link href="/account" className="text-gray-700 hover:text-primary">Account</Link>
-                <button onClick={handleLogout} className="text-red-600 hover:underline">Logout</button>
+                <Link href="/dashboard" className="block py-1 text-md font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Dashboard</Link>
+                <Link href="/account" className="block py-1 text-md font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Account</Link>
+                <button onClick={handleLogout} className="block text-md font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Logout</button>
               </>
             ) : (
               <>
-                <Link href="#faq" className="hover:underline">FAQ</Link>
-                <Link href="#pricing" className="hover:underline">Pricing</Link>
-                <Link href="/login" className="text-gray-700 hover:text-primary">Login</Link>
-                <Link href="/signup" className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Sign Up</Link>
+                <Link href="#referral" className="block text-md font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Referral Program</Link>
+                <Link href="#faq" className="block text-md font-medium text-gray-800 hover:text-blue-600 hover:no-underline">FAQ</Link>
+                <Link href="#pricing" className="block text-md font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Pricing</Link>
+                
+                <Link href="/signup" className="bg-blue-600 text-md font-medium text-white px-4 rounded hover:bg-blue-700 hover:no-underline">Sign Up</Link>
               </>
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-gray-700"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle Menu"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Right side: Login and Menu */}
+           <div className="flex items-center space-x-4">
+            {/* Login link - always visible */}
+            <Link href="/login" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              Login
+            </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-gray-700"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle Menu"
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+
+          {/* Mobile Nav */}
+          {menuOpen && (
+            <nav className="md:hidden absolute top-full bg-white border round shadow-lg w-fit px-4 pb-4 z-50 space-y-2 text-sm border-t">
+              {user ? (
+                <>
+                  <Link href="/dashboard" className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Dashboard</Link>
+                  <Link href="/account" className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Account</Link>
+                  <button onClick={handleLogout} className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Logout</button>
+                </>
+              ) : (
+                <>
+                  <Link href="#referral" className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Referral Program</Link>
+                  <Link href="#faq" className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">FAQ</Link>
+                  <Link href="#pricing" className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Pricing</Link>
+                  
+                  <Link href="/signup" className="block py-1 text-lg font-medium text-gray-800 hover:text-blue-600 hover:no-underline">Sign Up</Link>
+                </>
+              )}
+            </nav>
+          )}
         </div>
-
-        {/* Mobile Nav */}
-        {menuOpen && (
-          <nav className="md:hidden bg-white px-4 pb-4 space-y-2 text-sm border-t">
-            {user ? (
-              <>
-                <Link href="/dashboard" className="block text-gray-700 hover:text-primary">Dashboard</Link>
-                <Link href="/account" className="block text-gray-700 hover:text-primary">Account</Link>
-                <button onClick={handleLogout} className="block text-red-600 hover:underline">Logout</button>
-              </>
-            ) : (
-              <>
-                 <Link href="#faq" className="hover:underline">FAQ</Link>
-                <Link href="#pricing" className="hover:underline">Pricing</Link>
-                <Link href="/login" className="block text-gray-700 hover:text-primary">Login</Link>
-                <Link href="/signup" className="block text-gray-700 hover:text-primary">Sign Up</Link>
-              </>
-            )}
-          </nav>
-        )}
       </header>
 
       {/* Spacer to account for fixed header height */}

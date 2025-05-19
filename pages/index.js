@@ -62,7 +62,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      
+
 
       {/* Hero */}
       <section className="bg-white px-4 py-20 sm:py-24 text-center">
@@ -97,7 +97,7 @@ export default function Home() {
             Take Control of Your Taxes
           </a>
 
-          <p className="text-xs sm:text-sm text-gray-400 mt-4">Cancel anytime. No strings attached.</p>
+          <p className="text-xs sm:text-sm text-gray-400 mt-4">Pause or cancel anytime. No strings attached.</p>
         </div>
       </section>
 
@@ -106,11 +106,11 @@ export default function Home() {
       {/* Pricing Section */}
       <section id="pricing" className="bg-gray-50 py-16 px-6 text-center">
         <h2 className="text-3xl font-bold mb-4">Simple, Honest Pricing</h2>
-        <p className="text-gray-600 max-w-xl mx-auto mb-12">
-          Start with a free 30-day trial. After that, it’s just <span className="font-semibold text-gray-800">$4.95/month</span>. No contracts. Cancel anytime.
+        <p className="text-gray-600 max-w-xl mx-auto mb-8">
+          Start with a free 30-day trial. After that, it’s just <span className="font-semibold text-gray-800">$4.95/month</span>. No contracts. Pause or cancel anytime.
         </p>
 
-        <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-md rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
+        <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-lg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
           {/* Badge */}
           <div className="absolute top-0 right-0 bg-green-500 text-white text-xs px-3 py-1 rounded-bl-xl font-semibold">
             Best Value
@@ -194,22 +194,25 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="faq" className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          {faqItems.map((item, index) => (
-            <details key={index} className="bg-white shadow rounded p-4">
-              <summary className="font-medium cursor-pointer">{item.question}</summary>
-              <p className="mt-2 text-gray-700">{item.answer}</p>
-            </details>
-          ))}
+      <section id="faq" className="py-16 px-6 mb-12 mt-4">
+        <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-lg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
+          
+          <h2 className="text-3xl font-bold mb-4 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqItems.map((item, index) => (
+              <details key={index} className="bg-white shadow rounded p-4">
+                <summary className="font-medium cursor-pointer">{item.question}</summary>
+                <p className="mt-2 text-gray-700">{item.answer}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
 
 
-       {/* Why Trust Us Section */ }
-      < section className = "bg-white py-16 px-6 text-center" >
+      {/* Why Trust Us Section */}
+      < section className="bg-white py-16 px-6 text-center" >
         <h2 className="text-3xl font-bold mb-4">Why Trust TaxTracker.ca?</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-12">
           Your financial data deserves privacy, protection, and peace of mind. Here’s how we deliver all three.
@@ -256,38 +259,38 @@ export default function Home() {
         </div>
       </section >
 
-      {/* Pricing Section */ }
-      < section className = "bg-gray-50 py-16 px-6 text-center" >
-        <h2 className="text-3xl font-bold mb-4">Simple, Honest Pricing</h2>
+      {/* Referral Section */}
+      < section id="referral" className="bg-gray-50 py-16 px-6 text-center" >
+        <h2 className="text-3xl font-bold mb-4">Invite Friends, Earn Free Months!</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-12">
-          Start with a free 30-day trial. After that, it’s just <span className="font-semibold text-gray-800">$4.95/month</span>. No contracts. Cancel anytime.
+        Love using TaxTracker? Share it with your friends and earn <span className="font-semibold text-gray-800">1 free month</span>. for every person who signs up using your referral code!
         </p>
 
         <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-md rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
           {/* Badge */}
           <div className="absolute top-0 right-0 bg-green-500 text-white text-xs px-3 py-1 rounded-bl-xl font-semibold">
-            Best Value
+            Referral Rewards
           </div>
 
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">TaxTracker Pro</h3>
-          <p className="text-4xl font-bold text-gray-900 mb-2">$4.95<span className="text-xl font-medium text-gray-500">/month</span></p>
-          <p className="text-gray-600 mb-6">Includes everything you need to track your business taxes with confidence.</p>
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">How it works:</h3>
+          
+          <p className="text-gray-600 mb-6">For every friday that continutes their subscription past the trial period, you will receive a free month</p>
 
           <ul className="text-left text-gray-700 space-y-2 mb-8 max-w-sm mx-auto">
             <li className="flex items-start">
-              <span className="text-green-600 font-bold mr-2">✓</span> CRA T2125-based tracking
+              <span className="text-green-600 font-bold mr-2">✓</span> Each friend gets a free trial
             </li>
             <li className="flex items-start">
-              <span className="text-green-600 font-bold mr-2">✓</span> Monthly and Year-to-Date summaries
+              <span className="text-green-600 font-bold mr-2">✓</span> You get 1 month free when they continue past the trial
             </li>
             <li className="flex items-start">
-              <span className="text-green-600 font-bold mr-2">✓</span> GST/HST collection & remittance
+              <span className="text-green-600 font-bold mr-2">✓</span> No limits - refer as many people as you want!
             </li>
             <li className="flex items-start">
-              <span className="text-green-600 font-bold mr-2">✓</span> CSV and PDF export
+              <span className="text-green-600 font-bold mr-2">✓</span> Your own referral code to share
             </li>
             <li className="flex items-start">
-              <span className="text-green-600 font-bold mr-2">✓</span> Mobile-friendly interface
+              <span className="text-green-600 font-bold mr-2">✓</span> Easily find your referral code and track your referrals
             </li>
           </ul>
 
@@ -299,19 +302,19 @@ export default function Home() {
           </a>
 
           <p className="text-sm text-gray-500 mt-4">
-            You’ll only be charged after your 30-day trial ends. Cancel anytime.
+          <a href="/login" className="  text-blue-500 px-0 py-2 hover:bg-blue mt-4">Login</a> to view your referral code under Account settings
           </p>
         </div>
       </section >
 
-      {/* Floating Mobile CTA */ }
-      < div className = "fixed bottom-0 left-0 right-0 md:hidden bg-white border-t p-3 text-center shadow z-50" >
-      <Link href="/signup"
-        className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-500 w-full block">
-        Start Free Trial
-      </Link>
+      {/* Floating Mobile CTA */}
+      < div className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t p-3 text-center shadow z-50" >
+        <Link href="/signup"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-500 w-full block">
+          Start Free Trial
+        </Link>
       </div>
-  
+
 
 
     </div >
