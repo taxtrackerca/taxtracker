@@ -313,15 +313,16 @@ export default function Account() {
 
         {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
           <div className="mt-4">
+            <p className="text-sm mt-2 mb-2">
+              Pause your subscription before the next billing cycle, you will not be charged. Resume anytime to pick up where you left off.
+            </p>
             <button
               onClick={() => setShowPauseConfirm(true)}
-              className="bg-yellow-600 text-white px-4 py-2 rounded"
+              className="bg-yellow-600 text-white font-semibold px-4 py-2 mb-2 rounded"
             >
               Pause Subscription
             </button>
-            <p className="text-sm text-gray-500 mt-1">
-              Your access will remain active until the end of your current billing period.
-            </p>
+            
           </div>
         )}
 
