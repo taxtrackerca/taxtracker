@@ -6,6 +6,7 @@ import BusinessExpensesSection from './BusinessExpensesSection';
 import HomeExpensesSection from './HomeExpensesSection';
 import VehicleExpensesSection from './VehicleExpensesSection';
 import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
+import LogSection from './LogSection';
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -147,6 +148,19 @@ export default function MonthTracker({ monthId, onRefresh }) {
     });
   };
 
+  const updateLogs = (logType, newEntries) => {
+    setData((prev) => {
+      const updatedLogs = { ...prev.logs, [logType]: newEntries };
+      const updated = { ...prev, logs: updatedLogs };
+  
+      if (saveTimeout) clearTimeout(saveTimeout);
+      const timeout = setTimeout(() => handleAutoSave(updated), 1000);
+      setSaveTimeout(timeout);
+  
+      return updated;
+    });
+  };
+
   const handleSave = async () => {
     await handleAutoSave(data);
     setMessage('Saved!');
@@ -181,7 +195,16 @@ export default function MonthTracker({ monthId, onRefresh }) {
     travel: '', utilities: '', fuel: '', delivery: '', other: '',
     homeHeat: '', homeElectricity: '', homeInsurance: '', homeMaintenance: '', homeMortgage: '', homePropertyTax: '',
     homeSqft: '', businessSqft: '',
-    kmsThisMonth: '', businessKms: '', vehicleFuel: '', vehicleInsurance: '', vehicleLicense: '', vehicleRepairs: ''
+    kmsThisMonth: '', businessKms: '', vehicleFuel: '', vehicleInsurance: '', vehicleLicense: '', vehicleRepairs: '',
+    logs: {
+      driving: [],
+      meal: [],
+      travel: [],
+      mobilePhone: [],
+      inventory: [],
+      gift: [],
+      misc: []
+    }
   };
 
   const businessExpenses = sumFields(data, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
@@ -209,6 +232,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <BusinessExpensesSection data={data} updateField={updateField} />
       <HomeExpensesSection data={data} updateField={updateField} />
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
+      <LogSection logs={data.logs || {}} updateLogs={updateLogs} />
 
       <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-50">
         <div className="max-w-4xl mx-auto p-4">
