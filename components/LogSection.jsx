@@ -150,15 +150,16 @@ function LogCard({ logKey, title, icon, fields, entries, update }) {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
                       {fields.map(({ label, type }) => (
-                        <input
-                          key={label}
-                          type={type}
-                          placeholder={label}
-                          value={entry[label] || ''}
-                          onChange={(e) => handleChange(index, label, e.target.value)}
-                          className="bg-white border border-gray-300 rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-blue-500"
-                        />
-                      ))}
+                        <div key={label} className="flex flex-col space-y-1 w-full">
+                            <label className="text-sm font-medium text-gray-700">{label}</label>
+                            <input
+                            type={type}
+                            value={entry[label] || ''}
+                            onChange={(e) => handleChange(index, label, e.target.value)}
+                            className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition"
+                            />
+                        </div>
+                        ))}
                       <div className="flex items-center justify-end space-x-3 mt-1">
                         <button
                           onClick={() => setExpandedEntryIndex(null)}
