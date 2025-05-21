@@ -6,8 +6,9 @@ import BusinessExpensesSection from './BusinessExpensesSection';
 import HomeExpensesSection from './HomeExpensesSection';
 import VehicleExpensesSection from './VehicleExpensesSection';
 import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
+import LogSection from './LogSection';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import LogsSection from './LogsSection';
-
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -20,6 +21,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [saveTimeout, setSaveTimeout] = useState(null);
   const [province, setProvince] = useState('Nova Scotia');
   const [logsExpanded, setLogsExpanded] = useState(false);
+  
 
   const sumFields = (source, fields) =>
     fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
@@ -150,72 +152,17 @@ export default function MonthTracker({ monthId, onRefresh }) {
     });
   };
 
-  const updateLogs = async (logType, newEntries) => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
+  const updateLogs = (logType, newEntries) => {
+    setData((prev) => {
+      const updatedLogs = { ...prev.logs, [logType]: newEntries };
+      const updated = { ...prev, logs: updatedLogs };
   
-    let updated = { ...data }; // Start from current data
+      if (saveTimeout) clearTimeout(saveTimeout);
+      const timeout = setTimeout(() => handleAutoSave(updated), 1000);
+      setSaveTimeout(timeout);
   
-    // Special handling for uploadReceipts
-    if (logType === 'uploadReceipts') {
-      for (const entry of newEntries) {
-        const file = entry['Receipt Photo'];
-        const amount = parseFloat(entry['Amount']);
-        const category = entry['Category'];
-  
-        if (!file || isNaN(amount) || !category) continue;
-  
-        const [selectedMonth, selectedYear] = monthId.split(' ');
-        const { uploadReceiptToFirebase } = await import('../lib/uploadReceiptToFirebase');
-        const imageUrl = await uploadReceiptToFirebase(file, uid, selectedYear, selectedMonth);
-  
-        // Save receipt metadata
-        const receiptRef = doc(collection(db, 'users', uid, 'receipts'));
-        await setDoc(receiptRef, {
-          uid,
-          month: selectedMonth,
-          year: selectedYear,
-          amount,
-          description: entry['Description'],
-          category,
-          imageUrl,
-          createdAt: new Date()
-        });
-  
-        const fieldMap = {
-          'Advertising': 'advertising',
-          'Meals': 'meals',
-          'Insurance': 'insurance',
-          'Office': 'office',
-          'Supplies': 'supplies',
-          'Admin': 'admin',
-          'Travel': 'travel',
-          'Utilities': 'utilities',
-          'Delivery': 'delivery',
-          'Other': 'other',
-          'Fuel and Oil': 'vehicleFuel',
-          'Maintenance & Repairs': 'vehicleRepairs'
-        };
-  
-        const mappedField = fieldMap[category];
-        if (mappedField) {
-          const currentVal = parseFloat(updated[mappedField] || 0);
-          const updatedVal = (currentVal + amount).toFixed(2);
-          updated[mappedField] = updatedVal;
-        }
-      }
-    }
-  
-    // Handle log data update
-    const updatedLogs = { ...(data.logs || {}), [logType]: newEntries };
-    updated.logs = updatedLogs;
-  
-    setData(updated); // Set new state
-  
-    // Trigger auto-save
-    if (saveTimeout) clearTimeout(saveTimeout);
-    const timeout = setTimeout(() => handleAutoSave(updated), 1000);
-    setSaveTimeout(timeout);
+      return updated;
+    });
   };
 
   const handleSave = async () => {
@@ -290,7 +237,6 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <HomeExpensesSection data={data} updateField={updateField} />
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
       <LogsSection logs={data.logs || {}} updateLogs={updateLogs} />
-
 
       
 

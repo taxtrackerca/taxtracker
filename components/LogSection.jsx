@@ -9,7 +9,6 @@ const logTypes = {
       { label: 'Purpose', type: 'text' },
       { label: 'Total KM', type: 'number' }
     ]
-
   },
   meal: {
     name: 'Meal Log', icon: '🍽️',
@@ -57,28 +56,7 @@ const logTypes = {
     fields: [
       { label: 'Note', type: 'text' }
     ]
-  },
-
-  uploadReceipts: {
-    name: 'Upload Receipts',
-    icon: '🧾',
-    fields: [
-      { label: 'Receipt Photo', type: 'file' },
-      { label: 'Amount', type: 'number' },
-      { label: 'Description', type: 'text' },
-      {
-        label: 'Category',
-        type: 'select',
-        options: [
-          'Advertising', 'Meals', 'Insurance', 'Office', 'Supplies', 'Admin',
-          'Travel', 'Utilities', 'Delivery', 'Other',
-          'Fuel and Oil', 'Maintenance & Repairs',
-          'Misc'
-        ]
-      }
-    ]
   }
-
 };
 
 export default function LogSection({ logs, updateLogs }) {
@@ -110,7 +88,7 @@ function LogCard({ logKey, title, icon, fields, entries, update }) {
   };
 
   const handleAdd = () => {
-    const newEntry = fields.reduce((acc, field) => ({ ...acc, [field.label]: '' }), {});
+    const newEntry = fields.reduce((acc, field) => ({ ...acc, [field]: '' }), {});
     update([...entries, newEntry]);
     setExpandedEntryIndex(entries.length);
   };
@@ -143,77 +121,46 @@ function LogCard({ logKey, title, icon, fields, entries, update }) {
         <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
           <span className="text-base">{icon}</span> {title}
         </h4>
-        {open ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+        {open ? (
+          <ChevronDown className="h-4 w-4 text-gray-500" />
+        ) : (
+          <ChevronRight className="h-4 w-4 text-gray-500" />
+        )}
       </button>
+
 
       {open && (
         <div className="p-4 space-y-4 bg-white border-t border-gray-100">
+
+          {/* Entries */}
           {entries.map((entry, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2">
+            <div
+              key={index}
+              className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2"
+            >
               {expandedEntryIndex !== index ? (
                 <button
                   onClick={() => setExpandedEntryIndex(index)}
                   className="w-full text-left text-sm text-gray-700 hover:underline flex justify-between"
                 >
-                  <span>Entry #{index + 1}</span>
-                  <span>Expand ▼</span>
+                  <span>
+                    {fields.map(({ label }) => entry[label]).filter(Boolean).join(' • ') || 'Untitled Entry'}
+                  </span>
+                  <span className="text-blue-500 text-xs">Edit</span>
                 </button>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
-                  {fields.map((field) => {
-                    const { label, type } = field;
-                    return (
-                      <div key={label} className="flex flex-col space-y-1 w-full">
-                        <label className="text-sm font-medium text-gray-700">{label}</label>
-
-                        {type === 'file' ? (
-                          <>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => handleChange(index, label, e.target.files[0])}
-                              className="bg-white border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition"
-                            />
-                            {entry[label] && typeof entry[label] === 'object' && (
-                              <img
-                                src={URL.createObjectURL(entry[label])}
-                                alt="Local Preview"
-                                className="mt-2 max-h-32 rounded border"
-                              />
-                            )}
-                            {entry.imageUrl && typeof entry[label] !== 'object' && (
-                              <a href={entry.imageUrl} target="_blank" rel="noopener noreferrer">
-                                <img
-                                  src={entry.imageUrl}
-                                  alt="Uploaded Receipt"
-                                  className="mt-2 max-h-32 rounded border"
-                                />
-                              </a>
-                            )}
-                          </>
-                        ) : type === 'select' ? (
-                          <select
-                            value={entry[label] || ''}
-                            onChange={(e) => handleChange(index, label, e.target.value)}
-                            className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition"
-                          >
-                            <option value="">Select a category</option>
-                            {field.options.map((opt) => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type={type}
-                            value={entry[label] || ''}
-                            onChange={(e) => handleChange(index, label, e.target.value)}
-                            className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition"
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-
+                  {fields.map(({ label, type }) => (
+                    <div key={label} className="flex flex-col space-y-1 w-full">
+                      <label className="text-sm font-medium text-gray-700">{label}</label>
+                      <input
+                        type={type}
+                        value={entry[label] || ''}
+                        onChange={(e) => handleChange(index, label, e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 transition"
+                      />
+                    </div>
+                  ))}
                   <div className="flex items-center justify-end space-x-3 mt-1 col-span-full">
                     <button
                       onClick={() => setExpandedEntryIndex(null)}
@@ -233,6 +180,7 @@ function LogCard({ logKey, title, icon, fields, entries, update }) {
             </div>
           ))}
 
+          {/* Add Entry Button — Always Visible */}
           <button
             onClick={handleAdd}
             className="text-sm text-blue-600 hover:underline"
@@ -240,6 +188,7 @@ function LogCard({ logKey, title, icon, fields, entries, update }) {
             + Add Entry
           </button>
 
+          {/* Total */}
           {entries.length > 0 && (
             <div className="text-right text-sm text-gray-700 font-medium pt-2 border-t border-gray-200">
               {title === 'Driving Log' ? 'Total KM' : 'Total'}: {calculateLogTotal(entries, fields)}
