@@ -6,7 +6,8 @@ import BusinessExpensesSection from './BusinessExpensesSection';
 import HomeExpensesSection from './HomeExpensesSection';
 import VehicleExpensesSection from './VehicleExpensesSection';
 import { federalRates, federalCredit, provincialData } from '../lib/taxRates';
-import LogSection from './LogSection';
+import LogsSection from './LogsSection';
+
 
 export default function MonthTracker({ monthId, onRefresh }) {
   const [data, setData] = useState({});
@@ -18,6 +19,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [showCheck, setShowCheck] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState(null);
   const [province, setProvince] = useState('Nova Scotia');
+  const [logsExpanded, setLogsExpanded] = useState(false);
 
   const sumFields = (source, fields) =>
     fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
@@ -153,6 +155,33 @@ export default function MonthTracker({ monthId, onRefresh }) {
       const updatedLogs = { ...prev.logs, [logType]: newEntries };
       const updated = { ...prev, logs: updatedLogs };
   
+      // Driving Log → businessKms
+      if (logType === 'driving') {
+        const totalKm = newEntries.reduce((sum, entry) => {
+          const val = parseFloat(entry['Total KM']);
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+        updated.businessKms = totalKm.toFixed(2);
+      }
+  
+      // Meal Log → meals
+      if (logType === 'meal') {
+        const totalMeals = newEntries.reduce((sum, entry) => {
+          const val = parseFloat(entry['Amount']);
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+        updated.meals = totalMeals.toFixed(2);
+      }
+  
+      // Travel Log → travel
+      if (logType === 'travel') {
+        const totalTravel = newEntries.reduce((sum, entry) => {
+          const val = parseFloat(entry['Cost']);
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+        updated.travel = totalTravel.toFixed(2);
+      }
+  
       if (saveTimeout) clearTimeout(saveTimeout);
       const timeout = setTimeout(() => handleAutoSave(updated), 1000);
       setSaveTimeout(timeout);
@@ -232,7 +261,10 @@ export default function MonthTracker({ monthId, onRefresh }) {
       <BusinessExpensesSection data={data} updateField={updateField} />
       <HomeExpensesSection data={data} updateField={updateField} />
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
-      <LogSection logs={data.logs || {}} updateLogs={updateLogs} />
+      <LogsSection logs={data.logs || {}} updateLogs={updateLogs} />
+
+
+      
 
       <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-50">
         <div className="max-w-4xl mx-auto p-4">
