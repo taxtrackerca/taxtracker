@@ -150,44 +150,72 @@ export default function MonthTracker({ monthId, onRefresh }) {
     });
   };
 
-  const updateLogs = (logType, newEntries) => {
-    setData((prev) => {
-      const updatedLogs = { ...prev.logs, [logType]: newEntries };
-      const updated = { ...prev, logs: updatedLogs };
+  const updateLogs = async (logType, newEntries) => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
   
-      // Driving Log → businessKms
-      if (logType === 'driving') {
-        const totalKm = newEntries.reduce((sum, entry) => {
-          const val = parseFloat(entry['Total KM']);
-          return sum + (isNaN(val) ? 0 : val);
-        }, 0);
-        updated.businessKms = totalKm.toFixed(2);
+    let updated = { ...data }; // Start from current data
+  
+    // Special handling for uploadReceipts
+    if (logType === 'uploadReceipts') {
+      for (const entry of newEntries) {
+        const file = entry['Receipt Photo'];
+        const amount = parseFloat(entry['Amount']);
+        const category = entry['Category'];
+  
+        if (!file || isNaN(amount) || !category) continue;
+  
+        const [selectedMonth, selectedYear] = monthId.split(' ');
+        const { uploadReceiptToFirebase } = await import('../lib/uploadReceiptToFirebase');
+        const imageUrl = await uploadReceiptToFirebase(file, uid, selectedYear, selectedMonth);
+  
+        // Save receipt metadata
+        const receiptRef = doc(collection(db, 'users', uid, 'receipts'));
+        await setDoc(receiptRef, {
+          uid,
+          month: selectedMonth,
+          year: selectedYear,
+          amount,
+          description: entry['Description'],
+          category,
+          imageUrl,
+          createdAt: new Date()
+        });
+  
+        const fieldMap = {
+          'Advertising': 'advertising',
+          'Meals': 'meals',
+          'Insurance': 'insurance',
+          'Office': 'office',
+          'Supplies': 'supplies',
+          'Admin': 'admin',
+          'Travel': 'travel',
+          'Utilities': 'utilities',
+          'Delivery': 'delivery',
+          'Other': 'other',
+          'Fuel and Oil': 'vehicleFuel',
+          'Maintenance & Repairs': 'vehicleRepairs'
+        };
+  
+        const mappedField = fieldMap[category];
+        if (mappedField) {
+          const currentVal = parseFloat(updated[mappedField] || 0);
+          const updatedVal = (currentVal + amount).toFixed(2);
+          updated[mappedField] = updatedVal;
+        }
       }
+    }
   
-      // Meal Log → meals
-      if (logType === 'meal') {
-        const totalMeals = newEntries.reduce((sum, entry) => {
-          const val = parseFloat(entry['Amount']);
-          return sum + (isNaN(val) ? 0 : val);
-        }, 0);
-        updated.meals = totalMeals.toFixed(2);
-      }
+    // Handle log data update
+    const updatedLogs = { ...(data.logs || {}), [logType]: newEntries };
+    updated.logs = updatedLogs;
   
-      // Travel Log → travel
-      if (logType === 'travel') {
-        const totalTravel = newEntries.reduce((sum, entry) => {
-          const val = parseFloat(entry['Cost']);
-          return sum + (isNaN(val) ? 0 : val);
-        }, 0);
-        updated.travel = totalTravel.toFixed(2);
-      }
+    setData(updated); // Set new state
   
-      if (saveTimeout) clearTimeout(saveTimeout);
-      const timeout = setTimeout(() => handleAutoSave(updated), 1000);
-      setSaveTimeout(timeout);
-  
-      return updated;
-    });
+    // Trigger auto-save
+    if (saveTimeout) clearTimeout(saveTimeout);
+    const timeout = setTimeout(() => handleAutoSave(updated), 1000);
+    setSaveTimeout(timeout);
   };
 
   const handleSave = async () => {
