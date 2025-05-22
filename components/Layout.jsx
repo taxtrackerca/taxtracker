@@ -51,9 +51,11 @@ export default function Layout({ children }) {
           {/* Right side: Login and Menu */}
            <div className="flex items-center space-x-4">
             {/* Login link - always visible */}
-            <Link href="/login" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-              Login
-            </Link>
+            {!user && (
+              <Link href="/login" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                Login
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
