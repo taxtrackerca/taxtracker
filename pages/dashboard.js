@@ -1,5 +1,5 @@
 // Dashboard.js with countdown timer for paused subscriptions
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import DashboardSummary from '../components/DashboardSummary';
@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [pauseEndsAt, setPauseEndsAt] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
   const router = useRouter();
+  const trackerRef = useRef(null);
 
   const currentYear = new Date().getFullYear();
 
@@ -104,6 +105,17 @@ export default function Dashboard() {
     window.location.href = '/login';
   };
 
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(`${month} ${currentYear}`);
+  
+    // Scroll after short delay to ensure component has rendered
+    setTimeout(() => {
+      if (trackerRef.current) {
+        trackerRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 150);
+  };
+
   if (!user) return null;
 
   if (blocked) {
@@ -151,7 +163,7 @@ export default function Dashboard() {
           {months.map((month) => (
             <button
               key={month}
-              onClick={() => setSelectedMonth(`${month} ${currentYear}`)}
+              onClick={() => handleMonthSelect(month)}
               className={`px-4 py-2 border rounded ${selectedMonth === `${month} ${currentYear}` ? 'bg-blue-600 text-white' : 'hover:bg-blue-100'}`}
             >
               {month} {currentYear}
@@ -161,10 +173,14 @@ export default function Dashboard() {
       </div>
 
       {selectedMonth && (
-        <div className="mt-8">
-          <MonthTracker monthId={selectedMonth} onRefresh={() => setRefreshYTD(prev => !prev)} />
-        </div>
+        <div className="mt-8" ref={trackerRef}>
+          <MonthTracker
+            monthId={selectedMonth}
+            onRefresh={() => setRefreshYTD(prev => !prev)}
+          />
+       </div>
       )}
+      
     </div>
   );
 }

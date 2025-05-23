@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import IncomeSection from './IncomeSection';
@@ -10,7 +10,8 @@ import LogSection from './LogSection';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import LogsSection from './LogsSection';
 
-export default function MonthTracker({ monthId, onRefresh }) {
+const MonthTracker = forwardRef((props, ref) => {
+  const { monthId, onRefresh } = props;
   const [data, setData] = useState({});
   const [message, setMessage] = useState('');
   const [ytdKm, setYtdKm] = useState(0);
@@ -21,6 +22,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const [saveTimeout, setSaveTimeout] = useState(null);
   const [province, setProvince] = useState('Nova Scotia');
   const [logsExpanded, setLogsExpanded] = useState(false);
+  
   
 
   const sumFields = (source, fields) =>
@@ -229,7 +231,7 @@ export default function MonthTracker({ monthId, onRefresh }) {
   const liveEstimatedTaxThisMonth = totalTaxNow - totalTaxBefore;
 
   return (
-    <div className="bg-white p-4 rounded shadow space-y-4">
+      <div ref={ref} className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
       <IncomeSection data={data} updateField={updateField} />
@@ -291,4 +293,8 @@ export default function MonthTracker({ monthId, onRefresh }) {
       </div>
     </div>
   );
-}
+})
+
+export default MonthTracker;
+
+
