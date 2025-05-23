@@ -90,6 +90,9 @@ export default function AdminDashboard() {
       <AdminUserLookup />
       <AdminCreditAdjuster />
       <AdminSupportTabs />
+      <Link href="/admin/inbox" className="block px-4 py-2 text-sm hover:bg-gray-100 rounded">
+        📬 Support Threads
+      </Link>
       <AdminIpAlerts />
       
 
