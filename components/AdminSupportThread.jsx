@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { doc, getDoc, collection, addDoc, serverTimestamp, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
+import Link from 'next/link';
 
 export default function AdminSupportThread() {
   const router = useRouter();

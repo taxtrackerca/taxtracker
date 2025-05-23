@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, updateDoc, doc, query, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import Link from 'next/link';
 
 export default function AdminSupportRequests() {
   const [requests, setRequests] = useState([]);
