@@ -1,7 +1,6 @@
 // pages/admin/support/thread/[id].jsx
 import { useRouter } from 'next/router';
-import AdminSupportThread from '../../../../components/AdminSupportThread';
-
+import AdminSupportThread from '../../../components/AdminSupportThread';
 export default function AdminThreadPage() {
   const router = useRouter();
   const { id } = router.query;
