@@ -1,6 +1,6 @@
 // pages/support/threads.jsx
 import { useEffect, useState } from 'react';
-import { auth, db } from '../../lib/firebase';
+import { db } from '@lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import Link from 'next/link';
 
