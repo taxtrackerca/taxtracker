@@ -13,7 +13,7 @@ export default function AdminBroadcastForm() {
     e.preventDefault();
     setStatus('');
     try {
-      await postMessage({ title, content, showUntil, userId: targetUserId || null });
+      await postMessage({ title, content, userId: targetUserId || null });
       setStatus('Message posted');
       setTitle('');
       setContent('');
@@ -30,7 +30,6 @@ export default function AdminBroadcastForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border p-2 rounded" />
         <textarea placeholder="Message content" value={content} onChange={(e) => setContent(e.target.value)} required rows={4} className="w-full border p-2 rounded" />
-        <input type="date" value={showUntil} onChange={(e) => setShowUntil(e.target.value)} required className="w-full border p-2 rounded" />
         <input type="text" placeholder="Target User ID (optional)" value={targetUserId} onChange={(e) => setTargetUserId(e.target.value)} className="w-full border p-2 rounded" />
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">Send</button>
         {status && <p className="text-sm text-green-700 mt-2">{status}</p>}
