@@ -1,7 +1,7 @@
 // pages/support/thread/[threadId].jsx
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { db, auth } from '../../../lib/firebase';
+import { db, auth } from 'lib/firebase';
 import {
   doc,
   getDoc,
