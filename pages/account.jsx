@@ -418,7 +418,7 @@ export default function Account() {
         </p>
       </div>
       <hr className="my-6" />
-      <SupportTicketForm />
+      <div id="support-form"><SupportTicketForm /></div>
 
       {showPauseConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
