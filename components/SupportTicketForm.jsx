@@ -33,7 +33,7 @@ export default function SupportTicketForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
+    <form id="support-form" form onSubmit={handleSubmit} className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
       <h2 className="text-xl font-bold">Contact Support</h2>
 
       <label className="block">
