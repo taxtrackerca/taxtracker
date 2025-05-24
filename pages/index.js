@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ScreenshotGrid from '../components/ScreenshotGrid';
+import { useRouter } from 'next/router';
+import { auth } from '../lib/firebase';
 
 
 const faqItems = [
@@ -57,6 +59,18 @@ export default function Home() {
       window.location.href = '/login';
     }
   }, []);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        router.push('/dashboard');
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
 
 
   return (
