@@ -33,7 +33,6 @@ export default function SupportTicketForm() {
   };
 
   return (
-    <div id="support-form">
     <form onSubmit={handleSubmit} className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
       <h2 className="text-xl font-bold">Contact Support</h2>
 
@@ -68,6 +67,5 @@ export default function SupportTicketForm() {
 
       {status && <p className="text-sm text-green-700 mt-2">{status}</p>}
     </form>
-    </div>
   );
 }
