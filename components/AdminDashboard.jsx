@@ -11,7 +11,6 @@ import AdminBroadcastForm from './AdminBroadcastForm';
 import AdminSupportRequests from './AdminSupportRequests';
 import AdminSupportTabs from './AdminSupportTabs';
 import AdminIpAlerts from './AdminIpAlerts';
-import Link from 'next/link';
 
 
 const provinces = [
@@ -91,9 +90,6 @@ export default function AdminDashboard() {
       <AdminUserLookup />
       <AdminCreditAdjuster />
       <AdminSupportTabs />
-      <Link href="/admin/support/index.jsx" className="block px-4 py-2 text-sm hover:bg-gray-100 rounded">
-        📬 Support Threads
-      </Link>
       <AdminIpAlerts />
       
 

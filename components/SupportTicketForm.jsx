@@ -1,6 +1,6 @@
 // components/SupportTicketForm.jsx
 import { useState } from 'react';
-import { doc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 
 export default function SupportTicketForm() {
@@ -13,32 +13,21 @@ export default function SupportTicketForm() {
     setStatus('');
     const user = auth.currentUser;
     if (!user) return setStatus('You must be logged in to submit a request.');
-  
+
     try {
-      // Create thread
-      const threadRef = await addDoc(collection(db, 'supportThreads'), {
-        userId: user.uid,
+      await addDoc(collection(db, 'supportTickets'), {
         email: user.email,
+        userId: user.uid,
         subject,
-        status: 'open',
-        createdAt: serverTimestamp(),
-        lastUpdated: serverTimestamp(),
+        message,
+        resolved: false,
+        archived: false,
+        timestamp: Timestamp.now(),
       });
-  
-      // Create first message in subcollection
-      await addDoc(collection(threadRef, 'messages'), {
-        threadId: threadRef.id,
-        senderId: user.uid,
-        senderRole: 'user',
-        content: message,
-        timestamp: serverTimestamp(),
-      });
-  
       setSubject('');
       setMessage('');
       setStatus('Your support ticket has been submitted.');
     } catch (error) {
-      console.error(error);
       setStatus('Error submitting ticket.');
     }
   };

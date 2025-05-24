@@ -1,55 +1,46 @@
 // components/AdminSupportInbox.jsx
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import Link from 'next/link';
 
 export default function AdminSupportInbox() {
-  const [threads, setThreads] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchThreads = async () => {
-      const q = query(collection(db, 'supportThreads'), orderBy('lastUpdated', 'desc'));
-      const snapshot = await getDocs(q);
+    const fetchRequests = async () => {
+      const snapshot = await getDocs(collection(db, 'supportRequests'));
       const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setThreads(results);
+      setRequests(results);
       setLoading(false);
     };
 
-    fetchThreads();
+    fetchRequests();
   }, []);
 
-  const markResolved = async (id) => {
-    await updateDoc(doc(db, 'supportThreads', id), { status: 'resolved' });
-    setThreads(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
+  const handleResolve = async (id) => {
+    await deleteDoc(doc(db, 'supportRequests', id));
+    setRequests(prev => prev.filter(req => req.id !== id));
   };
 
-  if (loading) return <p className="p-4">Loading support threads...</p>;
-  if (threads.length === 0) return <p className="p-4">No support threads found.</p>;
+  if (loading) return <p className="p-4">Loading support requests...</p>;
+  if (requests.length === 0) return <p className="p-4">No open support requests.</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4">📬 Support Threads</h2>
+    <div className="max-w-3xl mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4">📬 Support Requests</h2>
       <ul className="space-y-4">
-        {threads.map((thread) => (
-          <li key={thread.id} className="border p-4 rounded shadow">
-            <p><strong>Subject:</strong> {thread.subject}</p>
-            <p><strong>Email:</strong> {thread.email}</p>
-            <p><strong>Status:</strong> {thread.status}</p>
-            <div className="flex gap-2 mt-2">
-              <Link href={`/admin/ticket/${thread.id}`} className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-500">
-                View Conversation →
-              </Link>
-              {thread.status !== 'resolved' && (
-                <button
-                  onClick={() => markResolved(thread.id)}
-                  className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-500"
-                >
-                  Mark as Resolved
-                </button>
-              )}
-            </div>
+        {requests.map((req) => (
+          <li key={req.id} className="border p-4 rounded shadow">
+            <p><strong>Email:</strong> {req.email}</p>
+            <p><strong>Requested Province:</strong> {req.requestedProvince}</p>
+            {req.message && <p><strong>Message:</strong> {req.message}</p>}
+            <button
+              onClick={() => handleResolve(req.id)}
+              className="mt-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-500"
+            >
+              Mark as Resolved
+            </button>
           </li>
         ))}
       </ul>
