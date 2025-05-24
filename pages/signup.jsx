@@ -45,6 +45,13 @@ export default function Signup() {
         body: JSON.stringify({ uid, email, referredBy: referralCode || null }),
       });
 
+      // Add this MailerLite call here
+      await fetch('/api/add-subscriber', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
