@@ -59,27 +59,26 @@ function DashboardMessages() {
   if (messages.length === 0) return null;
 
   return (
-    <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4 rounded space-y-4">
-      {messages.map((msg) => (
-        <div key={msg.id} className="space-y-1">
-          <h3 className="font-semibold text-yellow-800">{msg.title}</h3>
-          <p className="text-yellow-700 text-sm">{msg.content}</p>
-          {msg.requestReply && (
-            <a
-              href="/account#support-form"
-              className="inline-block mt-2 text-sm text-blue-700 underline hover:text-blue-900"
-            >
-              Reply to Support
-            </a>
-          )}
-          <button
-            onClick={() => handleAcknowledge(msg.id)}
-            className="text-sm text-yellow-700 underline hover:text-yellow-900"
+    <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 shadow-sm text-sm text-gray-800 space-y-2">
+      <h3 className="font-semibold text-yellow-800 text-base">{msg.title}</h3>
+      <p className="text-yellow-700 whitespace-pre-line">{msg.content}</p>
+
+      <div className="flex flex-wrap items-center gap-4 mt-2">
+        {msg.requestReply && (
+          <a
+            href="/account#support-form"
+            className="text-blue-600 hover:text-blue-800 underline font-medium"
           >
-            Acknowledge
-          </button>
-        </div>
-      ))}
+            Reply to Support
+          </a>
+        )}
+        <button
+          onClick={() => handleAcknowledge(msg.id)}
+          className="text-yellow-700 hover:text-yellow-900 underline font-medium"
+        >
+          Acknowledge
+        </button>
+      </div>
     </div>
   );
 }
