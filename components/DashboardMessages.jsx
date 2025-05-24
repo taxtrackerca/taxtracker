@@ -66,7 +66,7 @@ function DashboardMessages() {
           <p className="text-yellow-700 text-sm">{msg.content}</p>
           {msg.requestReply && (
             <a
-              href="support-form"
+              href="/account#support-form"
               className="inline-block mt-2 text-sm text-blue-700 underline hover:text-blue-900"
             >
               Reply to Support
