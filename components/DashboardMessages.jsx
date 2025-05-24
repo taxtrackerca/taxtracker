@@ -64,6 +64,14 @@ function DashboardMessages() {
         <div key={msg.id} className="space-y-1">
           <h3 className="font-semibold text-yellow-800">{msg.title}</h3>
           <p className="text-yellow-700 text-sm">{msg.content}</p>
+          {msg.requestReply && (
+            <a
+              href="/account/support"
+              className="inline-block mt-2 text-sm text-blue-700 underline hover:text-blue-900"
+            >
+              Reply to Support
+            </a>
+          )}
           <button
             onClick={() => handleAcknowledge(msg.id)}
             className="text-sm text-yellow-700 underline hover:text-yellow-900"
