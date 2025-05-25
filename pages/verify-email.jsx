@@ -8,7 +8,7 @@ import {
   deleteUser,
   signOut,
   GoogleAuthProvider,
-  reauthenticateWithPopup
+  reauthenticateWithPopup,
 } from 'firebase/auth';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { CheckCircle } from 'lucide-react';
@@ -33,19 +33,34 @@ export default function VerifyEmail() {
     return () => unsubscribe();
   }, []);
 
+  // Redirect to Stripe if email is verified
   useEffect(() => {
     const interval = setInterval(async () => {
       const currentUser = auth.currentUser;
-      if (currentUser.emailVerified) {
-        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-        const res = await fetch('/api/create-checkout-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ customerEmail: currentUser.email }),
-        });
-        const data = await res.json();
-        await stripe.redirectToCheckout({ sessionId: data.sessionId });
-      
+      if (currentUser) {
+        await currentUser.reload();
+        if (currentUser.emailVerified) {
+          try {
+            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+            const res = await fetch('/api/create-checkout-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                customerEmail: currentUser.email,
+                firebaseUid: currentUser.uid,
+              }),
+            });
+            const data = await res.json();
+            if (data.sessionId) {
+              await stripe.redirectToCheckout({ sessionId: data.sessionId });
+            } else {
+              setError('Failed to start Stripe session. Please try again later.');
+            }
+          } catch (err) {
+            console.error(err);
+            setError('Error redirecting to Stripe.');
+          }
+        }
       }
     }, 3000);
     return () => clearInterval(interval);
@@ -75,13 +90,13 @@ export default function VerifyEmail() {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error('No user signed in');
-  
+
       const providerId = currentUser.providerData[0]?.providerId;
-  
+
       if (providerId === 'password') {
         const password = prompt('Please re-enter your password to delete your account:');
         if (!password) return;
-  
+
         const credential = EmailAuthProvider.credential(currentUser.email, password);
         await reauthenticateWithCredential(currentUser, credential);
       } else if (providerId === 'google.com') {
@@ -90,17 +105,44 @@ export default function VerifyEmail() {
       } else {
         throw new Error('Re-authentication not supported for this provider.');
       }
-  
-      // Delete from Firestore
+
       await deleteDoc(doc(db, 'users', currentUser.uid));
-  
-      // Delete Auth account
       await deleteUser(currentUser);
-  
+
       router.push('/signup');
     } catch (err) {
       console.error(err);
       setError('Unable to delete account. Please try again.');
+    }
+  };
+
+  const handleManualStripeRedirect = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      await currentUser.reload();
+      if (currentUser.emailVerified) {
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+        const res = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerEmail: currentUser.email,
+            firebaseUid: currentUser.uid,
+          }),
+        });
+        const data = await res.json();
+        if (data.sessionId) {
+          await stripe.redirectToCheckout({ sessionId: data.sessionId });
+        } else {
+          setError('Stripe session failed. Try again later.');
+        }
+      } else {
+        setResent(false);
+        setError('Your email is not verified yet. Please check your inbox.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Error checking verification or starting Stripe.');
     }
   };
 
@@ -109,7 +151,7 @@ export default function VerifyEmail() {
       <CheckCircle className="mx-auto text-green-500 w-16 h-16 animate-pulse mb-4" />
       <h1 className="text-2xl font-bold mb-2">You're Almost There!</h1>
       <p className="text-gray-700 mb-4">
-        Your 30-day free trial has begun! To get started, please check your inbox and click the email verification link we sent you.
+        Your 30-day free trial has begun! Please check your inbox and click the email verification link we sent you.
       </p>
 
       {resent && <p className="text-green-600 mb-3 font-medium">Verification email sent!</p>}
@@ -127,17 +169,7 @@ export default function VerifyEmail() {
         </button>
 
         <button
-          onClick={async () => {
-            if (auth.currentUser) {
-              await auth.currentUser.reload();
-              if (auth.currentUser.emailVerified) {
-                router.push('/account-setup');
-              } else {
-                setResent(false);
-                setError('Your email is not verified yet. Please check your inbox.');
-              }
-            }
-          }}
+          onClick={handleManualStripeRedirect}
           className="text-blue-600 hover:text-blue-800 underline text-sm"
         >
           Already verified? Click here to continue
