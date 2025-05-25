@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update: if isSignedIn() &&
+        request.auth.uid == userId &&
+        !('isAdmin' in request.resource.data);
+      allow update: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+      allow delete: if isSignedIn() &&
+        request.auth.uid == userId &&
+        userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+      allow delete: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+      allow create: if isSignedIn() && request.auth.uid == userId;
+
+      match /months/{monthId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    match /months/{docId} {
+      allow read, write: if isSignedIn() && (
+        docId.startsWith(request.auth.uid + "_") || isAdmin()
+      );
+    }
+
+    match /logs/{logId} {
+      allow read, write: if isSignedIn() && (
+        request.auth.uid == resource.data.userId || isAdmin()
+      );
+    }
+
+    match /messages/{msgId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /supportTickets/{ticketId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /supportRequests/{requestId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /supportThreads/{threadId} {
+      allow read, write: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid || isAdmin()
+      );
+    }
+
+    match /admin/{docId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
