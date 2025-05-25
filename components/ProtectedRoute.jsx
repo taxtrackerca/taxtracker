@@ -47,6 +47,7 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
       }
     };
 
+    if (!router.isReady) return; // 🚫 Avoid early redirect before route is ready
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         checkAccess();
