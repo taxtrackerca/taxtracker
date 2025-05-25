@@ -24,6 +24,7 @@ function DashboardMessages() {
 
       const userData = userSnap.data();
       const seen = userData.acknowledgedBroadcasts || [];
+      const signupTime = userData.signupTimestamp?.toDate(); // Convert Firestore timestamp to JS Date
 
       // Initialize field if missing
       if (!userData.acknowledgedBroadcasts) {
@@ -34,7 +35,14 @@ function DashboardMessages() {
       const snap = await getDocs(collection(db, 'messages'));
       const filtered = snap.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(msg => (!msg.userId || msg.userId === user.uid) && !seen.includes(msg.id));
+        .filter(msg => {
+          const msgTime = msg.timestamp?.toDate?.(); // handle Firestore Timestamp
+          return (
+            (!msg.userId || msg.userId === user.uid) &&
+            !seen.includes(msg.id) &&
+            (!msgTime || msgTime > signupTime)
+          );
+        });
 
       setMessages(filtered);
       setAcknowledged(seen);
