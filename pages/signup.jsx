@@ -23,38 +23,42 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
-  
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-  
+
     if (!acceptedTerms) {
       setError('You must accept the terms and privacy policy.');
       return;
     }
-  
+
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
+
+      // ✅ Send verification email
+      await sendEmailVerification(result.user);
+
+      const token = await result.user.getIdToken();
+
       const uid = result.user.uid;
-  
+
       // Save user to Firestore
       await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid, email, referredBy: referralCode || null }),
       });
-  
+
       // Add to MailerLite
       await fetch('/api/add-subscriber', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-  
-      // Send verification email
-      await result.user.sendEmailVerification();
-  
+
+
       // Redirect to verify email page
       router.push('/verify-email');
     } catch (err) {
