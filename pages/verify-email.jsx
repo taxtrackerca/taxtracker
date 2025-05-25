@@ -2,8 +2,8 @@
 // pages/verify-email.jsx
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { auth } from '../lib/firebase';
-import { sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, deleteUser, signOut } from 'firebase/auth';
+import { auth, db } from '../lib/firebase';
+import { sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, deleteUser, signOut, GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react'; // Make sure lucide-react is installed
 import { deleteDoc, doc } from 'firebase/firestore';
@@ -15,6 +15,7 @@ export default function VerifyEmail() {
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  
   const handleLogout = async () => {
     await signOut(auth);
     router.push('/login');
@@ -69,20 +70,27 @@ export default function VerifyEmail() {
   const handleDeleteAndRestart = async () => {
     try {
       const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error('No user signed in');
   
-      if (!currentUser) throw new Error('No user signed in.');
+      const providerId = currentUser.providerData[0]?.providerId;
   
-      const email = currentUser.email;
-      const password = prompt('Please re-enter your password to delete your account:');
+      if (providerId === 'password') {
+        const password = prompt('Please re-enter your password to delete your account:');
+        if (!password) return;
   
-      if (!password) return;
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+      } else if (providerId === 'google.com') {
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(currentUser, provider);
+      } else {
+        throw new Error('Re-authentication not supported for this provider.');
+      }
   
-      const credential = EmailAuthProvider.credential(email, password);
+      await deleteDoc(doc(db, 'users', currentUser.uid));
+      await deleteUser(currentUser);
+      router.push('/signup');
   
-      await reauthenticateWithCredential(currentUser, credential); // ✅ Reauth required
-      await deleteDoc(doc(db, 'users', currentUser.uid));          // ✅ Delete Firestore
-      await deleteUser(currentUser);                               // ✅ Delete Auth
-      router.push('/signup');                                      // ✅ Redirect
     } catch (err) {
       console.error(err);
       setError('Unable to delete account. Please try again.');
@@ -110,7 +118,7 @@ export default function VerifyEmail() {
             resendCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500'
           }`}
         >
-          {resendCooldown > 0 ? `Try again in ${resendCooldown}s` : 'Resend Email'}
+          {resendCooldown > 0 ? `Try again in ${resendCooldown}s` : 'Send Email'}
         </button>
   
         <button
