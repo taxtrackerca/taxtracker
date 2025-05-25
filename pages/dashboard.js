@@ -37,12 +37,23 @@ export default function Dashboard() {
       if (!currentUser) {
         router.push('/login');
       } else {
+        await currentUser.reload(); // refresh email verification status
+        if (!currentUser.emailVerified) {
+          router.push('/verify-email');
+         return;
+       }
         setUser(currentUser);
         const uid = currentUser.uid;
         const userDoc = await getDoc(doc(db, 'users', uid));
         if (!userDoc.exists()) return;
 
         const data = userDoc.data();
+
+        // Check if account setup is incomplete
+        if (!data.businessName || !data.province) {
+          router.push('/account-setup');
+          return;
+        }
         setUserData(data);
         setBusinessName(data.businessName || '');
 

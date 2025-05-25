@@ -63,7 +63,7 @@ export default function VerifyEmail() {
         Your 30-day free trial has begun! To get started, please check your inbox and click the email verification link we sent you.
       </p>
 
-      {resent && <p className="text-green-600 mb-2">Verification email resent!</p>}
+      {resent && <p className="text-green-600 mb-2">Verification email sent!</p>}
       {error && <p className="text-red-500 mb-2">{error}</p>}
 
       <button
@@ -73,9 +73,23 @@ export default function VerifyEmail() {
         Resend Email
       </button>
 
-      <div className="text-sm text-gray-600">
-        Already verified? <Link href="/dashboard" className="underline">Go to Dashboard</Link>
-      </div>
+      <button
+  onClick={async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      if (auth.currentUser.emailVerified) {
+        router.push('/account-setup');
+      } else {
+        setError('Your email is not verified yet. Please check your inbox.');
+      }
+    }
+  }}
+  className="text-sm underline text-blue-600 hover:text-blue-800"
+>
+  Already verified? Click here to continue
+</button>
+
+     
     </div >
   );
 }
