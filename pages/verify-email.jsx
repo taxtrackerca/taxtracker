@@ -89,7 +89,6 @@ export default function VerifyEmail() {
       await addDoc(collection(db, 'support_tickets'), {
         type: 'account_deleted',
         email: currentUser.email,
-        uid: currentUser.uid,
         timestamp: serverTimestamp(),
         reason: 'User could not verify email and chose to delete and start over.',
       });
