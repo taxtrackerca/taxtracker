@@ -1,5 +1,4 @@
 import { onRequest } from 'firebase-functions/v2/https';
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { setGlobalOptions } from 'firebase-functions/v2/options';
 import admin from 'firebase-admin';
 import express from 'express';
@@ -69,26 +68,3 @@ app.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
 export const stripeWebhook = onRequest({ rawRequest: true }, app);
 
 
-export const deleteStripeCustomer = onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new HttpsError('unauthenticated', 'Request had no auth context.');
-  }
-
-  const customerId = data.customerId;
-  if (!customerId) {
-    throw new HttpsError('invalid-argument', 'Missing Stripe customer ID.');
-  }
-
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16',
-  });
-
-  try {
-    await stripe.customers.del(customerId);
-    console.log(`🗑️ Deleted Stripe customer: ${customerId}`);
-    return { success: true };
-  } catch (err) {
-    console.error('❌ Failed to delete Stripe customer:', err);
-    throw new HttpsError('internal', 'Stripe deletion failed');
-  }
-});

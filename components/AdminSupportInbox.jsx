@@ -12,7 +12,7 @@ export default function AdminSupportInbox() {
       const snapshot = await getDocs(collection(db, 'supportRequests'));
       const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setRequests(results);
-      setLoading(false);
+      setLoading(false); 
     };
 
     fetchRequests();
