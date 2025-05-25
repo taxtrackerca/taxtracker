@@ -23,53 +23,40 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-
+  
     if (!acceptedTerms) {
       setError('You must accept the terms and privacy policy.');
       return;
     }
-
+  
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      const token = await result.user.getIdToken();
       const uid = result.user.uid;
-
+  
+      // Save user to Firestore
       await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid, email, referredBy: referralCode || null }),
       });
-
-      // Add this MailerLite call here
+  
+      // Add to MailerLite
       await fetch('/api/add-subscriber', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          customerEmail: email,
-          firebaseUid: uid,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('Stripe session creation failed.');
-      }
+  
+      // Send verification email
+      await result.user.sendEmailVerification();
+  
+      // Redirect to verify email page
+      router.push('/verify-email');
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('An account with this email already exists. Please log in instead.');

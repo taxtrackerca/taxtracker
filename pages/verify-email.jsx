@@ -12,6 +12,7 @@ import {
 } from 'firebase/auth';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { CheckCircle } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
 
 export default function VerifyEmail() {
   const router = useRouter();
@@ -35,9 +36,16 @@ export default function VerifyEmail() {
   useEffect(() => {
     const interval = setInterval(async () => {
       const currentUser = auth.currentUser;
-      if (currentUser) {
-        await currentUser.reload();
-        if (currentUser.emailVerified) router.push('/account-setup');
+      if (currentUser.emailVerified) {
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+        const res = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerEmail: currentUser.email }),
+        });
+        const data = await res.json();
+        await stripe.redirectToCheckout({ sessionId: data.sessionId });
+      
       }
     }, 3000);
     return () => clearInterval(interval);
