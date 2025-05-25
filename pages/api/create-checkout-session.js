@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
     console.log('✅ Stripe session created:', session.url);
 
-    res.status(200).json({ url: session.url });
+    res.status(200).json({ sessionId: session.url });
   } catch (err) {
     console.error('❌ Stripe session creation error:', err);
     res.status(500).json({ error: err.message });
