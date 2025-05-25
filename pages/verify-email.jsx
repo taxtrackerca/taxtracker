@@ -6,26 +6,29 @@ import { auth } from '../lib/firebase';
 import { sendEmailVerification } from 'firebase/auth';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react'; // Make sure lucide-react is installed
+import { signOut } from 'firebase/auth';
+import { deleteUser } from 'firebase/auth';
+import { deleteDoc, doc } from 'firebase/firestore';
 
 export default function VerifyEmail() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [resent, setResent] = useState(false);
   const [error, setError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-
-        if (!currentUser.emailVerified && !resent) {
-          sendEmailVerification(currentUser)
-            .then(() => setResent(true))
-            .catch(() => setError('Failed to send verification email.'));
-        }
       }
     });
-
+  
     return () => unsubscribe();
   }, []);
 
@@ -43,15 +46,47 @@ export default function VerifyEmail() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [resendCooldown]);
+
   const handleResend = async () => {
     try {
-      if (user) {
+      if (user && resendCooldown === 0) {
         await sendEmailVerification(user);
         setResent(true);
         setError('');
+        setResendCooldown(60); // 60-second timer
       }
     } catch (err) {
       setError('Failed to resend email. Please try again.');
+    }
+  };
+
+  const handleDeleteAndRestart = async () => {
+    try {
+      const currentUser = auth.currentUser;
+  
+      if (currentUser) {
+        const uid = currentUser.uid;
+  
+        // 1. Delete Firestore user doc
+        await deleteDoc(doc(db, 'users', uid));
+  
+        // 2. Delete Firebase Auth user
+        await deleteUser(currentUser);
+  
+        // 3. Redirect to signup
+        router.push('/signup');
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      setError('Unable to delete account. Please try again.');
     }
   };
 
@@ -67,11 +102,14 @@ export default function VerifyEmail() {
       {error && <p className="text-red-500 mb-2">{error}</p>}
 
       <button
-        onClick={handleResend}
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500 mb-4"
-      >
-        Resend Email
-      </button>
+  onClick={handleResend}
+  disabled={resendCooldown > 0}
+  className={`bg-blue-600 text-white px-6 py-2 rounded mb-4 ${
+    resendCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500'
+  }`}
+>
+  {resendCooldown > 0 ? `Try again in ${resendCooldown}s` : 'Resend Email'}
+</button>
 
       <button
   onClick={async () => {
@@ -87,6 +125,19 @@ export default function VerifyEmail() {
   className="text-sm underline text-blue-600 hover:text-blue-800"
 >
   Already verified? Click here to continue
+</button>
+<button
+  onClick={handleLogout}
+  className="mt-2 text-sm text-gray-600 underline hover:text-gray-800"
+>
+  Log out
+</button>
+
+<button
+  onClick={handleDeleteAndRestart}
+  className="mt-2 text-sm text-red-600 underline hover:text-red-800"
+>
+  Can't verify your email? Delete account and start over
 </button>
 
      

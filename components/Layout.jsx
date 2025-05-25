@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { useRouter } from 'next/router';
+
+
 
 export default function Layout({ children }) {
+  const router = useRouter();
+  const hideNavRoutes = ['/verify-email']; // Add more routes as needed
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -19,13 +24,17 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-background text-text flex flex-col font-sans hover:no-underline">
-      {/* Header */}
-      <header className="bg-white shadow fixed w-full z-50 top-0 hover:text-blue-600 hover:no-underline ">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center hover:no-underline">
-          <Link href="/" className="flex items-center space-x-2 hover:text-blue-600 hover:no-underline">
-            <img src="/logo.png" alt="TaxTracker Logo" className="h-8 w-auto" />
-            <span className="text-2xl font-bold text-black font-poppins tracking-tight text-primary">TaxTracker</span>
-          </Link>
+      
+      {/* Conditionally show header */}
+      {!hideNavRoutes.includes(router.pathname) && (
+        <header className="bg-white shadow fixed w-full z-50 top-0 hover:text-blue-600 hover:no-underline">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center hover:no-underline">
+            <Link href="/" className="flex items-center space-x-2 hover:text-blue-600 hover:no-underline">
+              <img src="/logo.png" alt="TaxTracker Logo" className="h-8 w-auto" />
+              <span className="text-2xl font-bold text-black font-poppins tracking-tight text-primary">
+                TaxTracker
+              </span>
+            </Link>
 
 
 
@@ -89,6 +98,7 @@ export default function Layout({ children }) {
           )}
         </div>
       </header>
+    )}
 
       {/* Spacer to account for fixed header height */}
       <div className="h-20"></div>
