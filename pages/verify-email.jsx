@@ -102,7 +102,7 @@ export default function VerifyEmail() {
       <CheckCircle className="mx-auto text-green-500 w-16 h-16 animate-pulse mb-4" />
       <h1 className="text-2xl font-bold mb-2">You're Almost There!</h1>
       <p className="text-gray-700 mb-4">
-        Your 30-day free trial has begun! To get started, please check your inbox and click the email verification link we sent you.
+        Your 30-day free trial has begun! To get started, please press the Send Email button below, check your inbox and click the email verification link we sent you. Be sure to check your junk mail in not in your inbox.
       </p>
 
       {/* Success or error messages */}

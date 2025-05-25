@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
-export default function ProtectedRoute({ children, adminOnly = false }) {
+export default function ProtectedRoute({ children, adminOnly = false, allowIncompleteProfile = false }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,9 +30,11 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
         const data = userDoc.data();
 
         if (!data?.businessName || !data?.province) {
-          safeRedirect('/account-setup');
-          return;
-        }
+            if (!allowIncompleteProfile) {
+              safeRedirect('/account-setup');
+              return;
+            }
+          }
 
         if (adminOnly && !data?.isAdmin) {
           safeRedirect('/');
