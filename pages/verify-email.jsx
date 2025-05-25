@@ -6,7 +6,7 @@ import { auth, db } from '../lib/firebase';
 import { sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, deleteUser, signOut, GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react'; // Make sure lucide-react is installed
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function VerifyEmail() {
   const router = useRouter();
@@ -86,6 +86,13 @@ export default function VerifyEmail() {
       } else {
         throw new Error('Re-authentication not supported for this provider.');
       }
+      await addDoc(collection(db, 'support_tickets'), {
+        type: 'account_deleted',
+        email: currentUser.email,
+        uid: currentUser.uid,
+        timestamp: serverTimestamp(),
+        reason: 'User could not verify email and chose to delete and start over.',
+      });
 
       await deleteDoc(doc(db, 'users', currentUser.uid));
       await deleteUser(currentUser);
