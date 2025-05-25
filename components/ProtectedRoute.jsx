@@ -59,11 +59,13 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
     return () => unsubscribe();
   }, [router, adminOnly]);
 
-  // Prevent multiple redirects
   const safeRedirect = (path) => {
-    if (!redirecting && router.pathname !== path) {
+    if (!redirecting && router.pathname !== path && router.isReady) {
       setRedirecting(true);
-      router.push(path);
+      // Defer redirect to the next event loop tick to avoid race
+      setTimeout(() => {
+        router.replace(path);
+      }, 0);
     }
   };
 
