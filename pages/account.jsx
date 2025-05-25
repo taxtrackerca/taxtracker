@@ -9,6 +9,7 @@ import { Check } from 'lucide-react';
 import { provincialData, federalRates, federalCredit } from '../lib/taxRates';
 import SupportForm from '../components/SupportForm';
 import SupportTicketForm from '../components/SupportTicketForm';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const provinces = [
   'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
@@ -287,6 +288,7 @@ export default function Account() {
   if (!user) return null;
 
   return (
+    <ProtectedRoute>
     <div className="p-4 max-w-xl mx-auto">
       <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
 
@@ -449,5 +451,6 @@ export default function Account() {
         </div>
       )}
     </div>
+    </ProtectedRoute>
   );
 }

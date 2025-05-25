@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const provinces = [
   'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
@@ -29,6 +30,7 @@ export default function AccountSetup() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="max-w-md mx-auto mt-20 p-4 bg-white rounded shadow">
       <h1 className="text-2xl font-bold mb-4">Account Setup</h1>
       <form onSubmit={handleSubmit}>
@@ -57,5 +59,6 @@ export default function AccountSetup() {
         </button>
       </form>
     </div>
+    </ProtectedRoute>
   );
 }

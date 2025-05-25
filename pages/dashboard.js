@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { signOut } from 'firebase/auth';
 import DashboardMessages from '../components/DashboardMessages';
 import { useRouter } from 'next/router';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -146,6 +147,7 @@ export default function Dashboard() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="p-4">
       <div className="mb-2">
         {userData?.paused && !blocked && timeLeft && (
@@ -193,7 +195,9 @@ export default function Dashboard() {
       )}
       
     </div>
+    </ProtectedRoute>
   );
+  
 }
 
 // ✅ FIXED: disables static generation for this page
