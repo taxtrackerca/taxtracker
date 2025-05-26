@@ -1,5 +1,19 @@
 import Stripe from 'stripe';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
+// ✅ Init Firebase Admin SDK (only once)
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+}
+
+const db = getFirestore();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
@@ -8,15 +22,28 @@ export default async function handler(req, res) {
   const { customerEmail, firebaseUid } = req.body;
 
   try {
-    // Step 1: Create Stripe customer
-    const customer = await stripe.customers.create({
+    // ✅ Step 1: Check if customer with email already exists
+    const existingCustomers = await stripe.customers.list({
       email: customerEmail,
-      metadata: {
-        firebaseUid,
-      },
+      limit: 1,
     });
 
-    // Step 2: Create checkout session
+    const customer = existingCustomers.data[0]
+      ? existingCustomers.data[0]
+      : await stripe.customers.create({
+          email: customerEmail,
+          metadata: { firebaseUid },
+        });
+
+    // ✅ Step 2: Save Stripe Customer ID to Firestore
+    await db.collection('users').doc(firebaseUid).set(
+      {
+        stripeCustomerId: customer.id,
+      },
+      { merge: true }
+    );
+
+    // ✅ Step 3: Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',

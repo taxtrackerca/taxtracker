@@ -22,6 +22,7 @@ export default function VerifyEmail() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [redirecting, setRedirecting] = useState(false);
   const intervalIdRef = useRef(null);
+  const redirectLockRef = useRef(false); // ✅ Add this line
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -43,10 +44,10 @@ export default function VerifyEmail() {
       await currentUser.reload();
   
       if (currentUser.emailVerified) {
-        try {
-          setRedirecting(true);
+        setRedirecting(true);
           clearInterval(intervalIdRef.current); // ✅ stop polling
-  
+        try {
+          
           const token = await currentUser.getIdToken();
           const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
   
@@ -72,12 +73,13 @@ export default function VerifyEmail() {
           console.error('Stripe redirect error:', err);
           setError('Error redirecting to Stripe. Please try again later.');
           setRedirecting(false);
+          redirectLockRef.current = false;
         }
       }
     }, 3000);
   
     return () => clearInterval(intervalIdRef.current);
-  }, []);
+  }, [redirecting]);
 
   useEffect(() => {
     if (resendCooldown > 0) {
