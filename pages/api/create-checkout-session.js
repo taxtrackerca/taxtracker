@@ -8,19 +8,19 @@ export default async function handler(req, res) {
   const { customerEmail, firebaseUid } = req.body;
 
   try {
-    // ✅ STEP 1: Create the Stripe customer with metadata
+    // Step 1: Create Stripe customer
     const customer = await stripe.customers.create({
       email: customerEmail,
       metadata: {
-        firebaseUid, // ✅ store Firebase UID directly on the customer
+        firebaseUid,
       },
     });
 
-    // ✅ STEP 2: Create the session and pass the customer ID
+    // Step 2: Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-      customer: customer.id, // ✅ pass customer ID instead of email
+      customer: customer.id,
       line_items: [
         {
           price: 'price_1RKyanGbcqZ6lOpJHtAuXFQp',
@@ -30,12 +30,12 @@ export default async function handler(req, res) {
       subscription_data: {
         trial_period_days: 30,
       },
-      success_url: `${req.headers.origin}/account-setup?session_id={CHECKOUT_SESSION_ID}`,      cancel_url: `${req.headers.origin}/signup`,
+      success_url: `${req.headers.origin}/account-setup?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin}/signup`,
     });
 
     console.log('✅ Stripe session created:', session.url);
-
-    res.status(200).json({ sessionId: session.url });
+    res.status(200).json({ url: session.url });
   } catch (err) {
     console.error('❌ Stripe session creation error:', err);
     res.status(500).json({ error: err.message });

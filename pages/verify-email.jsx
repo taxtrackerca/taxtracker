@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { auth, db } from '../lib/firebase';
 import {
@@ -20,6 +20,8 @@ export default function VerifyEmail() {
   const [resent, setResent] = useState(false);
   const [error, setError] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [redirecting, setRedirecting] = useState(false);
+  const intervalIdRef = useRef(null);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -33,37 +35,48 @@ export default function VerifyEmail() {
     return () => unsubscribe();
   }, []);
 
-  // Redirect to Stripe if email is verified
   useEffect(() => {
-    const interval = setInterval(async () => {
+    intervalIdRef.current = setInterval(async () => {
       const currentUser = auth.currentUser;
-      if (currentUser) {
-        await currentUser.reload();
-        if (currentUser.emailVerified) {
-          try {
-            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-            const res = await fetch('/api/create-checkout-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                customerEmail: currentUser.email,
-                firebaseUid: currentUser.uid,
-              }),
-            });
-            const data = await res.json();
-            if (data.sessionId) {
-              await stripe.redirectToCheckout({ sessionId: data.sessionId });
-            } else {
-              setError('Failed to start Stripe session. Please try again later.');
-            }
-          } catch (err) {
-            console.error(err);
-            setError('Error redirecting to Stripe.');
+      if (!currentUser || redirecting) return;
+  
+      await currentUser.reload();
+  
+      if (currentUser.emailVerified) {
+        try {
+          setRedirecting(true);
+          clearInterval(intervalIdRef.current); // ✅ stop polling
+  
+          const token = await currentUser.getIdToken();
+          const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+  
+          const res = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              customerEmail: currentUser.email,
+              firebaseUid: currentUser.uid,
+            }),
+          });
+  
+          const data = await res.json();
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            throw new Error('Stripe session creation failed.');
           }
+        } catch (err) {
+          console.error('Stripe redirect error:', err);
+          setError('Error redirecting to Stripe. Please try again later.');
+          setRedirecting(false);
         }
       }
     }, 3000);
-    return () => clearInterval(interval);
+  
+    return () => clearInterval(intervalIdRef.current);
   }, []);
 
   useEffect(() => {
@@ -119,20 +132,29 @@ export default function VerifyEmail() {
   const handleManualStripeRedirect = async () => {
     try {
       const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error('No user signed in');
+  
       await currentUser.reload();
+  
       if (currentUser.emailVerified) {
+        const token = await currentUser.getIdToken(); // ✅ after checking the user
         const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+  
         const res = await fetch('/api/create-checkout-session', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // ✅ correct placement
+          },
           body: JSON.stringify({
             customerEmail: currentUser.email,
             firebaseUid: currentUser.uid,
           }),
         });
+  
         const data = await res.json();
-        if (data.sessionId) {
-          await stripe.redirectToCheckout({ sessionId: data.sessionId });
+        if (data.url) {
+          window.location.href = data.url;
         } else {
           setError('Stripe session failed. Try again later.');
         }
