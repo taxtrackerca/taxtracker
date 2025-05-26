@@ -68,7 +68,7 @@ export default function Layout({ children }) {
   // 3. Popup submit
   const handleSubmit = async (email) => {
     try {
-      await fetch('/api/subscribe', {
+      await fetch('/api/add-subscriber', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

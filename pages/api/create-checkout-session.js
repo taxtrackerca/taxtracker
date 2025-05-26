@@ -43,7 +43,19 @@ export default async function handler(req, res) {
       { merge: true }
     );
 
-    // ✅ Step 3: Create checkout session
+    // ✅ Step 3: Add to MailerLite
+    try {
+      await fetch(`${req.headers.origin}/api/add-subscriber`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: customerEmail, name: '' }),
+      });
+      console.log(`✅ Added ${customerEmail} to MailerLite`);
+    } catch (mailError) {
+      console.warn(`⚠️ MailerLite add failed:`, mailError);
+    }
+
+    // ✅ Step 4: Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
