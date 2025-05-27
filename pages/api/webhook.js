@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  if (event.type === 'invoice.paid') {
+  if (event.type === 'customer.subscription.created') {
     try {
       const invoice = event.data.object;
       const customerId = invoice.customer;
