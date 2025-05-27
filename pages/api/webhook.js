@@ -82,9 +82,12 @@ export default async function handler(req, res) {
       const userData = userSnap.data();
       console.log("📄 Found user:", userData.email || 'no-email');
 
-      // 3. Apply referral logic
-      if (userData.referredBy && !userData.referralRewarded) {
-        const referrerRef = db.collection('users').doc(userData.referredBy);
+      // ✅ Access referral fields directly and safely
+      const referredBy = userData?.referredBy;
+      const referralRewarded = userData?.referralRewarded || false;
+
+      if (referredBy && !referralRewarded) {
+        const referrerRef = db.collection('users').doc(referredBy);
         const referrerSnap = await referrerRef.get();
 
         if (referrerSnap.exists) {
@@ -92,9 +95,9 @@ export default async function handler(req, res) {
           await referrerRef.update({ credits: currentCredits + 1 });
           await userRef.update({ referralRewarded: true });
 
-          console.log(`🎉 Referral credit added to ${userData.referredBy}`);
+          console.log(`🎉 Referral credit added to ${referredBy}`);
         } else {
-          console.log("⚠️ Referrer not found:", userData.referredBy);
+          console.log("⚠️ Referrer not found:", referredBy);
         }
       }
     } catch (err) {
