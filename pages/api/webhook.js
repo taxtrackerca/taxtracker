@@ -51,6 +51,7 @@ export default async function handler(req, res) {
   }
 
   if (event.type === 'customer.subscription.created') {
+    res.status(200).send('OK'); // ✅ Respond immediately
     try {
       const invoice = event.data.object;
       const customerId = invoice.customer;
