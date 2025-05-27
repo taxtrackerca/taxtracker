@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       console.warn(`⚠️ MailerLite add failed:`, mailError);
     }
 
-    // ✅ Step 4: Create checkout session
+    // ✅ Step 4: Create checkout sessio
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',

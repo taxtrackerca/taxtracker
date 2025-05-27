@@ -22,7 +22,7 @@ export default function VerifyEmail() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [redirecting, setRedirecting] = useState(false);
   const intervalIdRef = useRef(null);
-  const redirectLockRef = useRef(false); // ✅ Add this line
+  const redirectLockRef = useRef(false); // ✅ Add this 
 
   const handleLogout = async () => {
     await signOut(auth);
