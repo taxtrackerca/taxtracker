@@ -44,11 +44,27 @@ export default function Signup() {
 
       const uid = result.user.uid;
 
-      // Save user to Firestore
+      // Step 1: Lookup the referrer UID from the referralCode
+      let referredByUid = null;
+
+      if (referralCode) {
+        const refCheck = await fetch('/api/get-referrer-uid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referralCode }),
+        });
+
+        const refData = await refCheck.json();
+        if (refData?.uid) {
+          referredByUid = refData.uid;
+        }
+      }
+
+      // Step 2: Save user to Firestore with UID as referredBy
       await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, email, referredBy: referralCode || null }),
+        body: JSON.stringify({ uid, email, referredBy: referredByUid || null }),
       });
 
       // Add to MailerLite
