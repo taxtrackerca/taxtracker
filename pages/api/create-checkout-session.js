@@ -66,9 +66,7 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
-      subscription_data: {
-        trial_period_days: 0,
-      },
+      
       success_url: `${req.headers.origin}/account-setup?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/signup`,
     });
