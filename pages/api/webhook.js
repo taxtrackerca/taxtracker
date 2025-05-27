@@ -50,37 +50,39 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  if (event.type === 'customer.subscription.created') {
-    res.status(200).send('OK'); // ✅ Respond immediately
-    try {
-      const invoice = event.data.object;
-      const customerId = invoice.customer;
+  // ✅ Always respond quickly to Stripe
+  res.status(200).send('Received');
 
-      // 🔍 1. Fetch Stripe customer to get metadata
+  // ✅ Continue processing async (outside response)
+  if (event.type === 'customer.subscription.created') {
+    try {
+      const subscription = event.data.object;
+      const customerId = subscription.customer;
+
+      // 1. Fetch Stripe customer metadata
       const customer = await stripe.customers.retrieve(customerId);
       const firebaseUid = customer.metadata?.firebaseUid;
 
       if (!firebaseUid) {
         console.log("❌ No UID found in customer metadata");
-        return res.status(200).send('Missing firebaseUid');
+        return;
       }
 
       console.log("🔑 Firebase UID:", firebaseUid);
 
-      // 🔍 2. Lookup Firestore user
+      // 2. Get Firestore user
       const userRef = db.collection('users').doc(firebaseUid);
       const userSnap = await userRef.get();
 
       if (!userSnap.exists) {
-        console.log("❌ User doc not found for UID:", firebaseUid);
-        return res.status(200).send('User not found');
+        console.log("❌ User doc not found:", firebaseUid);
+        return;
       }
 
       const userData = userSnap.data();
+      console.log("📄 Found user:", userData.email || 'no-email');
 
-      console.log("📄 Found user:", userData.email);
-
-      // 🎯 3. Apply referral logic
+      // 3. Apply referral logic
       if (userData.referredBy && !userData.referralRewarded) {
         const referrerRef = db.collection('users').doc(userData.referredBy);
         const referrerSnap = await referrerRef.get();
@@ -95,13 +97,8 @@ export default async function handler(req, res) {
           console.log("⚠️ Referrer not found:", userData.referredBy);
         }
       }
-
-      return res.status(200).send('Referral check complete');
     } catch (err) {
-      console.error("❌ Webhook error:", err.message);
-      return res.status(500).send('Internal error');
+      console.error("❌ Webhook processing error:", err.message);
     }
   }
-
-  return res.status(200).send('Event received');
 }
