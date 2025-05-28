@@ -1,8 +1,8 @@
 import {onRequest} from "firebase-functions/v2/https";
 import {setGlobalOptions} from "firebase-functions/v2/options";
 import admin from "firebase-admin";
-import Stripe from "stripe";
 import express from "express";
+import Stripe from "stripe";
 
 setGlobalOptions({
   region: "us-central1",
@@ -14,7 +14,7 @@ const db = admin.firestore();
 
 const app = express();
 
-// Stripe needs raw body for webhook signature verification
+// Stripe requires raw body
 app.post("/", express.raw({type: "application/json"}), async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-10-16",
