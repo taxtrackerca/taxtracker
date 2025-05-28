@@ -18,23 +18,25 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
 
-      allow update: if isSignedIn() && request.auth.uid == userId && !('isAdmin' in request.resource.data);
-      allow update: if isServerRequest(); // Allow backend updates
-      allow update: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2"; // Admin override
-
-      allow delete: if isSignedIn() && request.auth.uid == userId && userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
-      allow delete: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2"; // Admin override
-
       allow create: if isSignedIn() && request.auth.uid == userId;
+
+      // Allow updates:
+      allow update: if isSignedIn() && request.auth.uid == userId && !('isAdmin' in request.resource.data);
+      allow update: if isAdmin(); // ✅ Allow admins to update any user
+      allow update: if isServerRequest(); // ✅ Server-to-Firestore access (like Stripe webhook)
+
+      // Allow deletes:
+      allow delete: if isSignedIn() && request.auth.uid == userId && userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+      allow delete: if isAdmin(); // ✅ Admin override for delete
 
       // Subcollection: months
       match /months/{monthId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
 
-      // Subcollection: referrals
+      // Subcollection: referrals (written only by backend)
       match /referrals/{refId} {
-        allow write: if isServerRequest(); // Only allow backend (unauth) writes
+        allow write: if isServerRequest();
       }
     }
 
@@ -64,20 +66,20 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
-    // Support requests (like province changes)
+    // Province change or deletion requests
     match /supportRequests/{requestId} {
       allow create: if isSignedIn();
       allow read, update, delete: if isAdmin();
     }
 
-    // Support thread system
+    // Support thread messages
     match /supportThreads/{threadId} {
       allow read, write: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid || isAdmin()
       );
     }
 
-    // Admin data
+    // Admin dashboard Firestore doc access
     match /admin/{docId} {
       allow read, write: if isAdmin();
     }
