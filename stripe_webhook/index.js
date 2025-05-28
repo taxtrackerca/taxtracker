@@ -4,18 +4,26 @@ import admin from "firebase-admin";
 import express from "express";
 import Stripe from "stripe";
 
+// ✅ Configure region and secret environment variables
 setGlobalOptions({
   region: "us-central1",
   secrets: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
 });
 
+// ✅ Initialize Firebase Admin SDK
 admin.initializeApp();
 const db = admin.firestore();
 
+// ✅ Create express app but DO NOT use express.json()
 const app = express();
 
-// Stripe requires raw body
-app.post("/", express.raw({type: "application/json"}), async (req, res) => {
+// ✅ Apply Stripe-specific raw body parser before any middleware
+app.use(
+    express.raw({type: "application/json"}),
+);
+
+// ✅ Define Stripe webhook handler
+app.post("/", async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-10-16",
   });
@@ -25,7 +33,7 @@ app.post("/", express.raw({type: "application/json"}), async (req, res) => {
 
   try {
     event = stripe.webhooks.constructEvent(
-        req.body,
+        req.body, // raw buffer
         sig,
         process.env.STRIPE_WEBHOOK_SECRET,
     );
@@ -36,6 +44,7 @@ app.post("/", express.raw({type: "application/json"}), async (req, res) => {
 
   console.log(`✅ Received event: ${event.type}`);
 
+  // Example: Handle invoice.paid
   if (event.type === "invoice.paid") {
     const invoice = event.data.object;
     const customer = await stripe.customers.retrieve(invoice.customer);
@@ -72,4 +81,5 @@ app.post("/", express.raw({type: "application/json"}), async (req, res) => {
   res.status(200).send("Webhook processed");
 });
 
+// ✅ Export Cloud Function
 export const stripeWebhook = onRequest({rawRequest: true}, app);
