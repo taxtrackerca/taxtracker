@@ -1,39 +1,30 @@
 import {onRequest} from "firebase-functions/v2/https";
 import {setGlobalOptions} from "firebase-functions/v2/options";
-import admin from "firebase-admin";
-import express from "express";
 import Stripe from "stripe";
+import admin from "firebase-admin";
 
-// ✅ Configure region and secret environment variables
+// ✅ Setup secrets and region
 setGlobalOptions({
   region: "us-central1",
   secrets: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
 });
 
-// ✅ Initialize Firebase Admin SDK
+// ✅ Init Firebase Admin
 admin.initializeApp();
 const db = admin.firestore();
 
-// ✅ Create express app but DO NOT use express.json()
-const app = express();
-
-// ✅ Apply Stripe-specific raw body parser before any middleware
-app.use(
-    express.raw({type: "application/json"}),
-);
-
-// ✅ Define Stripe webhook handler
-app.post("/", async (req, res) => {
+// ✅ Export webhook function directly
+export const stripeWebhook = onRequest({rawRequest: true}, async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-10-16",
   });
 
   const sig = req.headers["stripe-signature"];
-  let event;
 
+  let event;
   try {
     event = stripe.webhooks.constructEvent(
-        req.body, // raw buffer
+        req.rawBody, // ✅ Use req.rawBody, not req.body
         sig,
         process.env.STRIPE_WEBHOOK_SECRET,
     );
@@ -44,14 +35,14 @@ app.post("/", async (req, res) => {
 
   console.log(`✅ Received event: ${event.type}`);
 
-  // Example: Handle invoice.paid
+  // ✅ Example: invoice.paid handler
   if (event.type === "invoice.paid") {
     const invoice = event.data.object;
     const customer = await stripe.customers.retrieve(invoice.customer);
     const uid = customer.metadata?.firebaseUid;
 
     if (!uid) {
-      console.warn("⚠️ No firebaseUid found on customer metadata");
+      console.warn("⚠️ No firebaseUid found");
       return res.status(200).send("No action required");
     }
 
@@ -59,12 +50,11 @@ app.post("/", async (req, res) => {
     const userSnap = await userRef.get();
 
     if (!userSnap.exists) {
-      console.warn("⚠️ User document not found");
+      console.warn("⚠️ User not found");
       return res.status(200).send("No action required");
     }
 
     const userData = userSnap.data();
-
     if (userData.referredBy && !userData.referralRewarded) {
       const referrerRef = db.collection("users").doc(userData.referredBy);
       const referrerSnap = await referrerRef.get();
@@ -80,6 +70,3 @@ app.post("/", async (req, res) => {
 
   res.status(200).send("Webhook processed");
 });
-
-// ✅ Export Cloud Function
-export const stripeWebhook = onRequest({rawRequest: true}, app);
