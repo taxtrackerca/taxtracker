@@ -10,56 +10,74 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
+    function isServerRequest() {
+      return request.auth == null;
+    }
+
+    // Users collection
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow update: if isSignedIn() &&
-        request.auth.uid == userId &&
-        !('isAdmin' in request.resource.data);
-      allow update: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2";
-      allow delete: if isSignedIn() &&
-        request.auth.uid == userId &&
-        userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
-      allow delete: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+
+      allow update: if isSignedIn() && request.auth.uid == userId && !('isAdmin' in request.resource.data);
+      allow update: if isServerRequest(); // Allow backend updates
+      allow update: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2"; // Admin override
+
+      allow delete: if isSignedIn() && request.auth.uid == userId && userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+      allow delete: if request.auth.uid == "P3DLBUSvwRPTfNaMepXosdr1kRe2"; // Admin override
+
       allow create: if isSignedIn() && request.auth.uid == userId;
 
+      // Subcollection: months
       match /months/{monthId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
+
+      // Subcollection: referrals
+      match /referrals/{refId} {
+        allow write: if isServerRequest(); // Only allow backend (unauth) writes
+      }
     }
 
+    // Legacy or shared months (outside users)
     match /months/{docId} {
       allow read, write: if isSignedIn() && (
         docId.startsWith(request.auth.uid + "_") || isAdmin()
       );
     }
 
+    // Logs
     match /logs/{logId} {
       allow read, write: if isSignedIn() && (
         request.auth.uid == resource.data.userId || isAdmin()
       );
     }
 
+    // Admin messages
     match /messages/{msgId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
+    // Support tickets
     match /supportTickets/{ticketId} {
       allow create: if isSignedIn();
       allow read, update, delete: if isAdmin();
     }
 
+    // Support requests (like province changes)
     match /supportRequests/{requestId} {
       allow create: if isSignedIn();
       allow read, update, delete: if isAdmin();
     }
 
+    // Support thread system
     match /supportThreads/{threadId} {
       allow read, write: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid || isAdmin()
       );
     }
 
+    // Admin data
     match /admin/{docId} {
       allow read, write: if isAdmin();
     }

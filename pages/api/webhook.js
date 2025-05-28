@@ -50,55 +50,70 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // ✅ Always respond quickly to Stripe
   res.status(200).send('Received');
 
-  // ✅ Continue processing async (outside response)
   if (event.type === 'invoice.paid') {
     try {
       const invoice = event.data.object;
-  
-      // Ignore $0 invoices (e.g., free trials)
+
       if (invoice.amount_paid === 0) {
         console.log("🟡 Skipping $0 invoice");
         return;
       }
-  
+
       const customerId = invoice.customer;
       const customer = await stripe.customers.retrieve(customerId);
       const firebaseUid = customer.metadata?.firebaseUid;
-  
+
       if (!firebaseUid) {
         console.log("❌ No UID found in customer metadata");
         return;
       }
-  
+
       const userRef = db.collection('users').doc(firebaseUid);
       const userSnap = await userRef.get();
-  
+
       if (!userSnap.exists) {
         console.log("❌ User doc not found for UID:", firebaseUid);
         return;
       }
-  
+
       const userData = userSnap.data();
       const referredBy = userData?.referredBy;
       const referralRewarded = userData?.referralRewarded || false;
-  
-      // ✅ Only reward once, after first real payment
+
       if (referredBy && !referralRewarded) {
         const referrerRef = db.collection('users').doc(referredBy);
         const referrerSnap = await referrerRef.get();
-  
-        if (referrerSnap.exists) {
-          const currentCredits = referrerSnap.data().credits || 0;
-          await referrerRef.update({ credits: currentCredits + 1 });
-          await userRef.set({ referralRewarded: true }, { merge: true });
-  
-          console.log(`🎉 1 credit rewarded to ${referredBy} for referred user ${firebaseUid}`);
-        } else {
+
+        if (!referrerSnap.exists) {
           console.log("⚠️ Referrer not found:", referredBy);
+          return;
         }
+
+        // ✅ Add a referral log entry
+        await db
+          .collection('users')
+          .doc(referredBy)
+          .collection('referrals')
+          .doc(firebaseUid)
+          .set({
+            credited: true,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+        // ✅ Increment totalCredits
+        await referrerRef.set(
+          {
+            totalCredits: admin.firestore.FieldValue.increment(1),
+          },
+          { merge: true }
+        );
+
+        // ✅ Mark this user as rewarded
+        await userRef.set({ referralRewarded: true }, { merge: true });
+
+        console.log(`🎉 1 credit rewarded to ${referredBy} for referred user ${firebaseUid}`);
       } else {
         console.log("ℹ️ No referral reward needed or already rewarded.");
       }
