@@ -53,10 +53,15 @@ export default async function handler(req, res) {
   if (event.type === 'invoice.paid') {
     try {
       const invoice = event.data.object;
-      const customerId = invoice.customer;
+      const amountPaid = invoice.amount_paid;
 
-      // 🔍 1. Fetch Stripe customer to get metadata
-      const customer = await stripe.customers.retrieve(customerId);
+      // Skip if invoice was $0
+      if (!amountPaid || amountPaid === 0) {
+        console.log("ℹ️ Invoice paid is $0, skipping.");
+        return res.status(200).send('No action needed for $0 invoice');
+      }
+
+      const customer = await stripe.customers.retrieve(invoice.customer);
       const firebaseUid = customer.metadata?.firebaseUid;
 
       if (!firebaseUid) {
@@ -64,35 +69,22 @@ export default async function handler(req, res) {
         return res.status(200).send('Missing firebaseUid');
       }
 
-      console.log("🔑 Firebase UID:", firebaseUid);
-
-      // 🔍 2. Lookup Firestore user
       const userRef = db.collection('users').doc(firebaseUid);
       const userSnap = await userRef.get();
-
       if (!userSnap.exists) {
         console.log("❌ User doc not found for UID:", firebaseUid);
         return res.status(200).send('User not found');
       }
 
       const userData = userSnap.data();
-
       console.log("📄 Found user:", userData.email);
 
-      // 🎯 3. Apply referral logic
-      if (userData.referredBy && !userData.referralRewarded) {
-        const referrerRef = db.collection('users').doc(userData.referredBy);
-        const referrerSnap = await referrerRef.get();
-
-        if (referrerSnap.exists) {
-          const currentCredits = referrerSnap.data().credits || 0;
-          await referrerRef.update({ credits: currentCredits + 1 });
-          await userRef.update({ referralRewarded: true });
-
-          console.log(`🎉 Referral credit added to ${userData.referredBy}`);
-        } else {
-          console.log("⚠️ Referrer not found:", userData.referredBy);
-        }
+      // If referredBy exists, mark it as "used"
+      if (userData.referredBy && userData.referredBy !== 'used') {
+        await userRef.update({ referredBy: 'used' });
+        console.log(`✅ Referral marked as used for UID: ${firebaseUid}`);
+      } else {
+        console.log(`ℹ️ No referral update needed for UID: ${firebaseUid}`);
       }
 
       return res.status(200).send('Referral check complete');
