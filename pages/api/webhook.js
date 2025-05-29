@@ -25,10 +25,11 @@ if (!admin.apps.length) {
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     }),
   });
 }
+
 const db = admin.firestore();
 
 export default async function handler(req, res) {
@@ -50,100 +51,76 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // ✅ Respond immediately to Stripe
+  // ✅ Respond immediately to Stripe to avoid Vercel timeout
   res.status(200).send('Received');
 
-  // 🔄 Process in background
-  // ✅ Fully detach from Vercel's event loop
-setImmediate(() => {
-  handleStripeEvent(event).catch(err => {
-    console.error(`❌ Async error in event ${event.type}:`, err);
+  // 🔄 Fully detach background processing
+  setImmediate(() => {
+    handleStripeEvent(event).catch(err => {
+      console.error(`❌ Async error in event ${event.type}:`, err);
+    });
   });
-});
 }
 
-// 🔄 Background event handler
 async function handleStripeEvent(event) {
-  try {
-  if (event.type === 'charge.succeeded') {
-    const charge = event.data.object;
-    console.log("🔄 Handling charge.succeeded event");
+  if (event.type !== 'charge.succeeded') return;
 
-    if (!charge.amount || charge.amount === 0) {
-      console.log('⚠️ Skipping charge with 0 amount');
-      return;
-    }
+  const charge = event.data.object;
+  console.log("🔄 Handling charge.succeeded event");
 
-    const stripeCustomerId = charge.customer;
-    console.log("🔍 Stripe Customer ID:", stripeCustomerId);
-
-    const userQuery = await db.collection('users')
-      .where('stripeCustomerId', '==', stripeCustomerId)
-      .limit(1)
-      .get();
-
-    if (userQuery.empty) {
-      console.log("❌ No user found with stripeCustomerId:", stripeCustomerId);
-      return;
-    }
-
-    const userDoc = userQuery.docs[0];
-    const userData = userDoc.data();
-
-    console.log("👤 Found user:", userData.email);
-    console.log("📦 User referredBy:", userData.referredBy);
-
-    if (!userData.referredBy || userData.referredBy === 'used') {
-      console.log("ℹ️ No referral action needed");
-      return;
-    }
-
-    const referrerDoc = await db.collection('users').doc(userData.referredBy).get();
-    if (!referrerDoc.exists) {
-      console.log("⚠️ Referrer not found:", userData.referredBy);
-      return;
-    }
-
-    const referrerData = referrerDoc.data();
-    const referrerStripeId = referrerData.stripeCustomerId;
-    console.log("👤 Referrer Stripe ID:", referrerStripeId);
-
-    if (!referrerStripeId) {
-      console.log("⚠️ Referrer missing stripeCustomerId");
-      return;
-    }
-
-    const subscriptions = await stripe.subscriptions.list({
-      customer: referrerStripeId,
-      status: 'active',
-      limit: 1,
-    });
-
-    const subscription = subscriptions.data[0];
-    if (!subscription) {
-      console.log("⚠️ Referrer has no active subscription");
-      return;
-    }
-
-    console.log("📅 Current period end:", subscription.current_period_end);
-
-    const newDate = new Date(subscription.current_period_end * 1000);
-    newDate.setMonth(newDate.getMonth() + 1);
-    const newAnchor = Math.floor(newDate.getTime() / 1000);
-
-    console.log("⏩ New billing anchor:", newAnchor);
-
-    await stripe.subscriptions.update(subscription.id, {
-      billing_cycle_anchor: newAnchor,
-      proration_behavior: 'none',
-    });
-
-    console.log("✅ Stripe subscription extended");
-
-    await userDoc.ref.update({ referredBy: 'used' });
-    console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
+  if (!charge.amount || charge.amount === 0) {
+    console.log('⚠️ Skipping charge with 0 amount');
+    return;
   }
-} catch (err) {
-  console.error('❌ Error inside handleStripeEvent:', err);
-}
+
+  const stripeCustomerId = charge.customer;
+  console.log("🔍 Stripe Customer ID:", stripeCustomerId);
+
+  const userQuery = await db.collection('users')
+    .where('stripeCustomerId', '==', stripeCustomerId)
+    .limit(1)
+    .get();
+
+  if (userQuery.empty) {
+    console.log("❌ No user found with stripeCustomerId:", stripeCustomerId);
+    return;
+  }
+
+  const userDoc = userQuery.docs[0];
+  const userData = userDoc.data();
+
+  console.log("👤 Found user:", userData.email);
+  console.log("📦 User referredBy:", userData.referredBy);
+
+  if (!userData.referredBy || userData.referredBy === 'used') {
+    console.log("ℹ️ No referral action needed");
+    return;
+  }
+
+  const referrerDoc = await db.collection('users').doc(userData.referredBy).get();
+  if (!referrerDoc.exists) {
+    console.log("⚠️ Referrer not found:", userData.referredBy);
+    return;
+  }
+
+  const referrerData = referrerDoc.data();
+  const referrerStripeId = referrerData.stripeCustomerId;
+
+  if (!referrerStripeId) {
+    console.log("⚠️ Referrer missing stripeCustomerId");
+    return;
+  }
+
+  // ✅ Grant $4.95 credit to referrer using Stripe Credit Grant
+  await stripe.customers.createBalanceTransaction(referrerStripeId, {
+    amount: -495, // Stripe credits use negative amount (495 cents = $4.95)
+    currency: 'cad',
+    description: `Referral reward: ${userData.email} signed up`,
+  });
+
+  console.log("✅ Applied $4.95 credit to referrer");
+
+  // ✅ Mark referral as used
+  await userDoc.ref.update({ referredBy: 'used' });
+  console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
 }
