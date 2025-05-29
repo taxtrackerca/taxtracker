@@ -61,6 +61,7 @@ export default async function handler(req, res) {
 
 // 🔄 Background event handler
 async function handleStripeEvent(event) {
+  try {
   if (event.type === 'charge.succeeded') {
     const charge = event.data.object;
     console.log("🔄 Handling charge.succeeded event");
@@ -139,4 +140,7 @@ async function handleStripeEvent(event) {
     await userDoc.ref.update({ referredBy: 'used' });
     console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
   }
+} catch (err) {
+  console.error('❌ Error inside handleStripeEvent:', err);
+}
 }
