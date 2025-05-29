@@ -54,9 +54,12 @@ export default async function handler(req, res) {
   res.status(200).send('Received');
 
   // 🔄 Process in background
+  // ✅ Fully detach from Vercel's event loop
+setImmediate(() => {
   handleStripeEvent(event).catch(err => {
     console.error(`❌ Async error in event ${event.type}:`, err);
   });
+});
 }
 
 // 🔄 Background event handler
