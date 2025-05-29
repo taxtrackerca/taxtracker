@@ -50,59 +50,57 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  res.status(200).send('Received'); // Respond immediately to Stripe
-
-  // Continue async after response
-  setTimeout(async () => {
+  if (event.type === 'invoice.paid') {
     try {
-      if (event.type === 'invoice.paid') {
-        const invoice = event.data.object;
+      const invoice = event.data.object;
+      const customerId = invoice.customer;
 
-        if (invoice.amount_paid === 0) {
-          console.log("🟡 Skipping $0 invoice");
-          return;
-        }
+      // 🔍 1. Fetch Stripe customer to get metadata
+      const customer = await stripe.customers.retrieve(customerId);
+      const firebaseUid = customer.metadata?.firebaseUid;
 
-        const customerId = invoice.customer;
-        const customer = await stripe.customers.retrieve(customerId);
-        const firebaseUid = customer.metadata?.firebaseUid;
+      if (!firebaseUid) {
+        console.log("❌ No UID found in customer metadata");
+        return res.status(200).send('Missing firebaseUid');
+      }
 
-        if (!firebaseUid) {
-          console.log("❌ No UID found in customer metadata");
-          return;
-        }
+      console.log("🔑 Firebase UID:", firebaseUid);
 
-        const userRef = db.collection('users').doc(firebaseUid);
-        const userSnap = await userRef.get();
+      // 🔍 2. Lookup Firestore user
+      const userRef = db.collection('users').doc(firebaseUid);
+      const userSnap = await userRef.get();
 
-        if (!userSnap.exists) {
-          console.log("❌ User doc not found for UID:", firebaseUid);
-          return;
-        }
+      if (!userSnap.exists) {
+        console.log("❌ User doc not found for UID:", firebaseUid);
+        return res.status(200).send('User not found');
+      }
 
-        const userData = userSnap.data();
-        const referredBy = userData?.referredBy;
-        const referralRewarded = userData?.referralRewarded || false;
+      const userData = userSnap.data();
 
-        if (referredBy && !referralRewarded) {
-          const referrerRef = db.collection('users').doc(referredBy);
-          const referrerSnap = await referrerRef.get();
+      console.log("📄 Found user:", userData.email);
 
-          if (referrerSnap.exists) {
-            const currentCredits = referrerSnap.data().credits || 0;
-            await referrerRef.update({ credits: currentCredits + 1 });
-            await userRef.set({ referralRewarded: true }, { merge: true });
+      // 🎯 3. Apply referral logic
+      if (userData.referredBy && !userData.referralRewarded) {
+        const referrerRef = db.collection('users').doc(userData.referredBy);
+        const referrerSnap = await referrerRef.get();
 
-            console.log(`🎉 1 credit rewarded to ${referredBy} for referred user ${firebaseUid}`);
-          } else {
-            console.log("⚠️ Referrer not found:", referredBy);
-          }
+        if (referrerSnap.exists) {
+          const currentCredits = referrerSnap.data().credits || 0;
+          await referrerRef.update({ credits: currentCredits + 1 });
+          await userRef.update({ referralRewarded: true });
+
+          console.log(`🎉 Referral credit added to ${userData.referredBy}`);
         } else {
-          console.log("ℹ️ No referral reward needed or already rewarded.");
+          console.log("⚠️ Referrer not found:", userData.referredBy);
         }
       }
+
+      return res.status(200).send('Referral check complete');
     } catch (err) {
-      console.error("❌ Async webhook processing error:", err.message);
+      console.error("❌ Webhook error:", err.message);
+      return res.status(500).send('Internal error');
     }
-  }, 0);
+  }
+
+  return res.status(200).send('Event received');
 }
