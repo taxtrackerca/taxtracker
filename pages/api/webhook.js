@@ -63,6 +63,7 @@ export default async function handler(req, res) {
 async function handleStripeEvent(event) {
   if (event.type === 'charge.succeeded') {
     const charge = event.data.object;
+    console.log("🔄 Handling charge.succeeded event");
 
     if (!charge.amount || charge.amount === 0) {
       console.log('⚠️ Skipping charge with 0 amount');
@@ -70,6 +71,7 @@ async function handleStripeEvent(event) {
     }
 
     const stripeCustomerId = charge.customer;
+    console.log("🔍 Stripe Customer ID:", stripeCustomerId);
 
     const userQuery = await db.collection('users')
       .where('stripeCustomerId', '==', stripeCustomerId)
@@ -84,6 +86,9 @@ async function handleStripeEvent(event) {
     const userDoc = userQuery.docs[0];
     const userData = userDoc.data();
 
+    console.log("👤 Found user:", userData.email);
+    console.log("📦 User referredBy:", userData.referredBy);
+
     if (!userData.referredBy || userData.referredBy === 'used') {
       console.log("ℹ️ No referral action needed");
       return;
@@ -97,6 +102,8 @@ async function handleStripeEvent(event) {
 
     const referrerData = referrerDoc.data();
     const referrerStripeId = referrerData.stripeCustomerId;
+    console.log("👤 Referrer Stripe ID:", referrerStripeId);
+
     if (!referrerStripeId) {
       console.log("⚠️ Referrer missing stripeCustomerId");
       return;
@@ -114,17 +121,22 @@ async function handleStripeEvent(event) {
       return;
     }
 
+    console.log("📅 Current period end:", subscription.current_period_end);
+
     const newDate = new Date(subscription.current_period_end * 1000);
     newDate.setMonth(newDate.getMonth() + 1);
     const newAnchor = Math.floor(newDate.getTime() / 1000);
+
+    console.log("⏩ New billing anchor:", newAnchor);
 
     await stripe.subscriptions.update(subscription.id, {
       billing_cycle_anchor: newAnchor,
       proration_behavior: 'none',
     });
 
-    await userDoc.ref.update({ referredBy: 'used' });
+    console.log("✅ Stripe subscription extended");
 
-    console.log(`🎉 Referral reward granted. ${userData.referredBy} got 1 month free.`);
+    await userDoc.ref.update({ referredBy: 'used' });
+    console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
   }
 }
