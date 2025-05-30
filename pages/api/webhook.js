@@ -31,39 +31,39 @@ const getRawBody = (req) =>
     req.on('error', reject);
   });
 
-// 🚫 NOT an async function!
+// ⚠️ NOT async
 export default function handler(req, res) {
   if (req.method !== 'POST') {
-    res.status(405).end('Method Not Allowed');
+    res.status(405).send('Method Not Allowed');
     return;
   }
 
   getRawBody(req)
     .then((buf) => {
       const sig = req.headers['stripe-signature'];
-
       let event;
+
       try {
         event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
-        console.log(`✅ Stripe event received: ${event.type}`);
+        console.log(`✅ [WEBHOOK] Event received: ${event.type}`);
       } catch (err) {
         console.error('❌ Signature verification failed:', err.message);
         res.status(400).send(`Webhook Error: ${err.message}`);
         return;
       }
 
-      // ✅ Respond FIRST before any processing
+      // ✅ Respond early before doing anything else
       res.status(200).send('Received');
 
-      // ✅ Do long async work afterward, completely detached
+      // ✅ Background processing
       setImmediate(() => {
         handleStripeEvent(event).catch((err) =>
-          console.error(`❌ Error in handleStripeEvent:`, err)
+          console.error(`❌ Async error in handleStripeEvent:`, err)
         );
       });
     })
     .catch((err) => {
-      console.error('❌ Failed to read raw body:', err);
+      console.error('❌ Error parsing raw body:', err);
       res.status(500).send('Internal Server Error');
     });
 }
@@ -72,14 +72,15 @@ async function handleStripeEvent(event) {
   if (event.type !== 'charge.succeeded') return;
 
   const charge = event.data.object;
-  console.log("🔁 Handling charge.succeeded for", charge.customer);
+  console.log("🔁 Processing charge.succeeded:", charge.id);
 
   if (!charge.amount || charge.amount === 0) {
-    console.log("⚠️ Skipping 0-amount charge");
+    console.log("⚠️ Zero-amount charge, skipping");
     return;
   }
 
   const stripeCustomerId = charge.customer;
+  console.log("🔍 Looking up user with stripeCustomerId:", stripeCustomerId);
 
   const userQuery = await db
     .collection('users')
@@ -88,18 +89,16 @@ async function handleStripeEvent(event) {
     .get();
 
   if (userQuery.empty) {
-    console.log("❌ No user found with stripeCustomerId:", stripeCustomerId);
+    console.log("❌ No user found for customer ID:", stripeCustomerId);
     return;
   }
 
   const userDoc = userQuery.docs[0];
   const userData = userDoc.data();
-
-  console.log("👤 Found user:", userData.email);
-  console.log("📦 User referredBy:", userData.referredBy);
+  console.log("👤 Matched user:", userData.email);
 
   if (!userData.referredBy || userData.referredBy === 'used') {
-    console.log("ℹ️ No referral credit needed");
+    console.log("ℹ️ No referral reward needed (already used or empty)");
     return;
   }
 
@@ -111,26 +110,24 @@ async function handleStripeEvent(event) {
 
   const referrerData = referrerDoc.data();
   const referrerStripeId = referrerData.stripeCustomerId;
-  console.log("🔗 Referrer Stripe ID:", referrerStripeId);
-
   if (!referrerStripeId) {
-    console.log("⚠️ Referrer missing stripeCustomerId");
+    console.log("⚠️ Referrer has no Stripe ID");
     return;
   }
 
-  // ✅ Add credit
+  // 🧾 Apply credit to referrer
   try {
     const result = await stripe.customers.createBalanceTransaction(referrerStripeId, {
       amount: -495,
       currency: 'cad',
-      description: `Referral reward: ${userData.email} signed up`,
+      description: `Referral reward for ${userData.email}`,
     });
-    console.log("✅ Applied $4.95 credit:", result.id);
+    console.log("💰 Credit applied. Stripe TX ID:", result.id);
   } catch (err) {
-    console.error("❌ Failed to apply credit:", err.message);
+    console.error("❌ Stripe credit error:", err.message);
     return;
   }
 
   await userDoc.ref.update({ referredBy: 'used' });
-  console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
+  console.log(`🎉 Referral marked as used for ${userData.email}`);
 }
