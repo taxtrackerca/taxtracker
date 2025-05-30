@@ -66,7 +66,7 @@ export default function handler(req, res) {
 }
 
 async function handleStripeEvent(event) {
-  if (event.type !== 'charge.succeeded') return;
+  if (event.type !== 'invoice.paid') return;
 
   const charge = event.data.object;
   console.log("🔁 Handling charge.succeeded for:", charge.id);
