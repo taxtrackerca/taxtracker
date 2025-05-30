@@ -53,7 +53,7 @@ export default function handler(req, res) {
 
       res.status(200).send('Received');
 
-      setTimeout(() => {
+      return setTimeout(() => {
         handleStripeEvent(event).catch((err) =>
           console.error(`❌ Error in handleStripeEvent:`, err)
         );
