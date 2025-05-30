@@ -77,8 +77,6 @@ async function handleStripeEvent(event) {
   }
 
   const stripeCustomerId = charge.customer;
-  console.log("🔍 Looking up user with stripeCustomerId:", stripeCustomerId);
-
   const userQuery = await db
     .collection('users')
     .where('stripeCustomerId', '==', stripeCustomerId)
@@ -86,47 +84,51 @@ async function handleStripeEvent(event) {
     .get();
 
   if (userQuery.empty) {
-    console.log("❌ No user found with stripeCustomerId:", stripeCustomerId);
+    console.log("❌ No user found for customer:", stripeCustomerId);
     return;
   }
 
   const userDoc = userQuery.docs[0];
-  const userData = userDoc.data();
-  console.log("👤 Found user:", userData.email);
+  const userRef = userDoc.ref;
 
-  if (!userData.referredBy || userData.referredBy === 'used') {
-    console.log("ℹ️ No referral action needed (empty or already used)");
-    return;
-  }
+  await db.runTransaction(async (t) => {
+    const freshUserDoc = await t.get(userRef);
+    const userData = freshUserDoc.data();
 
-  const referrerDoc = await db.collection('users').doc(userData.referredBy).get();
-  if (!referrerDoc.exists) {
-    console.log("❌ Referrer not found:", userData.referredBy);
-    return;
-  }
+    if (!userData.referredBy || userData.referredBy === 'used') {
+      console.log("ℹ️ No referral credit needed or already used");
+      return;
+    }
 
-  const referrerData = referrerDoc.data();
-  const referrerStripeId = referrerData.stripeCustomerId;
-  console.log("🔗 Referrer Stripe ID:", referrerStripeId);
+    const referrerDoc = await db.collection('users').doc(userData.referredBy).get();
+    if (!referrerDoc.exists) {
+      console.log("❌ Referrer not found:", userData.referredBy);
+      return;
+    }
 
-  if (!referrerStripeId) {
-    console.log("⚠️ Referrer has no Stripe customer ID");
-    return;
-  }
+    const referrerData = referrerDoc.data();
+    const referrerStripeId = referrerData.stripeCustomerId;
 
-  try {
-    const result = await stripe.customers.createBalanceTransaction(referrerStripeId, {
-      amount: -495,
-      currency: 'cad',
-      description: `Referral reward: ${userData.email} signed up`,
-    });
+    if (!referrerStripeId) {
+      console.log("⚠️ Referrer has no Stripe customer ID");
+      return;
+    }
 
-    console.log('✅ Credit granted to referrer. Transaction ID:', result.id);
-  } catch (err) {
-    console.error('❌ Failed to apply Stripe credit:', err.message);
-    return;
-  }
+    try {
+      const result = await stripe.customers.createBalanceTransaction(referrerStripeId, {
+        amount: -495,
+        currency: 'cad',
+        description: `Referral reward: ${userData.email} signed up`,
+      });
 
-  await userDoc.ref.update({ referredBy: 'used' });
-  console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
+      console.log("✅ Credit applied. TX ID:", result.id);
+    } catch (err) {
+      console.error("❌ Stripe error applying credit:", err.message);
+      return;
+    }
+
+    // ✅ Update referredBy to prevent duplicates
+    t.update(userRef, { referredBy: 'used' });
+    console.log(`🎉 Referral marked as used for UID: ${userRef.id}`);
+  });
 }
