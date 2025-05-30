@@ -53,11 +53,11 @@ export default function handler(req, res) {
 
       res.status(200).send('Received');
 
-      setImmediate(() => {
+      setTimeout(() => {
         handleStripeEvent(event).catch((err) =>
           console.error(`❌ Error in handleStripeEvent:`, err)
         );
-      });
+      }, 0);
     })
     .catch((err) => {
       console.error('❌ Failed to read raw body:', err);
