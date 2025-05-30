@@ -72,7 +72,12 @@ async function handleStripeEvent(event) {
   if (event.type !== 'charge.succeeded') return;
 
   const charge = event.data.object;
-  if (!charge.amount || charge.amount === 0) return;
+  console.log("🔁 Handling charge.succeeded for", charge.customer);
+
+  if (!charge.amount || charge.amount === 0) {
+    console.log("⚠️ Skipping 0-amount charge");
+    return;
+  }
 
   const stripeCustomerId = charge.customer;
 
@@ -82,28 +87,49 @@ async function handleStripeEvent(event) {
     .limit(1)
     .get();
 
-  if (userQuery.empty) return;
+  if (userQuery.empty) {
+    console.log("❌ No user found with stripeCustomerId:", stripeCustomerId);
+    return;
+  }
 
   const userDoc = userQuery.docs[0];
   const userData = userDoc.data();
 
-  if (!userData.referredBy || userData.referredBy === 'used') return;
+  console.log("👤 Found user:", userData.email);
+  console.log("📦 User referredBy:", userData.referredBy);
+
+  if (!userData.referredBy || userData.referredBy === 'used') {
+    console.log("ℹ️ No referral credit needed");
+    return;
+  }
 
   const referrerDoc = await db.collection('users').doc(userData.referredBy).get();
-  if (!referrerDoc.exists) return;
+  if (!referrerDoc.exists) {
+    console.log("❌ Referrer not found:", userData.referredBy);
+    return;
+  }
 
   const referrerData = referrerDoc.data();
   const referrerStripeId = referrerData.stripeCustomerId;
-  if (!referrerStripeId) return;
+  console.log("🔗 Referrer Stripe ID:", referrerStripeId);
 
-  // ✅ Stripe credit grant instead of anchor update
-  await stripe.customers.createBalanceTransaction(referrerStripeId, {
-    amount: -495,
-    currency: 'cad',
-    description: `Referral reward: ${userData.email} signed up`,
-  });
+  if (!referrerStripeId) {
+    console.log("⚠️ Referrer missing stripeCustomerId");
+    return;
+  }
 
-  console.log('✅ Credit granted to referrer');
+  // ✅ Add credit
+  try {
+    const result = await stripe.customers.createBalanceTransaction(referrerStripeId, {
+      amount: -495,
+      currency: 'cad',
+      description: `Referral reward: ${userData.email} signed up`,
+    });
+    console.log("✅ Applied $4.95 credit:", result.id);
+  } catch (err) {
+    console.error("❌ Failed to apply credit:", err.message);
+    return;
+  }
 
   await userDoc.ref.update({ referredBy: 'used' });
   console.log(`🎉 Referral marked as used for UID: ${userDoc.id}`);
