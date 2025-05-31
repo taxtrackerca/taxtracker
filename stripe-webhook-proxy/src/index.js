@@ -9,39 +9,27 @@ export default {
     const rawBody = await request.text();
     const headers = Object.fromEntries(request.headers.entries());
 
-    console.log("✅ Received webhook from Stripe, forwarding to Firebase");
+    console.log("✅ Received webhook from Stripe, forwarding raw payload to Firebase");
 
-    const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
-    });
-
-    // Optional: verify signature
-    try {
-      const event = stripe.webhooks.constructEvent(rawBody, headers['stripe-signature'], env.STRIPE_WEBHOOK_SECRET);
-
-      if (event.type === 'invoice.paid') {
-        const invoice = event.data.object;
-
-        ctx.waitUntil(
-          fetch('https://stripewebhook-pxtikbvqfa-uc.a.run.app', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(invoice),
-          }).then(res =>
-            res.text().then(text =>
-              console.log("📤 Forwarded invoice.paid to Firebase:", res.status, text)
-            )
-          ).catch(err =>
-            console.error("❌ Error forwarding to Firebase:", err)
+    ctx.waitUntil(
+      fetch('https://us-central1-taxtracker-1ab56.cloudfunctions.net/stripeWebhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': headers['stripe-signature'], // ✅ important
+        },
+        body: rawBody, // ✅ send raw body, untouched
+      })
+        .then((res) =>
+          res.text().then((text) =>
+            console.log("📤 Forwarded to Firebase webhook:", res.status, text)
           )
-        );
-      }
-    } catch (err) {
-      console.error("❌ Stripe verification failed:", err.message);
-    }
+        )
+        .catch((err) =>
+          console.error("❌ Failed to forward to Firebase:", err)
+        )
+    );
 
-    return new Response("Received", { status: 200 });
-  }
+    return new Response('Received', { status: 200 });
+  },
 };
