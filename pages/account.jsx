@@ -34,6 +34,7 @@ export default function Account() {
   const [userData, setUserData] = useState(null); // 👈 add this line
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
+  const [balance, setBalance] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -105,6 +106,19 @@ export default function Account() {
     };
 
     auth.onAuthStateChanged(() => checkAdmin());
+  }, []);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+  
+      const res = await fetch(`/api/get-stripe-balance?uid=${currentUser.uid}`);
+      const data = await res.json();
+      setBalance(data.balance);
+    };
+  
+    fetchBalance();
   }, []);
 
   useEffect(() => {
@@ -275,7 +289,7 @@ export default function Account() {
     }
   };
 
-  
+
 
   const handleCopyLink = () => {
     const referralLink = `https://taxtracker.ca/signup?ref=${referralCode}`;
@@ -289,168 +303,167 @@ export default function Account() {
 
   return (
     <ProtectedRoute>
-    <div className="p-4 max-w-xl mx-auto">
-      <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
+      <div className="p-4 max-w-xl mx-auto">
+        <Link href="/dashboard" className="text-blue-600 hover:underline">← Back to Dashboard</Link>
 
-      <h1 className="text-2xl font-bold mb-4 mt-4">Account Settings</h1>
+        <h1 className="text-2xl font-bold mb-4 mt-4">Account Settings</h1>
 
-      {isAdmin && (
-        <Link href="/admin" className="text-blue-600 hover:underline block mb-4">
-          Go to Admin Dashboard
-        </Link>
-      )}
-
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
-        <h2 className="text-lg font-semibold mb-2">Manage Your Subscription</h2>
-        <p className="text-sm mb-4">
-          Use the link below to securely view your subscription, update your billing details and check when your next payment is due.
-        </p>
-        <a
-          href="https://billing.stripe.com/p/login/6oE0346eYfk83FCbII"
-          className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded"
-        >
-          Manage Subscription
-        </a>
-      
-
-        {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
-          !userData?.paused &&
-          <div className="mt-4">
-            <p className="text-sm mt-2 mb-2">
-              Pause your subscription before the next billing cycle, you will not be charged. Resume anytime to pick up where you left off.
-            </p>
-            <button
-              onClick={() => setShowPauseConfirm(true)}
-              className="bg-yellow-600 text-white font-semibold px-4 py-2 mb-2 rounded"
-            >
-              Pause Subscription
-            </button>
-            
-          </div>
+        {isAdmin && (
+          <Link href="/admin" className="text-blue-600 hover:underline block mb-4">
+            Go to Admin Dashboard
+          </Link>
         )}
 
-        {userData?.paused && (
-          <div className="mt-4 mb-4">
-            <button
-              onClick={handleResume}
-              className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500"
-            >
-              Resume Subscription
-            </button>
-            <p className="text-sm mt-2 mb-2">
-              If you resume before your next billing cycle, the payment date will be the same. If the date has passed, you will be charged $4.95 immediately.
-            </p>
-          </div>
-        )}
-      </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-2">Manage Your Subscription</h2>
+          <p className="text-sm mb-4">
+            Use the link below to securely view your subscription, update your billing details and check when your next payment is due.
+          </p>
+          <a
+            href="https://billing.stripe.com/p/login/6oE0346eYfk83FCbII"
+            className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded"
+          >
+            Manage Subscription
+          </a>
 
 
-      <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
-      <h2 className="text-lg font-semibold mb-2">Login Details</h2>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 mb-6 rounded" />
-      
-        <div className="flex gap-4 mb-2">
-          <button onClick={handleEmailUpdate} className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
-          <button onClick={handlePasswordReset} className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
+          {subscriptionStatus && (subscriptionStatus.status === 'active' || subscriptionStatus.status === 'trialing') && (
+            !userData?.paused &&
+            <div className="mt-4">
+              <p className="text-sm mt-2 mb-2">
+                Pause your subscription before the next billing cycle, you will not be charged. Resume anytime to pick up where you left off.
+              </p>
+              <button
+                onClick={() => setShowPauseConfirm(true)}
+                className="bg-yellow-600 text-white font-semibold px-4 py-2 mb-2 rounded"
+              >
+                Pause Subscription
+              </button>
+
+            </div>
+          )}
+
+          {userData?.paused && (
+            <div className="mt-4 mb-4">
+              <button
+                onClick={handleResume}
+                className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500"
+              >
+                Resume Subscription
+              </button>
+              <p className="text-sm mt-2 mb-2">
+                If you resume before your next billing cycle, the payment date will be the same. If the date has passed, you will be charged $4.95 immediately.
+              </p>
+            </div>
+          )}
         </div>
-      </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
-      <h2 className="text-lg font-semibold mb-2">Business Name</h2>
-      <p className="text-sm mb-4">
-          Update the name of your business on the dashboard and exported documents.
-        </p>
-        <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} className="w-full border p-2 mb-6 rounded" />
-        
 
-        <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white font-semibold px-4 py-2 rounded hover:bg-green-500 mb-2">Save Business Name</button>
-        {businessMessage && (
-          <p className="text-green-600 text-sm mt-2">{businessMessage}</p>
-        )}
-      </div>
+        <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-2">Login Details</h2>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 mb-6 rounded" />
 
-      <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
-      <h2 className="text-lg font-semibold mb-2">Location of Business</h2>
-      <p className="text-sm mb-4">
-          Your Provincial tax brackets are determined by the location of your business.
-        </p>
-        
-        <input
-          type="text"
-          value={province || 'Not Set'}
-          readOnly
-          className="w-full border p-2 rounded bg-white-100 text-gray-700 cursor-not-allowed"
-        />
-        {requestPending && (
-          <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">
-            Request Sent
-          </span>
-        )}
-        <p className="text-sm text-gray-600 mt-2">
-          Need to update the location of your business?{' '}
-          <button
-            onClick={() => setShowSupportForm(true)}
-            className="text-blue-600">
-            Submit a request
-          </button>  
-        </p>
-      
-        {showSupportForm && (
-        <div id="support-form" className="mt-6">
-          <SupportForm 
-            onSubmitSuccess={() => setShowSupportForm(false)}
+          <div className="flex gap-4 mb-2">
+            <button onClick={handleEmailUpdate} className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
+            <button onClick={handlePasswordReset} className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-2">Business Name</h2>
+          <p className="text-sm mb-4">
+            Update the name of your business on the dashboard and exported documents.
+          </p>
+          <input type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} className="w-full border p-2 mb-6 rounded" />
+
+
+          <button onClick={handleBusinessNameUpdate} className="bg-green-600 text-white font-semibold px-4 py-2 rounded hover:bg-green-500 mb-2">Save Business Name</button>
+          {businessMessage && (
+            <p className="text-green-600 text-sm mt-2">{businessMessage}</p>
+          )}
+        </div>
+
+        <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-2">Location of Business</h2>
+          <p className="text-sm mb-4">
+            Your Provincial tax brackets are determined by the location of your business.
+          </p>
+
+          <input
+            type="text"
+            value={province || 'Not Set'}
+            readOnly
+            className="w-full border p-2 rounded bg-white-100 text-gray-700 cursor-not-allowed"
           />
+          {requestPending && (
+            <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">
+              Request Sent
+            </span>
+          )}
+          <p className="text-sm text-gray-600 mt-2">
+            Need to update the location of your business?{' '}
+            <button
+              onClick={() => setShowSupportForm(true)}
+              className="text-blue-600">
+              Submit a request
+            </button>
+          </p>
+
+          {showSupportForm && (
+            <div id="support-form" className="mt-6">
+              <SupportForm
+                onSubmitSuccess={() => setShowSupportForm(false)}
+              />
+            </div>
+          )}
         </div>
-        )}
-      </div>
 
-      
 
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
-        <h2 className="text-lg font-semibold mb-2">Referral Rewards</h2>
-        <p className="text-gray-700 mb-2">
-          You have <strong>{credits}</strong> free month{credits === 1 ? '' : 's'} remaining.
-        </p>
-        <p className="text-gray-700">
-          Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
-        </p>
-        <p className="text-sm text-gray-500 mt-1">
-        Invite your friends using this code—each signup earns you a free month!  <br />
-          
-        </p>
-      </div>
-      <hr className="my-6" />
-      <div id="support-form"><SupportTicketForm /></div>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
+          <h2 className="text-lg font-semibold mb-2">Referral Rewards</h2>
+          <p className="text-gray-700 mb-2">
+            You have <strong>${balance ?? '0.00'}</strong> credit.
+          </p>
+          <p className="text-gray-700">
+            Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Invite your friends using this code—each signup earns you credit!
+          </p>
+        </div>
 
-      {showPauseConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Pause Subscription</h2>
-            <p className="text-gray-700 mb-4">
-              Pausing your subscription will keep your access active until the end of your current billing cycle.
-              After that, your dashboard will be locked until you resume. Are you sure you want to continue?
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setShowPauseConfirm(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  await handlePause();
-                  setShowPauseConfirm(false);
-                }}
-                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-500"
-              >
-                Confirm Pause
-              </button>
+        <hr className="my-6" />
+        <div id="support-form"><SupportTicketForm /></div>
+
+        {showPauseConfirm && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-bold mb-4">Pause Subscription</h2>
+              <p className="text-gray-700 mb-4">
+                Pausing your subscription will keep your access active until the end of your current billing cycle.
+                After that, your dashboard will be locked until you resume. Are you sure you want to continue?
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowPauseConfirm(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    await handlePause();
+                    setShowPauseConfirm(false);
+                  }}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-500"
+                >
+                  Confirm Pause
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </ProtectedRoute>
   );
 }
