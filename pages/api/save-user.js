@@ -13,6 +13,7 @@ if (!admin.apps.length) {
     }),
   });
 }
+
 const db = admin.firestore();
 
 export default async function handler(req, res) {
@@ -27,9 +28,14 @@ export default async function handler(req, res) {
       {
         email,
         signupTimestamp: admin.firestore.FieldValue.serverTimestamp(),
-        referralCode,             // user's unique code to share
-        referredBy: referredBy || null, // optional if they were referred
-        credits: 0,               // for tracking future free months
+        referralCode,                      // unique shareable code
+        referredBy: referredBy || null,    // ID of who referred them
+        credits: 0,                        // future reward balance
+        referralStatus: 'unpaid',          // updated once Stripe confirms
+        referralRewarded: false,           // updated after manual crediting
+        stripeCustomerId: '',              // optional for now — filled in later
+        firstPaymentDate: null,            // added when invoice.paid is triggered
+        isAdmin: false                     // default to false unless manually set
       },
       { merge: true }
     );
