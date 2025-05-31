@@ -112,12 +112,12 @@ export default function Account() {
     const fetchBalance = async () => {
       const currentUser = auth.currentUser;
       if (!currentUser) return;
-  
+
       const res = await fetch(`/api/get-stripe-balance?uid=${currentUser.uid}`);
       const data = await res.json();
       setBalance(data.balance);
     };
-  
+
     fetchBalance();
   }, []);
 
@@ -422,13 +422,21 @@ export default function Account() {
         <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
           <h2 className="text-lg font-semibold mb-2">Referral Rewards</h2>
           <p className="text-gray-700 mb-2">
-            You have <strong>${balance ?? '0.00'}</strong> credit.
-          </p>
-          <p className="text-gray-700">
-            Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Invite your friends using this code—each signup earns you credit!
+            {balance !== null ? (
+              parseFloat(balance) < 0 ? (
+                <p><strong>You have ${Math.abs(balance).toFixed(2)} credit.</strong></p>
+              ) : (
+                <p><strong>No credit yet.</strong></p>
+              )
+            ) : (
+              <p>Loading your credit...</p>
+            )}
+            <p className="text-gray-700">
+              Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Invite your friends using this code—each signup earns you credit!
+            </p>
           </p>
         </div>
 

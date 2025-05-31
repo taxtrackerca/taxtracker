@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const balanceCents = customer.balance || 0;
 
     res.status(200).json({
-      balance: (balanceCents / 100).toFixed(2),
+      balance: Math.abs(balanceCents / 100).toFixed(2),
     });
   } catch (err) {
     console.error(err);
