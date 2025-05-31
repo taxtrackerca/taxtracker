@@ -62,10 +62,14 @@ export default async function handler(req, res) {
       customer: customer.id,
       line_items: [
         {
-          price: 'price_1RT9TEGbcqZ6lOpJptyI2Blw',
+          price: 'price_1RKyanGbcqZ6lOpJHtAuXFQp',
           quantity: 1,
         },
       ],
+
+      "subscription_data": {
+        "trial_period_days": "30"
+      },
       
       success_url: `${req.headers.origin}/account-setup?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/signup`,
