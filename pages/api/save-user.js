@@ -33,9 +33,9 @@ export default async function handler(req, res) {
         credits: 0,                        // future reward balance
         referralStatus: 'unpaid',          // updated once Stripe confirms
         referralRewarded: false,           // updated after manual crediting
-        stripeCustomerId: '',              // optional for now — filled in later
+        
         firstPaymentDate: null,            // added when invoice.paid is triggered
-        isAdmin: false                     // default to false unless manually set
+        
       },
       { merge: true }
     );
