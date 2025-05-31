@@ -11,6 +11,7 @@ import AdminBroadcastForm from './AdminBroadcastForm';
 import AdminSupportRequests from './AdminSupportRequests';
 import AdminSupportTabs from './AdminSupportTabs';
 import AdminIpAlerts from './AdminIpAlerts';
+import AdminPendingReferrals from '@/components/AdminPendingReferrals';
 
 
 const provinces = [
@@ -89,6 +90,7 @@ export default function AdminDashboard() {
       <AdminOverview />
       <AdminUserLookup />
       <AdminCreditAdjuster />
+      <AdminPendingReferrals />
       <AdminSupportTabs />
       <AdminIpAlerts />
       
