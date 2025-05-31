@@ -1,0 +1,4 @@
+name = "stripe-webhook-proxy"
+main = "src/index.js"
+compatibility_date = "2025-05-31"
+node_compat = true
