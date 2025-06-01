@@ -35,6 +35,7 @@ export default function Account() {
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -150,7 +151,7 @@ export default function Account() {
   const handlePasswordReset = async () => {
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage('Password reset email sent.');
+      setMessage('Password reset email sent. Please check your inbox.');
     } catch (error) {
       setMessage(error.message);
     }
@@ -361,12 +362,17 @@ export default function Account() {
 
         <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
           <h2 className="text-lg font-semibold mb-2">Login Details</h2>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 mb-6 rounded" />
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="w-full border p-2 mb-6 rounded bg-gray-100 text-gray-600 cursor-not-allowed"
+          />
 
           <div className="flex gap-4 mb-2">
-            <button onClick={handleEmailUpdate} className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
             <button onClick={handlePasswordReset} className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
           </div>
+          {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-lg">
