@@ -40,17 +40,17 @@ export default function VerifyEmail() {
     intervalIdRef.current = setInterval(async () => {
       const currentUser = auth.currentUser;
       if (!currentUser || redirecting) return;
-  
+
       await currentUser.reload();
-  
+
       if (currentUser.emailVerified) {
         setRedirecting(true);
-          clearInterval(intervalIdRef.current); // ✅ stop polling
+        clearInterval(intervalIdRef.current); // ✅ stop polling
         try {
-          
+
           const token = await currentUser.getIdToken();
           const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-  
+
           const res = await fetch('/api/create-checkout-session', {
             method: 'POST',
             headers: {
@@ -62,7 +62,7 @@ export default function VerifyEmail() {
               firebaseUid: currentUser.uid,
             }),
           });
-  
+
           const data = await res.json();
           if (data.url) {
             window.location.href = data.url;
@@ -77,7 +77,7 @@ export default function VerifyEmail() {
         }
       }
     }, 3000);
-  
+
     return () => clearInterval(intervalIdRef.current);
   }, [redirecting]);
 
@@ -135,13 +135,13 @@ export default function VerifyEmail() {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error('No user signed in');
-  
+
       await currentUser.reload();
-  
+
       if (currentUser.emailVerified) {
         const token = await currentUser.getIdToken(); // ✅ after checking the user
         const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-  
+
         const res = await fetch('/api/create-checkout-session', {
           method: 'POST',
           headers: {
@@ -153,7 +153,7 @@ export default function VerifyEmail() {
             firebaseUid: currentUser.uid,
           }),
         });
-  
+
         const data = await res.json();
         if (data.url) {
           window.location.href = data.url;
@@ -181,13 +181,19 @@ export default function VerifyEmail() {
       {resent && <p className="text-green-600 mb-3 font-medium">Verification email sent!</p>}
       {error && <p className="text-red-600 mb-3 font-medium">{error}</p>}
 
+      {redirecting && (
+        <div className="flex flex-col items-center mb-3">
+          <div className="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-6 w-6 mb-2 animate-spin"></div>
+          <p className="text-green-600 font-semibold">✅ Email verified! Redirecting...</p>
+        </div>
+      )}
+
       <div className="flex flex-col items-center space-y-3 mb-4">
         <button
           onClick={handleResend}
           disabled={resendCooldown > 0}
-          className={`w-full max-w-xs bg-blue-600 text-white font-semibold py-2 rounded ${
-            resendCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500'
-          }`}
+          className={`w-full max-w-xs bg-blue-600 text-white font-semibold py-2 rounded ${resendCooldown > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500'
+            }`}
         >
           {resendCooldown > 0 ? `Try again in ${resendCooldown}s` : 'Send Email'}
         </button>
