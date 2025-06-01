@@ -182,9 +182,8 @@ export default function VerifyEmail() {
       {error && <p className="text-red-600 mb-3 font-medium">{error}</p>}
 
       {redirecting && (
-        <div className="flex flex-col items-center mb-3">
-          <div className="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-6 w-6 mb-2 animate-spin"></div>
-          <p className="text-green-600 font-semibold">✅ Email verified! Redirecting...</p>
+        <div className="text-green-600 font-semibold mb-3">
+          ✅ Email verified! Redirecting to your free trial...
         </div>
       )}
 
