@@ -11,6 +11,8 @@ export default function Signup() {
   const [referralCode, setReferralCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -23,28 +25,29 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
+    setStatus('');
+    setLoading(true);
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      setLoading(false);
       return;
     }
 
     if (!acceptedTerms) {
       setError('You must accept the terms and privacy policy.');
+      setLoading(false);
       return;
     }
 
     try {
+      setStatus('Creating your account...');
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
-      // ✅ Send verification email
       await sendEmailVerification(result.user);
-
       const token = await result.user.getIdToken();
-
       const uid = result.user.uid;
 
-      // Step 1: Lookup the referrer UID from the referralCode
       let referredByUid = null;
 
       if (referralCode) {
@@ -60,29 +63,28 @@ export default function Signup() {
         }
       }
 
-      // Step 2: Save user to Firestore with UID as referredBy
       await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid, email, referredBy: referredByUid || null }),
       });
 
-      // Add to MailerLite
       await fetch('/api/add-subscriber', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
-
-      // Redirect to verify email page
+      setStatus('Redirecting...');
       router.push('/verify-email');
     } catch (err) {
+      console.error(err);
       if (err.code === 'auth/email-already-in-use') {
         setError('An account with this email already exists. Please log in instead.');
       } else {
         setError(err.message || 'Signup failed.');
       }
+      setLoading(false);
     }
   };
 
@@ -156,10 +158,14 @@ export default function Signup() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition"
+            disabled={loading}
+            className={`w-full bg-blue-600 text-white py-2 rounded-md font-semibold transition ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+              }`}
           >
-            Sign Up
+            {loading ? 'Signing up...' : 'Sign Up'}
           </button>
+
+          {status && <p className="text-sm text-gray-500 mt-3 text-center">{status}</p>}
         </form>
 
         <p className="text-sm text-gray-500 mt-4 text-center">
