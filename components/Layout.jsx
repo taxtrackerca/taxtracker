@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { auth } from '../lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import ExitIntentPopup from './ExitIntentPopup';
 import ToastNotification from './ToastNotification'; // Create this component
@@ -62,7 +62,14 @@ export default function Layout({ children }) {
 
   // 2. Logout
   const handleLogout = async () => {
-    await signOut(auth);
+    try {
+      localStorage.setItem('autoLoginAllowed', 'false'); // prevent future auto-login
+      await setPersistence(auth, browserSessionPersistence); // override long-term persistence
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   // 3. Popup submit
