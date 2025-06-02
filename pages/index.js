@@ -288,7 +288,7 @@ export default function Home() {
 
           <h3 className="text-2xl font-bold text-gray-800 mb-4">How it works:</h3>
           
-          <p className="text-gray-600 mb-6">For every friday that continutes their subscription past the trial period, you will receive a free month</p>
+          <p className="text-gray-600 mb-6">For every friend that continutes their subscription past the trial period, you will receive a free month</p>
 
           <ul className="text-left text-gray-700 space-y-2 mb-8 max-w-sm mx-auto">
             <li className="flex items-start">

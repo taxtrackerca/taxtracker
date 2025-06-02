@@ -36,6 +36,8 @@ export default function Account() {
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
   const [message, setMessage] = useState('');
+  const [pendingCount, setPendingCount] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -138,6 +140,33 @@ export default function Account() {
 
     fetchSubscriptionStatus();
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchReferrals = async () => {
+      const referralsRef = collection(db, 'users');
+      const q = query(referralsRef, where('referredBy', '==', !user));
+      const snapshot = await getDocs(q);
+
+      let pending = 0;
+      let active = 0;
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.referralStatus === 'paid') {
+          active += 1;
+        } else if (data.referralStatus === 'unpaid') {
+          pending += 1;
+        }
+      });
+
+      setPendingCount(pending);
+      setActiveCount(active);
+    };
+
+    fetchReferrals();
+  }, [!user]);
 
   const handleEmailUpdate = async () => {
     try {
@@ -430,6 +459,10 @@ export default function Account() {
           <p className="text-gray-700 mb-2">
             You have <strong>${balance ?? '0.00'}</strong> credit.
           </p>
+          <p className="text-sm text-gray-500">Pending Referrals</p>
+          <p className="text-xl font-bold">{pendingCount}</p>
+          <p className="text-sm text-gray-500">Active Referrals</p>
+          <p className="text-xl font-bold">{activeCount}</p>
           <p className="text-gray-700">
             Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{referralCode}</code>
           </p>
