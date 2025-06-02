@@ -5,6 +5,7 @@ import '../styles/fonts.css';
 import { Inter } from 'next/font/google';
 import Layout from '../components/Layout';
 import { useEffect, useState } from 'react';
+import AddToHomeScreenModal from '../components/AddToHomeScreenModal';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,6 +39,7 @@ export default function MyApp({ Component, pageProps }) {
             ⚠️ You're currently offline. Please reconnect to use TaxTracker.
           </div>
         )}
+        <AddToHomeScreenModal />
         <Layout>
           <fieldset disabled={isOffline} className="w-full">
             <Component {...pageProps} />
