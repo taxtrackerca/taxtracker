@@ -146,7 +146,7 @@ export default function Account() {
 
     const fetchReferrals = async () => {
       const referralsRef = collection(db, 'users');
-      const q = query(referralsRef, where('referredBy', '==', !user));
+      const q = query(referralsRef, where('referredBy', '==', user.uid));
       const snapshot = await getDocs(q);
 
       let pending = 0;
@@ -166,7 +166,7 @@ export default function Account() {
     };
 
     fetchReferrals();
-  }, [!user]);
+  }, [user]);
 
   const handleEmailUpdate = async () => {
     try {
