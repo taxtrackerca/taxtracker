@@ -66,8 +66,7 @@ export default function AddToHomeScreenModal() {
       )}
 
       {isAndroid && deferredPrompt && (
-        <div className="bg-blue-100 text-blue-900 p-4 text-sm text-center shadow-md">
-          <strong>Install TaxTracker:</strong>
+        <div className="fixed top-0 left-0 right-0 bg-blue-100 text-blue-900 p-4 text-sm text-center shadow-md z-50">          <strong>Install TaxTracker:</strong>
           <button
             onClick={handleAndroidInstall}
             className="ml-2 bg-blue-500 text-white px-3 py-1 rounded"
@@ -78,8 +77,7 @@ export default function AddToHomeScreenModal() {
       )}
 
       {showIosModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg relative">
+        <div className="fixed top-0 left-0 right-0 bg-blue-100 text-blue-900 p-4 text-sm text-center shadow-md z-50">          
             <button
               onClick={handleCloseIosModal}
               className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
@@ -101,7 +99,7 @@ export default function AddToHomeScreenModal() {
                 className="rounded-lg mx-auto"
               />
             </div>
-          </div>
+          
         </div>
       )}
     </>
