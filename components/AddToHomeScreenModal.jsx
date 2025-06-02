@@ -84,7 +84,7 @@ export default function AddToHomeScreenModal() {
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold mb-4 text-center">Add TaxTracker to Your Home Screen</h2>
+            <h2 className="text-xl font-semibold mb-4 text-center">Add TaxTracker App to Your Home Screen</h2>
             <ol className="list-decimal list-inside space-y-2 text-sm">
               <li>Tap the <strong>Share</strong> icon <span className="inline-block">📤</span> in Safari.</li>
               <li>Scroll down and tap <strong>“Add to Home Screen”</strong>.</li>
