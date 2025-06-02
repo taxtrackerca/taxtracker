@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import ScreenshotGrid from '../components/ScreenshotGrid';
 import { useRouter } from 'next/router';
 import { auth } from '../lib/firebase';
+import AddToHomeScreenModal from '../components/AddToHomeScreenModal';
 
 
 const faqItems = [
@@ -79,6 +80,7 @@ export default function Home() {
 
 
       {/* Hero */}
+      <AddToHomeScreenModal />
       <section className="bg-white px-4 py-20 sm:py-24 text-center">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">

@@ -39,7 +39,7 @@ export default function MyApp({ Component, pageProps }) {
             ⚠️ You're currently offline. Please reconnect to use TaxTracker.
           </div>
         )}
-        <AddToHomeScreenModal />
+       
         <Layout>
           <fieldset disabled={isOffline} className="w-full">
             <Component {...pageProps} />
