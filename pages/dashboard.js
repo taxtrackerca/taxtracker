@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [timeLeft, setTimeLeft] = useState('');
   const router = useRouter();
   const trackerRef = useRef(null);
-  const [showGuide, setShowGuide] = useState(false);
+  
 
   const currentYear = new Date().getFullYear();
 
@@ -167,31 +167,11 @@ export default function Dashboard() {
         <div className="flex gap-4 mb-4">
           <ExportSummaryCSV />
           <ExportSummaryPDF />
-          <button
-            onClick={() => setShowGuide(!showGuide)}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            Getting Started Guide
-          </button>
-        </div>
+          </div>
 
         <DashboardSummary refresh={refreshYTD} />
 
-        {showGuide && (
-          <div className="mt-4 border rounded shadow overflow-hidden">
-            <iframe
-              src="/docs/TaxTracker_Getting_Started_Guide_With_Logo.pdf"
-              width="100%"
-              height="600px"
-              className="w-full"
-            >
-              <p>
-                Your browser does not support embedded PDFs.
-                <a href="/docs/TaxTracker_Getting_Started_Guide_With_Logo.pdf" target="_blank">Download here</a>.
-              </p>
-            </iframe>
-          </div>
-        )}
+        
 
         <div className="mt-6">
           <h2 className="text-xl font-semibold mb-2">Select a Month</h2>
