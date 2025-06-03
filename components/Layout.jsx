@@ -15,6 +15,7 @@ export default function Layout({ children }) {
   const [user, setUser] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showIosModal, setShowIosModal] = useState(false);
 
   // 1. Check if user is logged in
   useEffect(() => {
@@ -134,16 +135,19 @@ export default function Layout({ children }) {
               <nav className="md:hidden absolute top-full bg-white border round shadow-lg w-fit px-4 pb-4 z-50 space-y-2 text-sm border-t">
                 {user ? (
                   <>
-                    <Link href="/dashboard" className="block py-1 text-lg text-gray-800 hover:text-blue-600">Dashboard</Link>
-                    <Link href="/account" className="block py-1 text-lg text-gray-800 hover:text-blue-600">Account</Link>
+                    <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Dashboard</Link>
+                    <Link href="/account" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Account</Link>
                     <button onClick={handleLogout} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Logout</button>
+                    <button onClick={() => {setShowIosModal(true); setMenuOpen(false);  }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
                   </>
                 ) : (
                   <>
-                    <Link href="#referral" className="block py-1 text-lg text-gray-800 hover:text-blue-600">Referral Program</Link>
-                    <Link href="#faq" className="block py-1 text-lg text-gray-800 hover:text-blue-600">FAQ</Link>
-                    <Link href="#pricing" className="block py-1 text-lg text-gray-800 hover:text-blue-600">Pricing</Link>
-                    <Link href="/signup" className="block py-1 text-lg text-gray-800 hover:text-blue-600">Sign Up</Link>
+                    <Link href="#referral" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Referral Program</Link>
+                    <Link href="#faq" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">FAQ</Link>
+                    <Link href="#pricing" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Pricing</Link>
+                    <Link href="/signup" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Sign Up</Link>
+                    <button onClick={() => {setShowIosModal(true); setMenuOpen(false);  }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
+
                   </>
                 )}
               </nav>
@@ -180,6 +184,32 @@ export default function Layout({ children }) {
           onClose={() => setShowToast(false)}
         />
       )}
+      {showIosModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg relative">
+      <button
+        onClick={() => setShowIosModal(false)}
+        className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
+      <h2 className="text-xl font-semibold mb-4 text-center">Add TaxTracker to Your Home Screen</h2>
+      <ol className="list-decimal list-inside space-y-2 text-sm">
+        <li>Tap the <strong>Share</strong> icon 📤 in Safari.</li>
+        <li>Scroll down and tap <strong>“Add to Home Screen”</strong>.</li>
+        <li>Tap <strong>Add</strong> in the top right corner.</li>
+      </ol>
+      <div className="mt-4">
+        <img
+          src="/screenshots/ios-share.png"
+          alt="Share Button in Safari"
+          className="rounded-lg mx-auto"
+          width={300}
+        />
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
