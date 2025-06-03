@@ -43,9 +43,9 @@ export default function Layout({ children }) {
       // Mobile: 20s timer
       const mobileTimeout = isMobile
         ? setTimeout(() => {
-            setShowPopup(true);
-            sessionStorage.setItem('exitPopupShown', 'true');
-          }, 20000)
+          setShowPopup(true);
+          sessionStorage.setItem('exitPopupShown', 'true');
+        }, 20000)
         : null;
 
       if (!isMobile) {
@@ -111,9 +111,38 @@ export default function Layout({ children }) {
               ) : (
                 <>
                   <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
-                  <Link href="#referral" className="text-gray-800 hover:text-blue-600">Referral Program</Link>
-                  <Link href="#faq" className="text-gray-800 hover:text-blue-600">FAQ</Link>
-                  <Link href="#pricing" className="text-gray-800 hover:text-blue-600">Pricing</Link>
+                  <Link
+                    href={{
+                      pathname: '/',
+                      query: { scrollTo: 'referral' }
+                    }}
+                    scroll={false}
+                    className="text-gray-800 hover:text-blue-600"
+                  >
+                    Referral Program
+                  </Link>
+
+                  <Link
+                    href={{
+                      pathname: '/',
+                      query: { scrollTo: 'faq' }
+                    }}
+                    scroll={false}
+                    className="text-gray-800 hover:text-blue-600"
+                  >
+                    FAQ
+                  </Link>
+
+                  <Link
+                    href={{
+                      pathname: '/',
+                      query: { scrollTo: 'pricing' }
+                    }}
+                    scroll={false}
+                    className="text-gray-800 hover:text-blue-600"
+                  >
+                    Pricing
+                  </Link>
                   <Link href="/signup" className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Sign Up</Link>
                 </>
               )}
@@ -139,10 +168,10 @@ export default function Layout({ children }) {
                   <>
                     <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Dashboard</Link>
                     <Link href="/account" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Account</Link>
-                    <button onClick={() => {setShowIosModal(true); setMenuOpen(false);  }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
-                    <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
+                    <button onClick={() => { setShowIosModal(true); setMenuOpen(false); }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
+                    <Link href="/getting-started" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Getting Started</Link>
                     <button onClick={handleLogout} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Logout</button>
-                    
+
                   </>
                 ) : (
                   <>
@@ -150,8 +179,8 @@ export default function Layout({ children }) {
                     <Link href="#faq" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">FAQ</Link>
                     <Link href="#pricing" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Pricing</Link>
                     <Link href="/signup" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Sign Up</Link>
-                    <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
-                    <button onClick={() => {setShowIosModal(true); setMenuOpen(false);  }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
+                    <Link href="/getting-started" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Getting Started</Link>
+                    <button onClick={() => { setShowIosModal(true); setMenuOpen(false); }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
 
                   </>
                 )}
@@ -190,31 +219,31 @@ export default function Layout({ children }) {
         />
       )}
       {showIosModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg relative">
-      <button
-        onClick={() => setShowIosModal(false)}
-        className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
-      >
-        ✕
-      </button>
-      <h2 className="text-xl font-semibold mb-4 text-center">Add TaxTracker to Your Home Screen</h2>
-      <ol className="list-decimal list-inside space-y-2 text-sm">
-        <li>Tap the <strong>Share</strong> icon 📤 in Safari.</li>
-        <li>Scroll down and tap <strong>“Add to Home Screen”</strong>.</li>
-        <li>Tap <strong>Add</strong> in the top right corner.</li>
-      </ol>
-      <div className="mt-4">
-        <img
-          src="/screenshots/ios-share.png"
-          alt="Share Button in Safari"
-          className="rounded-lg mx-auto"
-          width={300}
-        />
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl max-w-md w-full shadow-lg relative">
+            <button
+              onClick={() => setShowIosModal(false)}
+              className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-semibold mb-4 text-center">Add TaxTracker to Your Home Screen</h2>
+            <ol className="list-decimal list-inside space-y-2 text-sm">
+              <li>Tap the <strong>Share</strong> icon 📤 in Safari.</li>
+              <li>Scroll down and tap <strong>“Add to Home Screen”</strong>.</li>
+              <li>Tap <strong>Add</strong> in the top right corner.</li>
+            </ol>
+            <div className="mt-4">
+              <img
+                src="/screenshots/ios-share.png"
+                alt="Share Button in Safari"
+                className="rounded-lg mx-auto"
+                width={300}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

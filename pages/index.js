@@ -72,6 +72,30 @@ export default function Home() {
     return () => unsubscribe();
   }, [router]);
 
+  useEffect(() => {
+    const { scrollTo } = router.query;
+
+    if (scrollTo) {
+      const element = document.getElementById(scrollTo);
+      if (element) {
+        // Small timeout helps ensure layout is ready
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [router.query]);
+
+  return (
+    <main>
+      <section id="referral">...</section>
+      <section id="faq">...</section>
+      <section id="pricing">...</section>
+      {/* other content */}
+    </main>
+  );
+}
+
 
 
   return (
@@ -335,4 +359,4 @@ export default function Home() {
 
     </div >
   );
-}
+
