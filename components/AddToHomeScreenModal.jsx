@@ -55,12 +55,12 @@ export default function AddToHomeScreenModal() {
     <>
       {showIosBanner && (
         <div className="bg-blue-100 text-blue-900 p-4 text-sm text-center shadow-md">
-          <strong>Add TaxTracker App to your Home Screen:</strong> Tap below for instructions.
+          
           <button
             onClick={() => setShowIosModal(true)}
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base sm:text-lg px-6 sm:px-8 py-3 rounded shadow-lg transition duration-200"
           >
-            Add TaxTracker App to your Home Screen
+            Add TaxTracker App to Home Screen
           </button>
         </div>
       )}
@@ -71,7 +71,7 @@ export default function AddToHomeScreenModal() {
             onClick={handleAndroidInstall}
             className="ml-2 bg-blue-500 text-white px-3 py-1 rounded"
           >
-            Add to Home Screen
+            Add TaxTracker App to Home Screen
           </button>
         </div>
       )}
