@@ -1,6 +1,8 @@
 // pages/login.jsx
 import { useState, useEffect } from 'react';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged, setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -24,7 +26,15 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      const autoLoginAllowed = localStorage.getItem('autoLoginAllowed') !== 'false';
+  
+      await setPersistence(auth, autoLoginAllowed ? browserLocalPersistence : browserSessionPersistence);
+  
       await signInWithEmailAndPassword(auth, email, password);
+  
+      // ✅ Reset the flag so next login is auto-login unless user explicitly logs out
+      localStorage.setItem('autoLoginAllowed', 'true');
+  
       router.push('/dashboard');
     } catch (err) {
       setError('Invalid login credentials.');
