@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [timeLeft, setTimeLeft] = useState('');
   const router = useRouter();
   const trackerRef = useRef(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   const currentYear = new Date().getFullYear();
 
@@ -41,8 +42,8 @@ export default function Dashboard() {
         await currentUser.reload(); // refresh email verification status
         if (!currentUser.emailVerified) {
           router.push('/verify-email');
-         return;
-       }
+          return;
+        }
         setUser(currentUser);
         const uid = currentUser.uid;
         const userDoc = await getDoc(doc(db, 'users', uid));
@@ -119,7 +120,7 @@ export default function Dashboard() {
 
   const handleMonthSelect = (month) => {
     setSelectedMonth(`${month} ${currentYear}`);
-  
+
     // Scroll after short delay to ensure component has rendered
     setTimeout(() => {
       if (trackerRef.current) {
@@ -148,56 +149,78 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-    <div className="p-4">
-      <div className="mb-2">
-        {userData?.paused && !blocked && timeLeft && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
-            Your subscription is paused. You have {timeLeft} of access remaining.
+      <div className="p-4">
+        <div className="mb-2">
+          {userData?.paused && !blocked && timeLeft && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+              Your subscription is paused. You have {timeLeft} of access remaining.
+            </div>
+          )}
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          {businessName && <p className="text-xl font-bold">{businessName}</p>}
+        </div>
+
+        <DashboardMessages />
+
+        <div className="mb-6"></div>
+
+        <div className="flex gap-4 mb-4">
+          <ExportSummaryCSV />
+          <ExportSummaryPDF />
+          <button
+            onClick={() => setShowGuide(!showGuide)}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Getting Started Guide
+          </button>
+        </div>
+
+        <DashboardSummary refresh={refreshYTD} />
+
+        {showGuide && (
+          <div className="mt-4 border rounded shadow overflow-hidden">
+            <iframe
+              src="/docs/TaxTracker_Getting_Started_Guide_With_Logo.pdf"
+              width="100%"
+              height="600px"
+              className="w-full"
+            >
+              <p>
+                Your browser does not support embedded PDFs.
+                <a href="/docs/TaxTracker_Getting_Started_Guide_With_Logo.pdf" target="_blank">Download here</a>.
+              </p>
+            </iframe>
           </div>
         )}
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        {businessName && <p className="text-sm text-gray-600">{businessName}</p>}
-      </div>
 
-      <DashboardMessages />
-
-      <div className="mb-6"></div>
-
-      <div className="flex gap-4 mb-4">
-        <ExportSummaryCSV />
-        <ExportSummaryPDF />
-      </div>
-
-      <DashboardSummary refresh={refreshYTD} />
-
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-2">Select a Month</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {months.map((month) => (
-            <button
-              key={month}
-              onClick={() => handleMonthSelect(month)}
-              className={`px-4 py-2 border rounded ${selectedMonth === `${month} ${currentYear}` ? 'bg-blue-600 text-white' : 'hover:bg-blue-100'}`}
-            >
-              {month} {currentYear}
-            </button>
-          ))}
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-2">Select a Month</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {months.map((month) => (
+              <button
+                key={month}
+                onClick={() => handleMonthSelect(month)}
+                className={`px-4 py-2 border rounded ${selectedMonth === `${month} ${currentYear}` ? 'bg-blue-600 text-white' : 'hover:bg-blue-100'}`}
+              >
+                {month} {currentYear}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {selectedMonth && (
-        <div className="mt-8" ref={trackerRef}>
-          <MonthTracker
-            monthId={selectedMonth}
-            onRefresh={() => setRefreshYTD(prev => !prev)}
-          />
-       </div>
-      )}
-      
-    </div>
+        {selectedMonth && (
+          <div className="mt-8" ref={trackerRef}>
+            <MonthTracker
+              monthId={selectedMonth}
+              onRefresh={() => setRefreshYTD(prev => !prev)}
+            />
+          </div>
+        )}
+
+      </div>
     </ProtectedRoute>
   );
-  
+
 }
 
 // ✅ FIXED: disables static generation for this page

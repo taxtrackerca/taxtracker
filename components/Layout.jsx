@@ -103,12 +103,14 @@ export default function Layout({ children }) {
             <nav className="hidden md:flex space-x-6 text-sm">
               {user ? (
                 <>
+                  <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
                   <Link href="/dashboard" className="text-gray-800 hover:text-blue-600">Dashboard</Link>
                   <Link href="/account" className="text-gray-800 hover:text-blue-600">Account</Link>
                   <button onClick={handleLogout} className="text-gray-800 hover:text-blue-600">Logout</button>
                 </>
               ) : (
                 <>
+                  <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
                   <Link href="#referral" className="text-gray-800 hover:text-blue-600">Referral Program</Link>
                   <Link href="#faq" className="text-gray-800 hover:text-blue-600">FAQ</Link>
                   <Link href="#pricing" className="text-gray-800 hover:text-blue-600">Pricing</Link>
@@ -137,8 +139,10 @@ export default function Layout({ children }) {
                   <>
                     <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Dashboard</Link>
                     <Link href="/account" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Account</Link>
-                    <button onClick={handleLogout} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Logout</button>
                     <button onClick={() => {setShowIosModal(true); setMenuOpen(false);  }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
+                    <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
+                    <button onClick={handleLogout} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Logout</button>
+                    
                   </>
                 ) : (
                   <>
@@ -146,6 +150,7 @@ export default function Layout({ children }) {
                     <Link href="#faq" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">FAQ</Link>
                     <Link href="#pricing" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Pricing</Link>
                     <Link href="/signup" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Sign Up</Link>
+                    <Link href="/getting-started" className="text-gray-800 hover:text-blue-600">Getting Started</Link>
                     <button onClick={() => {setShowIosModal(true); setMenuOpen(false);  }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
 
                   </>
