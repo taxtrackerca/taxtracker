@@ -86,16 +86,6 @@ export default function Home() {
     }
   }, [router.query]);
 
-  return (
-    <main>
-      <section id="referral">...</section>
-      <section id="faq">...</section>
-      <section id="pricing">...</section>
-      {/* other content */}
-    </main>
-  );
-}
-
 
 
   return (
@@ -359,4 +349,4 @@ export default function Home() {
 
     </div >
   );
-
+}
