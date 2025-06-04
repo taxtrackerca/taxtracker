@@ -38,10 +38,10 @@ service cloud.firestore {
 
     // Legacy or shared months (outside users)
     match /months/{docId} {
-      allow read, write: if isSignedIn() && (
-        docId.startsWith(request.auth.uid + "_") || isAdmin()
-      );
-    }
+  allow read, write: if isSignedIn() && (
+    docId.matches("^" + request.auth.uid + "_.*") || isAdmin()
+  );
+}
 
     // Logs
     match /logs/{logId} {
