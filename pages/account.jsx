@@ -35,8 +35,7 @@ export default function Account() {
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
-  const [pendingReferrals, setPendingReferrals] = useState(0);
-  const [activeReferrals, setActiveReferrals] = useState(0);
+
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -70,23 +69,7 @@ export default function Account() {
             setIsAdmin(true);
           }
 
-          // Fetch referral counts
-          const pendingQuery = query(
-            collection(db, 'users'),
-            where('referredBy', '==', u.uid),
-            where('referralStatus', '==', 'unpaid')
-          );
-          const activeQuery = query(
-            collection(db, 'users'),
-            where('referredBy', '==', u.uid),
-            where('referralStatus', '==', 'paid')
-          );
-          const [pendingSnap, activeSnap] = await Promise.all([
-            getDocs(pendingQuery),
-            getDocs(activeQuery)
-          ]);
-          setPendingReferrals(pendingSnap.size);
-          setActiveReferrals(activeSnap.size);
+          
         }
       }
     });
@@ -450,10 +433,7 @@ export default function Account() {
           <p className="text-sm text-gray-500 mt-1">
             Invite your friends using this code—each signup earns you credit!
           </p>
-          <p className="text-sm text-gray-700 mt-4">
-            Active Referrals: <strong>{activeReferrals}</strong><br />
-            Pending Referrals: <strong>{pendingReferrals}</strong>
-          </p>
+          
         </div>
 
         <hr className="my-6" />
