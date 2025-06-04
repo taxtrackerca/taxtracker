@@ -17,23 +17,20 @@ service cloud.firestore {
     // Users collection
     match /users/{userId} {
   allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-  allow list: if isSignedIn(); // enables querying referred users
+  allow list: if isSignedIn(); // needed for referral queries
+  allow read: if isServerRequest(); // needed for SSR access
 
   allow create: if isSignedIn() && request.auth.uid == userId;
-
   allow update: if isSignedIn() && request.auth.uid == userId && !('isAdmin' in request.resource.data);
   allow update: if isAdmin();
   allow update: if isServerRequest();
-
-  allow delete: if isSignedIn() && request.auth.uid == userId && userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+  allow delete: if isSignedIn() && request.auth.uid == userId;
   allow delete: if isAdmin();
 
-  // Subcollection: months
   match /months/{monthId} {
     allow read, write: if isSignedIn() && request.auth.uid == userId;
   }
 
-  // Subcollection: referrals (written only by backend)
   match /referrals/{refId} {
     allow write: if isServerRequest();
   }
