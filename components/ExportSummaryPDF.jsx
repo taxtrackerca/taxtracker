@@ -150,7 +150,9 @@ export default function ExportSummaryPDF() {
       doc.text(`Prepared using TaxTracker.ca - ${year}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
 
       // Right-aligned page number
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 14, pageHeight - 10);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 14, pageHeight - 10, {
+        align: 'right'
+      });
     }
     doc.save(filename);
   };
