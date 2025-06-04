@@ -29,8 +29,8 @@ export default function ExportSummaryPDF() {
     const monthsRef = collection(db, 'users', userId, 'months');
     const snapshot = await getDocs(monthsRef);
     const categories = [
-      'advertising','meals','badDebts','insurance','interest','businessTax','office','supplies','legal','admin',
-      'rent','repairs','salaries','propertyTax','travel','utilities','fuel','delivery','other'
+      'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin',
+      'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other'
     ];
 
     let totalIncome = 0;
@@ -58,14 +58,14 @@ export default function ExportSummaryPDF() {
         expenseTotals[cat] += val;
       });
 
-      const homePct = parseFloat(data.businessSqft || 0) / parseFloat(data.homeSqft || 1);
+      const homePct = data.homeSqft > 0 ? parseFloat(data.businessSqft || 0) / data.homeSqft : 0;
       const home = [
-        'homeHeat','homeElectricity','homeInsurance','homeMaintenance','homeMortgage','homePropertyTax'
+        'homeHeat', 'homeElectricity', 'homeInsurance', 'homeMaintenance', 'homeMortgage', 'homePropertyTax'
       ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * homePct;
 
-      const vehiclePct = parseFloat(data.businessKms || 0) / parseFloat(data.kmsThisMonth || 1);
+      const vehiclePct = data.kmsThisMonth > 0 ? parseFloat(data.businessKms || 0) / data.kmsThisMonth : 0;
       const vehicle = [
-        'vehicleFuel','vehicleInsurance','vehicleLicense','vehicleRepairs'
+        'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
       ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * vehiclePct;
 
       const totalExpenses = monthBusiness + home + vehicle;
@@ -98,26 +98,61 @@ export default function ExportSummaryPDF() {
     autoTable(doc, {
       startY: 35,
       head: [['Month', 'Income', 'GST Collected', 'GST Remitted', 'Business Expenses', 'Home Use', 'Vehicle Use', 'Total Expenses']],
-      body: monthSummaries
+      body: monthSummaries,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [52, 73, 94] }
     });
 
     const totalsList = categories.map(cat => [cat.charAt(0).toUpperCase() + cat.slice(1), `$${expenseTotals[cat].toFixed(2)}`]);
 
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 10,
+      startY: doc.lastAutoTable.finalY + 15,
       head: [['Expense Category', 'Year-End Total']],
-      body: totalsList
+      body: totalsList,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [52, 73, 94] }
     });
 
-    doc.text(`Total Income: $${totalIncome.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 12);
-    doc.text(`Total GST Collected: $${totalGSTCollected.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 20);
-    doc.text(`Total GST Remitted: $${totalGSTRemitted.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 28);
-    doc.text(`Total Business Expenses: $${Object.values(expenseTotals).reduce((a, b) => a + b, 0).toFixed(2)}`, 14, doc.lastAutoTable.finalY + 36);
-    doc.text(`Total Home Expenses: $${totalHome.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 44);
-    doc.text(`Total Vehicle Expenses: $${totalVehicle.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 52);
-    doc.text(`Total All Expenses: $${totalAllExpenses.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 60);
+    // Compute Y-position for the final summary text
+    let finalY = doc.lastAutoTable.finalY + 10;
 
-    doc.save('summary.pdf');
+    // If near the bottom, start a new page
+    if (finalY > 250) {
+      doc.addPage();
+      finalY = 20;
+    }
+
+    doc.setFontSize(12);
+    doc.text(`Total Income: $${totalIncome.toFixed(2)}`, 14, finalY);
+    doc.text(`Total GST Collected: $${totalGSTCollected.toFixed(2)}`, 14, finalY + 8);
+    doc.text(`Total GST Remitted: $${totalGSTRemitted.toFixed(2)}`, 14, finalY + 16);
+    doc.text(`Total Business Expenses: $${Object.values(expenseTotals).reduce((a, b) => a + b, 0).toFixed(2)}`, 14, finalY + 24);
+    doc.text(`Total Home Expenses: $${totalHome.toFixed(2)}`, 14, finalY + 32);
+    doc.text(`Total Vehicle Expenses: $${totalVehicle.toFixed(2)}`, 14, finalY + 40);
+    doc.text(`Total All Expenses: $${totalAllExpenses.toFixed(2)}`, 14, finalY + 48);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const safeBusinessName = (businessName || 'summary').replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
+    const filename = `${safeBusinessName}-Summary-${dateStr}.pdf`;
+    // Add footer to all pages
+    const pageCount = doc.internal.getNumberOfPages();
+    const year = new Date().getFullYear();
+
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      doc.setFontSize(10);
+      doc.setTextColor(150);
+
+      // Centered branding text
+      doc.text(`Prepared using TaxTracker.ca - ${year}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+      // Right-aligned page number
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 14, pageHeight - 10);
+    }
+    doc.save(filename);
   };
 
   return (
