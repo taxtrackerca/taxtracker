@@ -16,29 +16,28 @@ service cloud.firestore {
 
     // Users collection
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+  allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+  allow list: if isSignedIn(); // enables querying referred users
 
-      allow create: if isSignedIn() && request.auth.uid == userId;
+  allow create: if isSignedIn() && request.auth.uid == userId;
 
-      // Allow updates:
-      allow update: if isSignedIn() && request.auth.uid == userId && !('isAdmin' in request.resource.data);
-      allow update: if isAdmin(); // ✅ Allow admins to update any user
-      allow update: if isServerRequest(); // ✅ Server-to-Firestore access (like Stripe webhook)
+  allow update: if isSignedIn() && request.auth.uid == userId && !('isAdmin' in request.resource.data);
+  allow update: if isAdmin();
+  allow update: if isServerRequest();
 
-      // Allow deletes:
-      allow delete: if isSignedIn() && request.auth.uid == userId && userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
-      allow delete: if isAdmin(); // ✅ Admin override for delete
+  allow delete: if isSignedIn() && request.auth.uid == userId && userId != "P3DLBUSvwRPTfNaMepXosdr1kRe2";
+  allow delete: if isAdmin();
 
-      // Subcollection: months
-      match /months/{monthId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-      }
+  // Subcollection: months
+  match /months/{monthId} {
+    allow read, write: if isSignedIn() && request.auth.uid == userId;
+  }
 
-      // Subcollection: referrals (written only by backend)
-      match /referrals/{refId} {
-        allow write: if isServerRequest();
-      }
-    }
+  // Subcollection: referrals (written only by backend)
+  match /referrals/{refId} {
+    allow write: if isServerRequest();
+  }
+}
 
     // Legacy or shared months (outside users)
     match /months/{docId} {

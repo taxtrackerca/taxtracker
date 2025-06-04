@@ -31,10 +31,12 @@ export default function Account() {
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [requestPending, setRequestPending] = useState(false);
-  const [userData, setUserData] = useState(null); // 👈 add this line
+  const [userData, setUserData] = useState(null);
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
+  const [pendingReferrals, setPendingReferrals] = useState(0);
+  const [activeReferrals, setActiveReferrals] = useState(0);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -53,7 +55,7 @@ export default function Account() {
           setHasSubscription(!!profile.subscriptionId);
           setCredits(profile.credits || 0);
           setReferralCode(profile.referralCode || '');
-          // Check if user has a pending support request
+
           const requestQuery = query(
             collection(db, 'supportRequests'),
             where('email', '==', u.email),
@@ -67,6 +69,24 @@ export default function Account() {
           if (profile.isAdmin === true) {
             setIsAdmin(true);
           }
+
+          // Fetch referral counts
+          const pendingQuery = query(
+            collection(db, 'users'),
+            where('referredBy', '==', u.uid),
+            where('referralStatus', '==', 'unpaid')
+          );
+          const activeQuery = query(
+            collection(db, 'users'),
+            where('referredBy', '==', u.uid),
+            where('referralStatus', '==', 'paid')
+          );
+          const [pendingSnap, activeSnap] = await Promise.all([
+            getDocs(pendingQuery),
+            getDocs(activeQuery)
+          ]);
+          setPendingReferrals(pendingSnap.size);
+          setActiveReferrals(activeSnap.size);
         }
       }
     });
@@ -429,6 +449,10 @@ export default function Account() {
           </p>
           <p className="text-sm text-gray-500 mt-1">
             Invite your friends using this code—each signup earns you credit!
+          </p>
+          <p className="text-sm text-gray-700 mt-4">
+            Active Referrals: <strong>{activeReferrals}</strong><br />
+            Pending Referrals: <strong>{pendingReferrals}</strong>
           </p>
         </div>
 
