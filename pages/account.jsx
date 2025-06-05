@@ -35,6 +35,7 @@ export default function Account() {
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
+  
 
 
   useEffect(() => {
@@ -153,9 +154,10 @@ export default function Account() {
   const handlePasswordReset = async () => {
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage('Password reset email sent.');
+      setPasswordMessage('Please check your email to reset password.');
+      setTimeout(() => setPasswordMessage(''), 3000);
     } catch (error) {
-      setMessage(error.message);
+      setPasswordMessage('Error resetting password. Please try again.');
     }
   };
 
@@ -378,6 +380,9 @@ export default function Account() {
             >
               Reset Password
             </button>
+            {PasswordMessage && (
+            <p className="text-green-600 text-sm mt-2">{PasswordMessage}</p>
+          )}
           </div>
         </div>
 
