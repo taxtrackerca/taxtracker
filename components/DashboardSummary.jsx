@@ -7,6 +7,7 @@ export default function DashboardSummary({ refresh }) {
   const [summary, setSummary] = useState({
     businessIncome: 0,
     otherIncome: 0,
+    otherIncomeNotTaxed: 0,
     combinedIncome: 0,
     gstCollected: 0,
     gstRemitted: 0,
@@ -25,6 +26,7 @@ export default function DashboardSummary({ refresh }) {
 
       let businessIncome = 0;
       let otherIncome = 0;
+      let otherIncomeNotTaxed = 0;
       let gstCollected = 0;
       let gstRemitted = 0;
       let business = 0, home = 0, vehicle = 0;
@@ -34,8 +36,13 @@ export default function DashboardSummary({ refresh }) {
         const data = doc.data();
 
         businessIncome += parseFloat(data.income || 0);
-        if (data.otherIncome && data.otherIncomeTaxed === 'yes') {
-          otherIncome += parseFloat(data.otherIncome || 0);
+        if (data.otherIncome) {
+          const val = parseFloat(data.otherIncome || 0);
+          if (data.otherIncomeTaxed === 'yes') {
+            otherIncome += val;
+          } else {
+            otherIncomeNotTaxed += val;
+          }
         }
 
         gstCollected += parseFloat(data.gstCollected || 0);
@@ -63,11 +70,12 @@ export default function DashboardSummary({ refresh }) {
         totalTax += parseFloat(data.estimatedTaxThisMonth || 0);
       });
 
-      const combinedIncome = businessIncome + otherIncome;
+      const combinedIncome = businessIncome + otherIncome + otherIncomeNotTaxed;
 
       setSummary({
         businessIncome,
         otherIncome,
+        otherIncomeNotTaxed,
         combinedIncome,
         gstCollected,
         gstRemitted,
@@ -89,6 +97,7 @@ export default function DashboardSummary({ refresh }) {
       <ul className="text-gray-800 space-y-1">
         <li>Total Business Income: ${summary.businessIncome.toFixed(2)}</li>
         <li>Total Other Income (already taxed): ${summary.otherIncome.toFixed(2)}</li>
+        <li>Total Other Income (not taxed): ${summary.otherIncomeNotTaxed.toFixed(2)}</li>
         <li className="font-bold">Combined Income: ${summary.combinedIncome.toFixed(2)}</li>
         <li>Total Claimable Expenses: ${totalExpenses.toFixed(2)}</li>
         <li className="font-bold text-red-600">Estimated Tax Owing (YTD): ${summary.totalEstimatedTax.toFixed(2)}</li>
