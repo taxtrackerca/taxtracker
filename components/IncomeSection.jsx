@@ -52,53 +52,77 @@ export default function IncomeSection({ data, updateField }) {
               className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-              Tax Already Deducted from Personal Income?
-              <Tooltip text="If this personal income (like wages or salary) already had tax withheld by an employer, choose Yes. If not, select No to include it in your tax estimate." />
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Has tax already been deducted from the other income?
             </label>
-            <select
-              value={data.otherIncomeTaxed}
-              onChange={(e) => updateField('otherIncomeTaxed', e.target.value)}
-              className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
-            >
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
+            <div className="flex items-center space-x-6 mt-1">
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="taxed"
+                  value="yes"
+                  checked={data.otherIncomeTaxed === 'yes'}
+                  onChange={(e) => updateField('otherIncomeTaxed', e.target.value)}
+                  className="form-radio text-blue-600"
+                />
+                <span className="ml-2">Yes</span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="taxed"
+                  value="no"
+                  checked={data.otherIncomeTaxed === 'no'}
+                  onChange={(e) => updateField('otherIncomeTaxed', e.target.value)}
+                  className="form-radio text-blue-600"
+                />
+                <span className="ml-2">No</span>
+              </label>
+            </div>
+
+            {/* ✅ Warning if filled but no selection */}
+            {data.otherIncome && data.otherIncome !== '' && !['yes', 'no'].includes(data.otherIncomeTaxed) && (
+              <p className="text-red-600 text-sm mt-1">
+                Please indicate whether tax has already been deducted from the other income.
+              </p>
+            )}
           </div>
 
-          {/* GST/HST */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                GST Collected
-                <Tooltip text="Enter the total GST/HST you charged your customers this month. This is the tax you collected on sales." />
-              </label>
-              <input
-                type="number"
-                value={data.gstCollected || ''}
-                onChange={(e) => updateField('gstCollected', e.target.value)}
-                placeholder="0.00"
-                className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                GST Remitted
-                <Tooltip text="Enter the amount of GST/HST you submitted to the CRA this month. This is the portion of collected tax you've already paid." />
-              </label>
-              <input
-                type="number"
-                value={data.gstRemitted || ''}
-                onChange={(e) => updateField('gstRemitted', e.target.value)}
-                placeholder="0.00"
-                className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
-              />
+          
+
+
+            {/* GST/HST */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  GST Collected
+                  <Tooltip text="Enter the total GST/HST you charged your customers this month. This is the tax you collected on sales." />
+                </label>
+                <input
+                  type="number"
+                  value={data.gstCollected || ''}
+                  onChange={(e) => updateField('gstCollected', e.target.value)}
+                  placeholder="0.00"
+                  className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  GST Remitted
+                  <Tooltip text="Enter the amount of GST/HST you submitted to the CRA this month. This is the portion of collected tax you've already paid." />
+                </label>
+                <input
+                  type="number"
+                  value={data.gstRemitted || ''}
+                  onChange={(e) => updateField('gstRemitted', e.target.value)}
+                  placeholder="0.00"
+                  className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
+                />
+              </div>
             </div>
           </div>
-        </div>
       )}
-    </div>
-  );
+        </div>
+      );
 }

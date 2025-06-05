@@ -194,7 +194,7 @@ const MonthTracker = forwardRef((props, ref) => {
   const defaultData = {
     income: '',
     otherIncome: '',
-    otherIncomeTaxed: 'yes',
+    otherIncomeTaxed: '',
     gstCollected: '', gstRemitted: '',
     advertising: '', meals: '', badDebts: '', insurance: '', interest: '', businessTax: '',
     office: '', supplies: '', legal: '', admin: '', rent: '', repairs: '', salaries: '', propertyTax: '',
