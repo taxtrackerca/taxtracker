@@ -27,15 +27,15 @@ const faqItems = [
   },
   {
     question: 'Can I use it on my phone or tablet?',
-    answer: 'Yes! TaxTracker is mobile-friendly and works great on any device—no app required (though an app version is coming soon).'
+    answer: 'Yes! TaxTracker is mobile-friendly and works great on any device, you can even save the app to your home screen for easy access.'
   },
   {
     question: 'What happens when my free trial ends?',
-    answer: 'You’ll still have access to your data, but you’ll need to subscribe for $4.95/month to keep entering new information and using the dashboard.'
+    answer: 'Your subscription of $4.95/month will begin automatically unless you pause of cancel. '
   },
   {
     question: 'What if I take a break from my business?',
-    answer: 'You can pause your subscription anytime. Your access stays active until your billing cycle ends, and you can resume later with no extra fees.'
+    answer: 'You can pause your subscription anytime. Your access stays active until your billing cycle ends, and you can resume later with no extra fees. All your data is saved for when you want to restart again.'
   },
   {
     question: 'Do I need to connect my bank account?',
@@ -293,7 +293,7 @@ export default function Home() {
       < section id="referral" className="bg-gray-50 py-16 px-6 text-center" >
         <h2 className="text-3xl font-bold mb-4">Invite Friends, Earn Free Months!</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-12">
-        Love using TaxTracker? Share it with your friends and earn <span className="font-semibold text-gray-800">1 free month</span>. for every person who signs up using your referral code!
+        Love using TaxTracker? Share it with your friends and earn <span className="font-semibold text-gray-800">1 free month</span> for every person who signs up using your referral code!
         </p>
 
         <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-md rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
@@ -320,7 +320,7 @@ export default function Home() {
               <span className="text-green-600 font-bold mr-2">✓</span> Your own referral code to share
             </li>
             <li className="flex items-start">
-              <span className="text-green-600 font-bold mr-2">✓</span> Easily find your referral code and track your referrals
+              <span className="text-green-600 font-bold mr-2">✓</span> Easily find your referral code and track your credit
             </li>
           </ul>
 
