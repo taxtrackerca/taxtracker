@@ -31,12 +31,10 @@ export default function Account() {
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [requestPending, setRequestPending] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState(null); // 👈 add this line
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
-  
-
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -55,7 +53,7 @@ export default function Account() {
           setHasSubscription(!!profile.subscriptionId);
           setCredits(profile.credits || 0);
           setReferralCode(profile.referralCode || '');
-
+          // Check if user has a pending support request
           const requestQuery = query(
             collection(db, 'supportRequests'),
             where('email', '==', u.email),
@@ -69,8 +67,6 @@ export default function Account() {
           if (profile.isAdmin === true) {
             setIsAdmin(true);
           }
-
-
         }
       }
     });
@@ -154,10 +150,9 @@ export default function Account() {
   const handlePasswordReset = async () => {
     try {
       await sendPasswordResetEmail(auth, email);
-      setPasswordMessage('Please check your email to reset password.');
-      setTimeout(() => setPasswordMessage(''), 3000);
+      setMessage('Password reset email sent.');
     } catch (error) {
-      setPasswordMessage('Error resetting password. Please try again.');
+      setMessage(error.message);
     }
   };
 
@@ -366,23 +361,11 @@ export default function Account() {
 
         <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
           <h2 className="text-lg font-semibold mb-2">Login Details</h2>
-          <input
-            type="email"
-            value={email}
-            readOnly
-            className="w-full border p-2 mb-4 rounded bg-gray-100 text-gray-700 cursor-not-allowed"
-          />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 mb-6 rounded" />
 
-          <div className="flex justify-start">
-            <button
-              onClick={handlePasswordReset}
-              className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500"
-            >
-              Reset Password
-            </button>
-            {PasswordMessage && (
-            <p className="text-green-600 text-sm mt-2">{PasswordMessage}</p>
-          )}
+          <div className="flex gap-4 mb-2">
+            <button onClick={handleEmailUpdate} className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
+            <button onClick={handlePasswordReset} className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
           </div>
         </div>
 
@@ -447,7 +430,6 @@ export default function Account() {
           <p className="text-sm text-gray-500 mt-1">
             Invite your friends using this code—each signup earns you credit!
           </p>
-
         </div>
 
         <hr className="my-6" />
