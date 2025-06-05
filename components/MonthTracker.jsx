@@ -108,8 +108,8 @@ const MonthTracker = forwardRef((props, ref) => {
     const otherIncome = parseFloat(updatedData.otherIncome || 0);
     const isOtherTaxed = updatedData.otherIncomeTaxed === 'yes';
 
-    const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
-    const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
+    const currentOtherIncome = isOtherTaxed ? 0 : otherIncome; // only include if not taxed
+
 
     const businessExpenses = sumFields(updatedData, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
     const homeUsePercent = parseFloat(updatedData.businessSqft || 0) / parseFloat(updatedData.homeSqft || 1);
@@ -117,8 +117,9 @@ const MonthTracker = forwardRef((props, ref) => {
     const vehicleUsePercent = parseFloat(updatedData.businessKms || 0) / parseFloat(updatedData.kmsThisMonth || 1);
     const vehicleExpenses = sumFields(updatedData, ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs']) * vehicleUsePercent;
 
-    const taxableBefore = adjustedPriorIncome - priorDeductions;
-    const taxableNow = (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
+    const taxableBefore = priorIncome - priorDeductions;
+    const taxableNow = (priorIncome + currentIncome + currentOtherIncome)
+      - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
 
     const provincial = provincialData[province];
     const federalTaxBefore = calculateBracketTax(taxableBefore, federalRates, federalCredit, 0.15);

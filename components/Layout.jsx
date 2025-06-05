@@ -175,14 +175,54 @@ export default function Layout({ children }) {
                   </>
                 ) : (
                   <>
-                    <Link href="#referral" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Referral Program</Link>
-                    <Link href="#faq" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">FAQ</Link>
-                    <Link href="#pricing" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Pricing</Link>
-                    <Link href="/signup" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Sign Up</Link>
-                    <Link href="/getting-started" onClick={() => setMenuOpen(false)} className="block py-1 text-lg text-gray-800 hover:text-blue-600">Getting Started</Link>
-                    <button onClick={() => { setShowIosModal(true); setMenuOpen(false); }} className="block py-1 text-lg text-gray-800 hover:text-blue-600">App</button>
-
-                  </>
+  <Link
+    href={{ pathname: '/', query: { scrollTo: 'referral' } }}
+    scroll={false}
+    onClick={() => setMenuOpen(false)}
+    className="block py-1 text-lg text-gray-800 hover:text-blue-600"
+  >
+    Referral Program
+  </Link>
+  <Link
+    href={{ pathname: '/', query: { scrollTo: 'faq' } }}
+    scroll={false}
+    onClick={() => setMenuOpen(false)}
+    className="block py-1 text-lg text-gray-800 hover:text-blue-600"
+  >
+    FAQ
+  </Link>
+  <Link
+    href={{ pathname: '/', query: { scrollTo: 'pricing' } }}
+    scroll={false}
+    onClick={() => setMenuOpen(false)}
+    className="block py-1 text-lg text-gray-800 hover:text-blue-600"
+  >
+    Pricing
+  </Link>
+  <Link
+    href="/signup"
+    onClick={() => setMenuOpen(false)}
+    className="block py-1 text-lg text-gray-800 hover:text-blue-600"
+  >
+    Sign Up
+  </Link>
+  <Link
+    href="/getting-started"
+    onClick={() => setMenuOpen(false)}
+    className="block py-1 text-lg text-gray-800 hover:text-blue-600"
+  >
+    Getting Started
+  </Link>
+  <button
+    onClick={() => {
+      setShowIosModal(true);
+      setMenuOpen(false);
+    }}
+    className="block py-1 text-lg text-gray-800 hover:text-blue-600"
+  >
+    App
+  </button>
+</>
                 )}
               </nav>
             )}
