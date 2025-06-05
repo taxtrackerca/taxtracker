@@ -205,9 +205,9 @@ export default function Account() {
 
         const income = parseFloat(data.income || 0);
         const otherIncome = parseFloat(data.otherIncome || 0);
-        const isOtherTaxed = data.otherIncomeTaxed === 'yes';
+        
 
-        const adjustedOther = isOtherTaxed ? 0 : otherIncome;
+        
 
         const businessExpenses = [
           'advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin',
@@ -226,7 +226,7 @@ export default function Account() {
           'vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs'
         ].reduce((sum, f) => sum + parseFloat(data[f] || 0), 0) * vehicleUsePercent;
 
-        const taxableIncome = Math.max(0, income + adjustedOther - (businessExpenses + homeExpenses + vehicleExpenses));
+        const taxableIncome = Math.max(0, income + otherIncome - (businessExpenses + homeExpenses + vehicleExpenses));
 
         const federalTax = calculateBracketTax(taxableIncome, federalRates, federalCredit, 0.15);
         const provincialTax = calculateBracketTax(taxableIncome, prov.rates, prov.credit, prov.rates[0].rate);
