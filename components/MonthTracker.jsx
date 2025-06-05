@@ -22,8 +22,8 @@ const MonthTracker = forwardRef((props, ref) => {
   const [saveTimeout, setSaveTimeout] = useState(null);
   const [province, setProvince] = useState('Nova Scotia');
   const [logsExpanded, setLogsExpanded] = useState(false);
-  
-  
+
+
 
   const sumFields = (source, fields) =>
     fields.reduce((t, f) => t + parseFloat(source[f] || 0), 0);
@@ -106,10 +106,8 @@ const MonthTracker = forwardRef((props, ref) => {
 
     const currentIncome = parseFloat(updatedData.income || 0);
     const otherIncome = parseFloat(updatedData.otherIncome || 0);
-    const isOtherTaxed = updatedData.otherIncomeTaxed === 'yes';
-
-    const adjustedPriorIncome = priorIncome + (isOtherTaxed ? otherIncome : 0);
-    const adjustedCurrentOtherIncome = isOtherTaxed ? 0 : otherIncome;
+    const adjustedPriorIncome = priorIncome + parseFloat(updatedData.otherIncome || 0);
+    const adjustedCurrentOtherIncome = 0; // We're not taxing this again
 
     const businessExpenses = sumFields(updatedData, ['advertising', 'meals', 'badDebts', 'insurance', 'interest', 'businessTax', 'office', 'supplies', 'legal', 'admin', 'rent', 'repairs', 'salaries', 'propertyTax', 'travel', 'utilities', 'fuel', 'delivery', 'other']);
     const homeUsePercent = parseFloat(updatedData.businessSqft || 0) / parseFloat(updatedData.homeSqft || 1);
@@ -118,7 +116,21 @@ const MonthTracker = forwardRef((props, ref) => {
     const vehicleExpenses = sumFields(updatedData, ['vehicleFuel', 'vehicleInsurance', 'vehicleLicense', 'vehicleRepairs']) * vehicleUsePercent;
 
     const taxableBefore = adjustedPriorIncome - priorDeductions;
-    const taxableNow = (adjustedPriorIncome + currentIncome + adjustedCurrentOtherIncome) - (priorDeductions + businessExpenses + homeExpenses + vehicleExpenses);
+    const bracketIncome = adjustedPriorIncome + currentIncome + otherIncome; // use all income to determine brackets
+    const actualTaxable = Math.max(0, currentIncome - (businessExpenses + homeExpenses + vehicleExpenses)); // only business income is taxed
+
+    const federalTax = calculateBracketTax(bracketIncome, federalRates, federalCredit, 0.15);
+    const provincialTax = calculateBracketTax(bracketIncome, provincial.rates, provincial.credit, provincial.rates[0].rate);
+    const totalTax = federalTax + provincialTax;
+
+    const totalBracketTax = calculateBracketTax(bracketIncome, federalRates, federalCredit, 0.15) +
+      calculateBracketTax(bracketIncome, provincial.rates, provincial.credit, provincial.rates[0].rate);
+
+    const bracketBefore = calculateBracketTax(taxableBefore, federalRates, federalCredit, 0.15) +
+      calculateBracketTax(taxableBefore, provincial.rates, provincial.credit, provincial.rates[0].rate);
+
+    // Only apply tax to the actualTaxable portion
+    const actualMonthlyTax = totalBracketTax - bracketBefore;
 
     const provincial = provincialData[province];
     const federalTaxBefore = calculateBracketTax(taxableBefore, federalRates, federalCredit, 0.15);
@@ -130,7 +142,7 @@ const MonthTracker = forwardRef((props, ref) => {
 
     const dataWithTax = {
       ...updatedData,
-      estimatedTaxThisMonth: Math.round(estimatedTaxThisMonth * 100) / 100
+      estimatedTaxThisMonth: Math.round(actualMonthlyTax * 100) / 100
     };
 
     await setDoc(doc(db, 'users', uid, 'months', monthId), dataWithTax, { merge: true });
@@ -158,11 +170,11 @@ const MonthTracker = forwardRef((props, ref) => {
     setData((prev) => {
       const updatedLogs = { ...prev.logs, [logType]: newEntries };
       const updated = { ...prev, logs: updatedLogs };
-  
+
       if (saveTimeout) clearTimeout(saveTimeout);
       const timeout = setTimeout(() => handleAutoSave(updated), 1000);
       setSaveTimeout(timeout);
-  
+
       return updated;
     });
   };
@@ -230,7 +242,7 @@ const MonthTracker = forwardRef((props, ref) => {
   const liveEstimatedTaxThisMonth = totalTaxNow - totalTaxBefore;
 
   return (
-      <div ref={ref} className="bg-white p-4 rounded shadow space-y-4">
+    <div ref={ref} className="bg-white p-4 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Tracking: {monthId}</h2>
 
       <IncomeSection data={data} updateField={updateField} />
@@ -239,7 +251,7 @@ const MonthTracker = forwardRef((props, ref) => {
       <VehicleExpensesSection data={data} updateField={updateField} ytdKm={ytdKm} />
       <LogsSection logs={data.logs || {}} updateLogs={updateLogs} />
 
-      
+
 
       <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-50">
         <div className="max-w-4xl mx-auto p-4">
