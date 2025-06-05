@@ -34,8 +34,9 @@ export default function DashboardSummary({ refresh }) {
         const data = doc.data();
 
         businessIncome += parseFloat(data.income || 0);
-        otherIncome += parseFloat(data.otherIncome || 0);
-      
+        if (data.otherIncome && data.otherIncomeTaxed === 'yes') {
+          otherIncome += parseFloat(data.otherIncome || 0);
+        }
 
         gstCollected += parseFloat(data.gstCollected || 0);
         gstRemitted += parseFloat(data.gstRemitted || 0);
@@ -87,7 +88,7 @@ export default function DashboardSummary({ refresh }) {
       <h2 className="text-xl font-semibold mb-2">Year-to-Date Summary</h2>
       <ul className="text-gray-800 space-y-1">
         <li>Total Business Income: ${summary.businessIncome.toFixed(2)}</li>
-        <li>Total Other Income: ${summary.otherIncome.toFixed(2)}</li>
+        <li>Total Other Income (already taxed): ${summary.otherIncome.toFixed(2)}</li>
         <li className="font-bold">Combined Income: ${summary.combinedIncome.toFixed(2)}</li>
         <li>Total Claimable Expenses: ${totalExpenses.toFixed(2)}</li>
         <li className="font-bold text-red-600">Estimated Tax Owing (YTD): ${summary.totalEstimatedTax.toFixed(2)}</li>
