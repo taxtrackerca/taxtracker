@@ -48,6 +48,10 @@ const faqItems = [
   {
     question: 'Is my information secure?',
     answer: 'Absolutely. TaxTracker uses Firebase Authentication and Firestore to keep your data safe and accessible only to you.'
+  },
+  {
+    question: 'Why isn’t Quebec supported?',
+    answer: 'Quebec uses a separate tax system with its own provincial agency (Revenu Québec), which differs from the other provinces and territories. At this time, TaxTracker is only designed for jurisdictions administered by the CRA.'
   }
 ];
 

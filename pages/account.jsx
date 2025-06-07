@@ -23,6 +23,7 @@ export default function Account() {
   const [businessName, setBusinessName] = useState('');
   const [province, setProvince] = useState('');
   const [businessMessage, setBusinessMessage] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState('');
   const [provinceMessage, setProvinceMessage] = useState('');
   const [hasSubscription, setHasSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -35,6 +36,7 @@ export default function Account() {
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [balance, setBalance] = useState(null);
+  
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -150,9 +152,10 @@ export default function Account() {
   const handlePasswordReset = async () => {
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage('Password reset email sent.');
+      setPasswordMessage('Password reset email sent.');
+      setTimeout(() => setPasswordMessage(''), 3000);
     } catch (error) {
-      setMessage(error.message);
+      setPasswordMessage('Error sending password reset email. Please try again later');
     }
   };
 
@@ -361,11 +364,11 @@ export default function Account() {
 
         <div className="bg-gray-100 border border-white rounded-lg p-4 mb-6 shadow-lg">
           <h2 className="text-lg font-semibold mb-2">Login Details</h2>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border p-2 mb-6 rounded" />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} readOnly className="w-full border p-2 mb-6 rounded" />
 
           <div className="flex gap-4 mb-2">
-            <button onClick={handleEmailUpdate} className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-500">Update Email</button>
             <button onClick={handlePasswordReset} className="bg-gray-600 text-white font-semibold px-4 py-2 rounded hover:bg-gray-500">Reset Password</button>
+            <p className="text-green-600 text-sm mt-2">{passwordMessage}</p>
           </div>
         </div>
 
