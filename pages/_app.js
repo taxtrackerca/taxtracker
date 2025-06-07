@@ -6,18 +6,19 @@ import { Inter } from 'next/font/google';
 import Layout from '../components/Layout';
 import { useEffect, useState } from 'react';
 import AddToHomeScreenModal from '../components/AddToHomeScreenModal';
+import { Analytics } from '@vercel/analytics/react'; // 👈 NEW
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function MyApp({ Component, pageProps }) {
-  const [isOffline, setIsOffline] = useState(false); // default to online
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
     const updateOnlineStatus = () => {
       setIsOffline(!navigator.onLine);
     };
 
-    updateOnlineStatus(); // run once on mount
+    updateOnlineStatus();
 
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
@@ -39,12 +40,14 @@ export default function MyApp({ Component, pageProps }) {
             ⚠️ You're currently offline. Please reconnect to use TaxTracker.
           </div>
         )}
-       
+
         <Layout>
           <fieldset disabled={isOffline} className="w-full">
             <Component {...pageProps} />
           </fieldset>
         </Layout>
+
+        <Analytics /> {/* 👈 NEW */}
       </main>
     </>
   );
