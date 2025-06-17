@@ -61,6 +61,7 @@ app.post('/', express.raw({ type: 'application/json' }), async (req, res) => {
       await userRef.update({
         referralStatus: 'paid',
         firstPaymentDate: new Date(),
+        subscribed: true, // ✅ Add this line
       });
 
       // ✅ Grant credit if not yet granted

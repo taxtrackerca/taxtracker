@@ -68,7 +68,10 @@ export default async function handler(req, res) {
       ],
 
       subscription_data: {
-        trial_period_days: 23
+        trial_period_days: 23,
+        metadata: {
+          firebaseUid, // ✅ this is important
+        },
       },
       
       success_url: `${req.headers.origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
