@@ -91,6 +91,27 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    const checkSession = async () => {
+      const sessionId = new URLSearchParams(window.location.search).get('session_id');
+      if (!sessionId) return;
+  
+      const res = await fetch('/api/verify-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+  
+      const result = await res.json();
+      if (result.success) {
+        console.log('✅ Subscription verified and updated');
+        // Optional: refresh page or show success message
+      }
+    };
+  
+    checkSession();
+  }, []);
+
+  useEffect(() => {
     if (!pauseEndsAt) return;
 
     const interval = setInterval(() => {
