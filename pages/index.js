@@ -116,12 +116,13 @@ export default function Home() {
             <span className="bg-blue-100 text-blue-700 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               30-Day Free Trial
             </span>
+            <span className="bg-green-100 text-green-800 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
+              No Credit Card Required
+            </span>
             <span className="bg-yellow-100 text-yellow-800 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               Only $4.95/month after
             </span>
-            <span className="bg-green-100 text-green-800 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
-              CRA-Compliant
-            </span>
+            
           </div>
 
           <a
@@ -131,7 +132,7 @@ export default function Home() {
             Take Control of Your Taxes
           </a>
 
-          <p className="text-xs sm:text-sm text-gray-400 mt-4">Pause or cancel anytime. No strings attached.</p>
+          <p className="text-xs sm:text-sm text-gray-400 mt-4">Start free — <span className="font-semibold text-gray-800">no credit card needed</span>. Cancel or pause anytime.</p>
         </div>
       </section>
 
@@ -141,7 +142,7 @@ export default function Home() {
       <section id="pricing" className="bg-gray-50 py-16 px-6 text-center">
         <h2 className="text-3xl font-bold mb-4">Simple, Honest Pricing</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-8">
-          Start with a free 30-day trial. After that, it’s just <span className="font-semibold text-gray-800">$4.95/month</span>. No contracts. Pause or cancel anytime.
+        Start with 7 days free — no credit card needed. Add your card on day 8 to unlock the full 30-day trial. Just <span className="font-semibold text-gray-800">$4.95/month</span> after trial. No contracts. Pause or cancel anytime.
         </p>
 
         <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-lg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">

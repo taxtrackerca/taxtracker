@@ -22,26 +22,12 @@ export default function GettingStarted() {
             <li>Visit <strong>www.taxtracker.ca</strong></li>
             <li>Click <strong>Sign Up</strong> and enter your email and password</li>
             <li>Check your email to verify your address</li>
-            <li>After verification, you'll be directed to activate your free trial</li>
           </ul>
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2">Step 2: Activate Your 30-Day Free Trial</h2>
-          <ul className="list-disc list-inside space-y-1">
-            <li>After verifying your email, you’ll be taken to a secure Stripe checkout page</li>
-            <li>Enter your payment information. You will not be charged until the trial ends</li>
-            <li>Enjoy uninterrupted access to TaxTracker during your free trial</li>
-          </ul>
-          <p className="mt-2 text-sm text-gray-700">
-            <strong>Why do we collect your card?</strong><br />
-            To ensure your access continues seamlessly after the 30-day free trial, we collect payment information upfront. You can cancel anytime from your Account page before the trial ends.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2">Step 3: Set Up Your Account</h2>
-          <p className="mb-2">Once subscribed, you’ll be prompted to:</p>
+          <h2 className="text-2xl font-semibold mb-2">Step 2: Set Up Your Account</h2>
+          <p className="mb-2">Once verified, you’ll be prompted to:</p>
           <ul className="list-disc list-inside space-y-1">
             <li>Enter your <strong>business name</strong></li>
             <li>Select your <strong>province or territory</strong></li>
@@ -52,7 +38,7 @@ export default function GettingStarted() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2">Step 4: Explore Your Dashboard</h2>
+          <h2 className="text-2xl font-semibold mb-2">Step 3: Explore Your Dashboard</h2>
           <ul className="list-disc list-inside space-y-1">
             <li>Track monthly business income</li>
             <li>Enter eligible expenses by CRA categories</li>
@@ -61,7 +47,24 @@ export default function GettingStarted() {
             <li>Export data to CSV or PDF</li>
             <li>Track mileage, meals, travel, and more</li>
           </ul>
+          <p className="mt-2 text-sm text-gray-700">
+            <strong>7 day trial with no credit card. On day 8, you will be directed to sign up for our subscription and will required a credit card at this time. You will continue another 23 days free and then be charged $4.95/month to continue to use this service. You can pause or cancel anytime.</strong> 
+          </p>
         </section>
+
+        <section className="mb-8">
+          <h2 className="text-2xl font-semibold mb-2">Step 4: Activate The Rest Of Your 30-Day Free Trial</h2>
+          <ul className="list-disc list-inside space-y-1">
+            <li>After 7 days, complete the subscription</li>
+            <li>Use TaxTracker for another 23 days for free</li>
+            <li>Your $4.95/month starts when your free trial ends.</li>
+          </ul>
+          <p className="mt-2 text-sm text-gray-700">
+            <strong>Why do we collect your card?</strong><br />
+            To ensure your access continues seamlessly after the 30-day free trial, we collect payment information on day 8. You can cancel anytime from your Account page before the trial ends.
+          </p>
+        </section>
+
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-2">Add TaxTracker to Your Phone</h2>
