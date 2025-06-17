@@ -65,28 +65,41 @@ export default function Login() {
       const checkTrialAndRedirect = async (user) => {
         const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
-  
         const now = Date.now();
-  
+      
         if (!userSnap.exists()) {
           return router.push('/account-setup');
         }
-  
+      
         const userData = userSnap.data();
         const trialStart = userData.trialStart || now;
-  
+      
         if (!userData.trialStart) {
           await setDoc(userRef, { trialStart }, { merge: true });
         }
-  
-        const hasStripe = !!userData.stripeCustomerId;
+      
         const trialExpired = now > trialStart + 7 * 24 * 60 * 60 * 1000;
-  
-        if (trialExpired && !hasStripe) {
-          return router.push('/subscribe');
+      
+        // ✅ If trial is still valid, go to dashboard
+        if (!trialExpired) return router.push('/dashboard');
+      
+        // ✅ Otherwise, check subscription
+        const token = await user.getIdToken();
+        const res = await fetch('/api/subscription-status', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      
+        const subscription = await res.json();
+        const hasActiveSub = subscription?.status === 'active' || subscription?.status === 'trialing';
+      
+        if (hasActiveSub) {
+          return router.push('/dashboard');
         }
-  
-        router.push('/dashboard');
+      
+        // ✅ Trial expired and no subscription
+        return router.push('/subscribe');
       };
   
       // ✅ Now you can call it

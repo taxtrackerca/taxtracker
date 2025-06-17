@@ -70,14 +70,14 @@ export default function Dashboard() {
         const now = new Date();
         const signupDate = data.signupTimestamp?.toDate?.() || new Date(data.signupTimestamp);
         const trialEndDate = new Date(signupDate);
-        trialEndDate.setDate(trialEndDate.getDate() + 30);
+        trialEndDate.setDate(trialEndDate.getDate() + 7);
         setTrialEnds(trialEndDate);
 
         const trialExpired = now > trialEndDate;
         const isPaused = data.paused === true;
         const hasActiveSub = sub?.status === 'active' || sub?.status === 'trialing';
 
-        if (isPaused && trialExpired && !hasActiveSub) {
+        if (!hasActiveSub && !isPaused && trialExpired) {
           setBlocked(true);
         }
 
@@ -133,16 +133,21 @@ export default function Dashboard() {
 
   if (blocked) {
     return (
-      <div className="p-6 text-center max-w-md mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Access Paused</h1>
-        <p className="text-gray-600 mb-4">
-          Your trial has ended and your subscription is currently paused.
-        </p>
-        <Link href="/account">
-          <a className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">
-            Resume Subscription
-          </a>
-        </Link>
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm text-center">
+          <h2 className="text-xl font-bold mb-2">Your Free Trial Has Ended</h2>
+          <p className="mb-4 text-gray-700">
+            Your 7-day free trial is over. To keep using TaxTracker for 23 more free days, add a credit card now.
+            <br />
+            <strong>You won’t be charged until your 30-day trial ends.</strong>
+          </p>
+          <button
+            onClick={() => router.push('/subscribe')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+          >
+            Continue Free Trial
+          </button>
+        </div>
       </div>
     );
   }
