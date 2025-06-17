@@ -47,28 +47,9 @@ export default function VerifyEmail() {
         setRedirecting(true);
         clearInterval(intervalIdRef.current); // ✅ stop polling
         try {
+          router.push('/account-setup');
 
-          const token = await currentUser.getIdToken();
-          const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-
-          const res = await fetch('/api/create-checkout-session', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              customerEmail: currentUser.email,
-              firebaseUid: currentUser.uid,
-            }),
-          });
-
-          const data = await res.json();
-          if (data.url) {
-            window.location.href = data.url;
-          } else {
-            throw new Error('Stripe session creation failed.');
-          }
+          
         } catch (err) {
           console.error('Stripe redirect error:', err);
           setError('Error redirecting to Stripe. Please try again later.');
@@ -175,7 +156,7 @@ export default function VerifyEmail() {
       <CheckCircle className="mx-auto text-green-500 w-16 h-16 animate-pulse mb-4" />
       <h1 className="text-2xl font-bold mb-2">You're Almost There!</h1>
       <p className="text-gray-700 mb-4">
-        Your 30-day free trial has begun! Please check your inbox and click the email verification link we sent you.
+        Your 7-day free trial has begun! Please check your inbox and click the email verification link we sent you.
       </p>
 
       {resent && <p className="text-green-600 mb-3 font-medium">Verification email sent!</p>}
@@ -183,7 +164,7 @@ export default function VerifyEmail() {
 
       {redirecting && (
         <div className="text-green-600 font-semibold mb-3">
-          ✅ Email verified! Redirecting to your free trial...
+          ✅ Email verified! Redirecting to your account setup...
         </div>
       )}
 
@@ -198,7 +179,7 @@ export default function VerifyEmail() {
         </button>
 
         <button
-          onClick={handleManualStripeRedirect}
+          onClick={() => router.push('/account-setup')}
           className="text-blue-600 hover:text-blue-800 underline text-sm"
         >
           Already verified? Click here to continue

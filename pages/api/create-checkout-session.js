@@ -67,12 +67,12 @@ export default async function handler(req, res) {
         },
       ],
 
-      "subscription_data": {
-        "trial_period_days": "30"
+      subscription_data: {
+        trial_period_days: 23
       },
       
-      success_url: `${req.headers.origin}/account-setup?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.origin}/signup`,
+      success_url: `http://localhost:3000/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:3000/signup`,
     });
 
     console.log('✅ Stripe session created:', session.url);

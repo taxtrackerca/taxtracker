@@ -26,6 +26,7 @@ export default function AccountSetup() {
       await setDoc(doc(db, 'users', user.uid), {
         businessName,
         province,
+        trialStart: Date.now(), // ✅ set trialStart when account is created
       }, { merge: true });
 
       router.push('/dashboard');

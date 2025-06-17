@@ -1,12 +1,14 @@
 // pages/login.jsx
 import { useState, useEffect } from 'react';
-import { signInWithEmailAndPassword, onAuthStateChanged, setPersistence,
+import {
+  signInWithEmailAndPassword, onAuthStateChanged, setPersistence,
   browserLocalPersistence,
-  browserSessionPersistence } from 'firebase/auth';
+  browserSessionPersistence
+} from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -17,9 +19,35 @@ export default function Login() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        router.push('/dashboard');
+        (async () => {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+
+          const now = Date.now();
+
+          if (!userSnap.exists()) {
+            return router.push('/account-setup');
+          }
+
+          const userData = userSnap.data();
+          const trialStart = userData.trialStart || now;
+
+          if (!userData.trialStart) {
+            await setDoc(userRef, { trialStart }, { merge: true });
+          }
+
+          const hasStripe = !!userData.stripeCustomerId;
+          const trialExpired = now > trialStart + 7 * 24 * 60 * 60 * 1000;
+
+          if (trialExpired && !hasStripe) {
+            return router.push('/subscribe');
+          }
+
+          router.push('/dashboard');
+        })();
       }
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -27,15 +55,42 @@ export default function Login() {
     e.preventDefault();
     try {
       const autoLoginAllowed = localStorage.getItem('autoLoginAllowed') !== 'false';
-  
       await setPersistence(auth, autoLoginAllowed ? browserLocalPersistence : browserSessionPersistence);
-  
       await signInWithEmailAndPassword(auth, email, password);
   
       // ✅ Reset the flag so next login is auto-login unless user explicitly logs out
       localStorage.setItem('autoLoginAllowed', 'true');
   
-      router.push('/dashboard');
+      // ✅ Define the function first
+      const checkTrialAndRedirect = async (user) => {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+  
+        const now = Date.now();
+  
+        if (!userSnap.exists()) {
+          return router.push('/account-setup');
+        }
+  
+        const userData = userSnap.data();
+        const trialStart = userData.trialStart || now;
+  
+        if (!userData.trialStart) {
+          await setDoc(userRef, { trialStart }, { merge: true });
+        }
+  
+        const hasStripe = !!userData.stripeCustomerId;
+        const trialExpired = now > trialStart + 7 * 24 * 60 * 60 * 1000;
+  
+        if (trialExpired && !hasStripe) {
+          return router.push('/subscribe');
+        }
+  
+        router.push('/dashboard');
+      };
+  
+      // ✅ Now you can call it
+      await checkTrialAndRedirect(auth.currentUser);
     } catch (err) {
       setError('Invalid login credentials.');
     }
