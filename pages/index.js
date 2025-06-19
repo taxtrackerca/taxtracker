@@ -6,6 +6,7 @@ import ScreenshotGrid from '../components/ScreenshotGrid';
 import { useRouter } from 'next/router';
 import { auth } from '../lib/firebase';
 import AddToHomeScreenModal from '../components/AddToHomeScreenModal';
+import { track } from '@vercel/analytics';
 
 
 const faqItems = [
@@ -90,6 +91,26 @@ export default function Home() {
     }
   }, [router.query]);
 
+  useEffect(() => {
+    const video = document.getElementById('promo-video');
+    const handlePlay = () => {
+      track('Video Played', {
+        page: 'Landing Page',
+        location: 'Hero Section',
+      });
+    };
+  
+    if (video) {
+      video.addEventListener('play', handlePlay);
+    }
+  
+    return () => {
+      if (video) {
+        video.removeEventListener('play', handlePlay);
+      }
+    };
+  }, []);
+
 
 
   return (
@@ -122,7 +143,7 @@ export default function Home() {
             <span className="bg-yellow-100 text-yellow-800 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold">
               Only $4.95/month after
             </span>
-            
+
           </div>
 
           <a
@@ -136,13 +157,32 @@ export default function Home() {
         </div>
       </section>
 
-      <ScreenshotGrid />
+      <section className="bg-black py-16 px-4 text-center">
+        <div className="max-w-4xl mx-auto">
+          <div className="aspect-w-16 aspect-h-9 w-full">
+            <video
+              className="rounded-xl shadow-lg w-full"
+              id="promo-video"
+              autoPlay
+              muted
+              playsInline
+              controls
+              preload="auto"
+              
+            >
+              <source src="/videos/taxtracker-demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <p className="text-white mt-4 text-sm">Watch how TaxTracker simplifies taxes for Canadians</p>
+        </div>
+      </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="bg-gray-50 py-16 px-6 text-center">
         <h2 className="text-3xl font-bold mb-4">Simple, Honest Pricing</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-8">
-        Start with 7 days free — no credit card needed. Add your card on day 8 to unlock the full 30-day trial. Just <span className="font-semibold text-gray-800">$4.95/month</span> after trial. No contracts. Pause or cancel anytime.
+          Start with 7 days free — no credit card needed. Add your card on day 8 to unlock the full 30-day trial. Just <span className="font-semibold text-gray-800">$4.95/month</span> after trial. No contracts. Pause or cancel anytime.
         </p>
 
         <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-lg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
@@ -231,7 +271,7 @@ export default function Home() {
 
       <section id="faq" className="py-16 px-6 mb-12 mt-4">
         <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-lg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
-          
+
           <h2 className="text-3xl font-bold mb-4 text-center">Frequently Asked Questions</h2>
           <div className="space-y-4">
             {faqItems.map((item, index) => (
@@ -298,7 +338,7 @@ export default function Home() {
       < section id="referral" className="bg-gray-50 py-16 px-6 text-center" >
         <h2 className="text-3xl font-bold mb-4">Invite Friends, Earn Free Months!</h2>
         <p className="text-gray-600 max-w-xl mx-auto mb-12">
-        Love using TaxTracker? Share it with your friends and earn <span className="font-semibold text-gray-800">1 free month</span> for every person who signs up using your referral code!
+          Love using TaxTracker? Share it with your friends and earn <span className="font-semibold text-gray-800">1 free month</span> for every person who signs up using your referral code!
         </p>
 
         <div className="max-w-xl mx-auto bg-white border border-gray-200 shadow-md rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
@@ -308,7 +348,7 @@ export default function Home() {
           </div>
 
           <h3 className="text-2xl font-bold text-gray-800 mb-4">How it works:</h3>
-          
+
           <p className="text-gray-600 mb-6">For every friend that continutes their subscription past the trial period, you will receive a free month</p>
 
           <ul className="text-left text-gray-700 space-y-2 mb-8 max-w-sm mx-auto">
@@ -337,7 +377,7 @@ export default function Home() {
           </a>
 
           <p className="text-sm text-gray-500 mt-4">
-          <a href="/login" className="  text-blue-500 px-0 py-2 hover:bg-blue mt-4">Login</a> to view your referral code under Account settings
+            <a href="/login" className="  text-blue-500 px-0 py-2 hover:bg-blue mt-4">Login</a> to view your referral code under Account settings
           </p>
         </div>
       </section >
