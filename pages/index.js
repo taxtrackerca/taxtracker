@@ -99,11 +99,11 @@ export default function Home() {
         location: 'Hero Section',
       });
     };
-  
+
     if (video) {
       video.addEventListener('play', handlePlay);
     }
-  
+
     return () => {
       if (video) {
         video.removeEventListener('play', handlePlay);
@@ -157,8 +157,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-black py-16 px-4 text-center">
+      <section className="bg-white py-16 px-4 text-center">
         <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-black-900 mb-6">
+            See TaxTracker in Action
+          </h2>
           <div className="aspect-w-16 aspect-h-9 w-full">
             <video
               className="rounded-xl shadow-lg w-full"
@@ -168,13 +171,12 @@ export default function Home() {
               playsInline
               controls
               preload="auto"
-              
+
             >
               <source src="/videos/taxtracker-demo.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
-          <p className="text-white mt-4 text-sm">Watch how TaxTracker simplifies taxes for Canadians</p>
         </div>
       </section>
 
